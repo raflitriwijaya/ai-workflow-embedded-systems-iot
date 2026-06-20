@@ -67,6 +67,7 @@
 ### 3.3 Development
 
 - **Activities:** Implement APIs (FastAPI/Node.js/Go; REST/gRPC); implement or configure the broker (EMQX/Mosquitto); implement the device twin/shadow; implement provisioning/enrollment and device identity (mTLS/X.509); implement OAuth/JWT user auth; implement the database layer (PostgreSQL/Redis); implement telemetry ingest and routing to the data pipelines; implement command/control; implement the cloud-side OTA orchestration backend (desired state); integrate cloud-side model serving; implement WebSockets; write tests.
+- **Security Implementation Readiness Gate:** Before exiting Development, the Backend/Cloud Security Champion completes the Security Implementation Readiness self-assessment checklist and submits it to the [[SECURITY_ENGINEER_SKILL|Security Engineer]] (or Deputy). The checklist covers: (a) mTLS (mutual Transport Layer Security) enforcement verified for all device-facing endpoints (no plaintext fallback), (b) X.509 certificate validation correctly implemented (hostname verification, expiry checking, revocation checking where applicable), (c) OAuth/JWT (JSON Web Token) user authentication verified with token expiry and refresh flow, (d) RBAC (Role-Based Access Control) enforcement confirmed for all API endpoints (least privilege per role), (e) OWASP (Open Worldwide Application Security Project) API Security Top 10 reviewed with zero Critical/High findings, (f) input validation and rate limiting functional on all public endpoints, (g) secrets stored in Vault (no hardcoded credentials, API keys, or connection strings), (h) audit logging implemented for all authentication events, authorization failures, and admin operations, (i) container image scanning passing with zero Critical vulnerabilities, (j) TLS (Transport Layer Security) configuration meets the security baseline (minimum TLS 1.3, strong cipher suites only). Gate exit criteria: all checklist items marked CONFIRMED by the Security Champion; any UNCERTAIN item flagged to the Security Engineer for review within 5 business days. This gate runs in parallel with other Development completion activities. The Security Champion initiates the checklist review ≥2 weeks before the scheduled Development exit. #Security-Implementation-Readiness #Security-Champion #shift-left #security-verification #release-gate
 - **Deliverables:** Working APIs, the broker/backend, the twin implementation, provisioning, auth, the database layer, and ingest + routing.
 
 ### 3.4 Execution
@@ -235,6 +236,15 @@
 - **Provides:** The broker endpoints, the message routing/topic structure, and reliable telemetry-stream access.
 - **Requires:** The ingestion contract, schema-conformance expectations at the boundary, and routing requirements.
 - **Cadence:** Ingest-contract alignment at planning; ingestion integration during development; ingest-health review.
+
+**Joint Telemetry-Integrity SLO:**
+Backend and Data jointly own a telemetry-integrity SLO (Service-Level Objective) with explicit segment ownership:
+- **Segment A (BACK-owned):** MQTT (Message Queuing Telemetry Transport) broker → ingest routing point. SLO: ≥99.9% of messages received by the broker are delivered to the routing point within 5 seconds. Measured by broker-to-routing-point delivery acknowledgment
+- **Segment B (DATA-owned):** Ingest routing point → time-series database / data lake. SLO: ≥99.9% of messages received at the routing point are committed to storage within 10 seconds. Measured by routing-point-to-storage write confirmation
+- **End-to-End (joint):** Device telemetry → storage. SLO: ≥99.8% of messages emitted by devices are committed to storage within 15 seconds. Measured by device-side sequence numbers reconciled against storage-side record counts
+- **Measurement cadence:** SLO compliance calculated continuously, reviewed at the monthly Backend-Data sync. Any SLO breach triggers a joint root-cause analysis within 2 business days
+- **Segment handoff monitoring:** The routing point is instrumented with inbound counters (from BACK) and outbound counters (to DATA). Counter mismatch alerts both roles within 5 minutes
+#telemetry-integrity #joint-slo #observability
 
 ### 6.5 Security Engineer
 

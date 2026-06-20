@@ -63,6 +63,7 @@
 ### 3.3 Development
 
 - **Activities:** Implement the CI/CD pipelines (GitLab CI / GitHub Actions); stand up the registry (MLflow) with DVC linkage; build conversion/packaging automation (TFLite Micro); implement orchestration (Airflow/Prefect); implement monitoring (Prometheus/Grafana, Evidently AI); provision infrastructure (Terraform, Docker, K3s); implement deployment automation (canary/staged/rollback); wire artifact signing.
+- **Security Implementation Readiness Gate:** Before exiting Development, the MLOps Security Champion completes the Security Implementation Readiness self-assessment checklist and submits it to the [[SECURITY_ENGINEER_SKILL|Security Engineer]] (or Deputy). The checklist covers: (a) model registry access-controlled with RBAC (Role-Based Access Control — least privilege), (b) model artifact signing verified (signature validation before deployment), (c) training pipeline: no secrets in training logs, training data access audited, (d) model deployment canary/staged rollout verified with rollback tested, (e) drift monitoring metrics access-controlled, (f) all pipeline dependencies scanned with zero Critical vulnerabilities, (g) experiment tracking data access-controlled (no PII — Personally Identifiable Information — exposure in experiment logs), (h) model-serving endpoints authenticated and authorized, (i) automated retraining triggers reviewed for injection or manipulation risk, (j) pipeline-to-OTA (Over-the-Air) integration verified: only signed, registry-approved models can enter the OTA distribution path. Gate exit criteria: all checklist items marked CONFIRMED; any UNCERTAIN item flagged to the Security Engineer within 5 business days. Initiated ≥2 weeks before scheduled Development exit. #Security-Implementation-Readiness #Security-Champion #shift-left #security-verification #release-gate
 - **Deliverables:** Working pipelines, a populated registry, conversion automation, monitoring dashboards, IaC, and deployment automation.
 
 ### 3.4 Execution
@@ -200,6 +201,7 @@
 |Reproducibility/audit (lineage) report|Evidence of model → data → code traceability|QA, Security, TPM|Markdown + registry export|Generated per release|
 |Retraining workflow|Automated drift-to-retrain-to-redeploy loop|Edge AI/ML, Data|Orchestrated DAG|Versioned with the pipeline|
 |Runbooks|Deploy, rollback, and incident procedures|DevOps, QA, on-call|Markdown|Versioned; reviewed per release|
+|Model Rebuildability Verification Job|Automated CI (Continuous Integration) job executing weekly. Selects one randomly chosen registered model version per product line from the MLflow Model Registry. Performs a clean rebuild from recorded lineage: dataset version (DVC — Data Version Control — reference) → training code version (Git commit SHA — Secure Hash Algorithm) → training config (pinned hyperparameters) → conversion script (fixed version). Rebuild succeeds if the reproduced model artifact is binary-identical (SHA-256 hash match) to the registered artifact. Rebuild failure triggers a #reproducibility-incident: root-cause analysis within 2 business days, remediation within 5 business days. Results published to the MLOps observability dashboard. Consecutive weekly failures for the same model block the next model release until root cause is resolved.|[[EDGE_AI_ML_ENGINEER_SKILL|Edge AI/ML]], [[DATA_ENGINEER_SKILL|Data]], [[QA_TEST_AUTOMATION_ENGINEER_SKILL|QA]]|Automated CI job (Python/pytest) + weekly Markdown report|Versioned with the MLOps pipeline repository; report generated weekly and archived|
 |Model-metric SLOs|Reliability targets for models and pipelines|DevOps, QA, TPM|Markdown|Reviewed per release cycle|
 
 ---
@@ -410,6 +412,7 @@ Constraints: artifact must fit budget and be signed; manifest pins model↔firmw
 - **Deployment failure rate:** Low failed-deployment and incident rate; low MTTR.
 - **Artifact integrity:** 100% of deployed artifacts signed and within the flash budget.
 - **Audit completeness:** 100% of deployments carry a full lineage and audit trail.
+- **Model rebuildability:** 100% of weekly sampled models rebuild successfully from lineage (binary-identical artifact). Any rebuild failure is a #reproducibility-incident. Remediation: root cause identified within 2 business days, resolved within 5 business days. Consecutive failures for the same model block the next model release. Measured by the Model Rebuildability Verification Job.
 
 **Process & team metrics:**
 

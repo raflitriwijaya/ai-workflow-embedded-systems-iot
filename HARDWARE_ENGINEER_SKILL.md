@@ -227,11 +227,31 @@
 - **Requires:** Pin-mux and peripheral usage intent, bring-up findings, driver-level electrical/timing issues, and confirmation that the board boots and enumerates buses.
 - **Cadence:** Pin-mux agreement at planning; joint board bring-up in execution; errata triage and rework cycles.
 
+**Shared Bring-Up Definition of Done:**
+The following joint DoD (Definition of Done) applies to every board bring-up. Both roles must confirm each item before bring-up is considered complete:
+1. Power rails: all voltages measured within ±5% of nominal, ripple within spec, sequencing order confirmed
+2. Clocks: main oscillator stable, PLLs (Phase-Locked Loops) locked, all peripheral clocks verified at expected frequencies
+3. Reset: reset vector confirmed, boot sequence completes to firmware entry point, watchdog timer operational
+4. Buses: I2C (Inter-Integrated Circuit) scan enumerates all expected addresses, SPI (Serial Peripheral Interface) loopback passes, UART (Universal Asynchronous Receiver-Transmitter) TX/RX confirmed
+5. Sensors: all sensors enumerated, sensor IDs or WHO_AM_I registers read correctly, sample data flows from sensor through driver to firmware buffer
+6. Debug/Programming: JTAG (Joint Test Action Group) / SWD (Serial Wire Debug) connection functional, firmware flash and verify successful
+7. Power budget: measured active and sleep current within the [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]]'s power budget
+Bring-up status (Pass/Fail per item, with measured values) is recorded in a joint Bring-Up Report signed by both [[HARDWARE_ENGINEER_SKILL|HW]] and [[FIRMWARE_ENGINEER_SKILL|FW]]. Items not passing block Development exit. #bring-up #joint-dod
+
 ### 6.3 Edge AI/ML Engineer
 
 - **Provides:** Selected sensors meeting the data spec, analog front-end design, and sensor characterization data (SNR, resolution, dynamic range, drift).
 - **Requires:** The sensor data specification — required sampling rate, resolution, dynamic range, and noise targets for model quality.
 - **Cadence:** Data-spec handoff at planning; sensor characterization in execution; data-fidelity review before production.
+
+**Sensor Data Fidelity Feedback Loop:**
+After sensor characterization ([[HARDWARE_ENGINEER_SKILL|HW]] §3.4), the following feedback loop ensures characterized sensor performance meets the ML data specification:
+1. **Characterization Data Delivery:** HW delivers sensor characterization report (measured SNR — Signal-to-Noise Ratio, resolution, dynamic range, drift, sampling jitter) to ML within 5 business days of characterization completion
+2. **ML Data Spec Conformance Check:** ML reviews the characterization report against the sensor data requirements specification within 10 business days. ML produces a conformance assessment: CONFIRMED (all specs met), CONDITIONAL (specs met with noted limitations), or REJECTED (specs not met — requires hardware redesign or ML spec adjustment)
+3. **CONDITIONAL Acceptance:** If CONDITIONAL, ML documents the limitations and their expected impact on model accuracy. HW and ML jointly present to the [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] for a trade-off decision within 5 business days
+4. **REJECTED:** If REJECTED, HW and ML jointly develop a remediation plan (sensor replacement, AFE — Analog Front-End — redesign, or ML spec relaxation) within 10 business days
+5. **Post-Bring-Up Re-Characterization:** If hardware changes are made (rework, component change), HW re-characterizes the sensor and re-enters the feedback loop at step 1
+#sensor-characterization #feedback-loop #ML-data-spec
 
 ### 6.4 Security Engineer
 

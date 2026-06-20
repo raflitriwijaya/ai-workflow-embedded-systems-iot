@@ -136,6 +136,11 @@
 ### 3.6 Technology Transfer to Product
 
 - Prepare a **Technology Transfer Pack** for each research finding with production potential: includes executive summary, technical description, experimental evidence, known limitations, estimated engineering effort for productization, and recommended next steps
+- **Pre-Transfer Security Review gate:** Before the Technology Transfer Pack is finalized for handoff to the engineering team, the Researcher must complete a mandatory security review for any Technology Transfer Pack that includes findings with implications for #connectivity, #data-handling, #compute-architecture, or #sensor-physics that could introduce novel #attack-surface elements
+  - **Trigger condition:** The Pre-Transfer Security Review gate is triggered when any research finding in the Technology Transfer Pack meets one or more of the following criteria: (a) introduces a novel wireless communication modality or RF (Radio Frequency) emission pattern not present in existing deployed products; (b) involves collection, processing, or transmission of a data type not previously handled by the engineering team, particularly data with potential #privacy or PII (Personally Identifiable Information) implications; (c) proposes an unconventional compute architecture (neuromorphic, analog compute, non-Von Neumann) that changes the trust model of the edge device; (d) exploits novel sensor physics (electrochemical, bio-inspired, quantum-assisted) that create new physical attack vectors not covered by existing threat models; or (e) introduces any new external interface — wired, wireless, optical, acoustic, or physical — to the embedded system boundary
+  - **Gate activity:** The Researcher prepares a Pre-Transfer Security Review briefing document as a mandatory appendix to the Technology Transfer Pack. This briefing identifies: (i) all potential #attack-surface elements introduced by each research finding, mapped to the STRIDE (Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege) threat categories; (ii) novel data types with #privacy implications, including data classification per organizational policy; (iii) all security assumptions made by the Researcher during experimental design (e.g., "assumed physical isolation of the laboratory testbed," "assumed ideal channel conditions"); and (iv) any limitations of the research prototype relevant to security assessment (e.g., "PoC uses unauthenticated debug interface for convenience," "research firmware does not implement secure boot"). The [[SECURITY_ENGINEER_SKILL|Security Engineer]] reviews this briefing and produces a formal #threat-model assessment using the #STRIDE methodology, which is included as a mandatory appendix in the final Technology Transfer Pack alongside the Researcher's briefing
+  - **Gate exit criteria:** All four of the following conditions must be satisfied before the Technology Transfer Pack is considered complete: (a) the Security Engineer has reviewed the briefing, produced a documented #threat-model assessment, and confirmed the assessment is final; (b) any CRITICAL-severity findings (CVSS v3.1 — Common Vulnerability Scoring System version 3.1 — score ≥ 9.0) are either resolved through design modification or formally accepted with a written risk acceptance by the Technology Transfer Review Board, which must include the [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Embedded Systems Architect]], the [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|Product Owner / TPM]], and the Security Engineer — no CRITICAL finding may proceed to engineering handoff without a signed risk acceptance; (c) the Technology Transfer Pack includes the Security Engineer's signed #threat-model assessment as a mandatory appendix; (d) any unresolved HIGH-severity findings (CVSS v3.1 score 7.0–8.9) are documented with a time-bound remediation plan specifying the owning role, estimated remediation effort, and a target remediation date agreed by the Security Engineer and the Embedded Systems Architect
+  - **Integration note:** This gate runs in parallel with other Technology Transfer stage activities — specifically, the Feasibility Assessment Report finalization, PoC (Proof-of-Concept) demonstration preparation, and joint feasibility assessment session scheduling. It does not serialize or block the Technology Transfer stage; it adds a mandatory concurrent activity that must be completed before the Technology Transfer Pack is declared final. The Researcher should initiate the Pre-Transfer Security Review by submitting the briefing document to the Security Engineer no later than 2 weeks (10 business days) before the scheduled Technology Transfer Review Board meeting. If the Security Engineer identifies findings that require design modifications, the Researcher and Security Engineer jointly determine whether to proceed with the scheduled Review Board meeting (with findings documented) or defer to allow for modifications
 - Conduct a joint feasibility assessment session with the Embedded Systems Architect and Product Owner/TPM: walk through findings, demonstrate PoC, and address engineering questions
 - Provide the engineering team with all necessary artifacts: PoC hardware designs (schematics, BOM, firmware for prototype only), characterized datasets, and documented performance boundaries
 - Remain available as a scientific consultant during the engineering team's productization phase: answer technical questions and clarify experimental findings without taking over engineering decisions
@@ -298,7 +303,12 @@
 - Feedback on engineering feasibility gaps identified during PoC review
 - System-level constraints (power budget, form factor, communication bandwidth, cost target) to inform research relevance assessment
 
-**Cadence:** Quarterly technology alignment meeting; on-demand for technology transfer handoffs and feasibility consultations
+**Cadence:**
+- Scheduled Technology Transfer Review: quarterly, first Tuesday of February, May, August, November #cadence #Technology-Transfer #interface-contract #HR-7. Researcher submits Technology Transfer Pack ≥3 weeks before the review date. Architect provides written feasibility assessment ≥1 week before the review meeting. Review meeting (60 min) covers: feasibility findings, architecture implication assessment, and resource budget impact analysis
+- Interim Technology Transfer: for time-sensitive research findings (market window < 3 months or patent filing deadline), Researcher may request an out-of-cycle Technology Transfer Review. Architect acknowledges request within 3 business days and schedules review within 10 business days. Limited to 2 interim reviews per quarter
+- Long-term Architecture Roadmap Briefing: Architect presents updated roadmap to Researcher annually (first Tuesday of March). Researcher provides research-direction feedback within 2 weeks
+- System-level constraint update: Architect notifies Researcher of significant architecture changes (new platform, protocol, or budget) within 5 business days of ADR (Architecture Decision Record) acceptance #synchronization. Researcher acknowledges within 5 business days and provides impact assessment on active research within 15 business days
+- Ad hoc scientific consultation: Researcher available for scientific consultation with 5 business days' notice. Limited to 4 hours per month. Urgent consultation (production incident requiring scientific expertise): response within 1 business day
 
 ---
 
@@ -316,7 +326,12 @@
 - Prioritization guidance for technology transfer requests when engineering team bandwidth is limited
 - Market-driven problem statements that can seed applied research directions
 
-**Cadence:** Bi-annual research-product alignment session; on-demand for feasibility requests initiated by the Product Owner
+**Cadence:**
+- Quarterly Research-Product Alignment Review: second Tuesday of February, May, August, November #cadence #research-alignment #interface-contract #HR-7. Researcher presents active research directions, expected Technology Transfer readiness dates, and resource needs. PO/TPM presents updated product priorities, market feedback, and any research-direction requests from the engineering team. Joint output: updated Research-Product Alignment document with prioritized research directions and expected transfer timelines
+- Research Direction Change Notification: Researcher notifies PO/TPM within 5 business days of significant research direction change (new domain, new sensing modality, new application area) #synchronization. PO/TPM provides product-impact assessment within 10 business days
+- Sprint-level research liaison: During active Technology Transfer (Development stage), Researcher participates in one sprint planning session per month to provide scientific context for transferred technology. PO/TPM schedules and provides sprint context ≥1 week in advance
+- Annual Innovation Portfolio Review: first Tuesday of December #cadence. Joint review of all active research directions against product roadmap, market trends, and business strategy. Output: prioritized research portfolio for the upcoming year with go/no-go decisions per research direction
+- Urgent strategic alignment: when a market or technology disruption requires immediate research reprioritization, either party may call an urgent alignment meeting with 3 business days' notice
 
 ---
 
@@ -334,7 +349,13 @@
 - Support in sourcing low-volume specialty components required for research prototypes
 - PCB fabrication and assembly assistance for complex research prototype boards (if beyond researcher's PCB design capability)
 
-**Cadence:** On-demand, triggered by prototype development needs or technology transfer handoffs
+**Cadence:**
+- PoC Hardware Design Handoff: Researcher delivers PoC hardware design package (schematics, component characterization data, assembly notes) ≥4 weeks before scheduled Hardware Engineer evaluation #cadence #Technology-Transfer #interface-contract #HR-7. Handoff occurs at the Technology Transfer Review or as a standalone Hardware Evaluation Gate
+- Hardware Feasibility Assessment: Hardware Engineer provides written feasibility assessment (manufacturability, BOM — Bill of Materials — cost estimate, component availability, regulatory path) within 15 business days of PoC design handoff #synchronization. Assessment includes: estimated BOM cost range, identified single-source components, recommended fabrication process, and any showstopper issues
+- Novel Component Evaluation: when Researcher identifies a novel sensor, material, or component requiring hardware evaluation, Researcher submits component datasheet and characterization data. Hardware Engineer provides evaluation (electrical compatibility, availability, cost, second-source options) within 10 business days
+- Joint Prototype Review: during active hardware prototyping of research-derived designs, bi-weekly 30-minute sync between Researcher and Hardware Engineer for the duration of the prototyping phase (typically 4–12 weeks) #cadence
+- Component characterization data delivery: Researcher delivers characterized sensor/component data packages within 5 business days of measurement completion. Hardware Engineer acknowledges receipt and flags any data gaps within 5 business days
+- Annual Research-Hardware Technology Scan: first Tuesday of October #cadence. Joint review of emerging components, materials, and fabrication techniques relevant to both research directions and product hardware roadmap
 
 ---
 
@@ -352,7 +373,13 @@
 - Support in porting research-grade code to target embedded platforms when the PoC is in a different language or environment
 - Clarification on MCU resource constraints (flash, RAM, compute) that define the feasibility boundary for research algorithm designs
 
-**Cadence:** On-demand, at technology transfer stage; occasional during PoC firmware development for complex research prototypes
+**Cadence:**
+- Algorithm Specification Handoff: Researcher delivers algorithm specification package (mathematical description, pseudocode, Python reference implementation, test vectors, expected resource requirements) ≥4 weeks before scheduled Firmware Engineer implementation start #cadence #Technology-Transfer #interface-contract #HR-7. Handoff occurs at the Technology Transfer Review or as a standalone Algorithm Review Gate
+- Firmware Feasibility Assessment: Firmware Engineer provides written assessment (RTOS — Real-Time Operating System — compatibility, estimated Flash/SRAM — Static Random-Access Memory — footprint, real-time deadline feasibility, peripheral requirements) within 15 business days of algorithm specification handoff #synchronization. Assessment includes: estimated CPU cycles, memory budget impact, peripheral conflicts, and any showstopper issues
+- Research-Grade Firmware Transfer: when Researcher has developed research-grade firmware (proof-of-concept, not production-quality), Researcher delivers code repository, build instructions, and known limitations. Firmware Engineer provides reusability assessment within 10 business days: what can be adapted for production, what must be rewritten, and estimated effort
+- Joint Algorithm-Firmware Review: during active firmware implementation of research-derived algorithms, bi-weekly 30-minute sync between Researcher and Firmware Engineer for the duration of the implementation phase #cadence. Researcher provides scientific context; Firmware Engineer provides implementation feedback
+- Fixed-Point Conversion Support: when a research algorithm uses floating-point and must be converted to fixed-point for MCU (Microcontroller Unit) deployment, Researcher provides fixed-point guidance (Q-format recommendations, precision analysis, error bounds) within 10 business days of request. Firmware Engineer provides fixed-point implementation results for Researcher validation within 10 business days of implementation
+- Annual Research-Firmware Technology Scan: first Tuesday of November #cadence. Joint review of emerging MCU capabilities, RTOS features, and firmware techniques relevant to active research directions
 
 ---
 
@@ -370,7 +397,12 @@
 - Collaboration on co-designing novel sensing + inference pipelines where the sensing modality and the ML architecture must be co-optimized
 - Access to edge hardware benchmarking results to validate research-stage model compression claims
 
-**Cadence:** On-demand per research project; quarterly cross-pollination meeting to share research and engineering ML directions
+**Cadence:**
+- Scheduled ML Research Transfer: aligned with the quarterly Technology Transfer Review (first Tuesday of February, May, August, November) #cadence #ML-research-transfer #interface-contract #HR-7. Researcher delivers novel ML findings package (model architecture description, training methodology, experimental results, unconventional operator requirements, preprocessing specifications) ≥3 weeks before the review. [[EDGE_AI_ML_ENGINEER_SKILL|Edge AI/ML Engineer]] provides TFLite Micro (TensorFlow Lite for Microcontrollers) feasibility assessment within 15 business days of transfer: operator support verification, estimated tensor arena size, estimated inference latency, and identification of any showstopper gaps
+- Early-Stage ML Research Briefing: when Researcher begins investigating a novel ML architecture or bio-inspired computing approach, Researcher briefs [[EDGE_AI_ML_ENGINEER_SKILL|Edge AI/ML Engineer]] within 10 business days of research direction approval #synchronization. Edge AI/ML Engineer provides initial feasibility scan (known TFLite Micro constraints, available kernels, CMSIS-NN — CMSIS Neural Network — compatibility) within 10 business days
+- Novel Preprocessing Specification Handoff: when Researcher develops a novel preprocessing algorithm (e.g., new signal transform, bio-inspired feature extraction), Researcher delivers the preprocessing specification with Python golden reference and test vectors #synchronization. Edge AI/ML Engineer provides fixed-point conversion feasibility assessment and integer quantization guidance within 15 business days
+- Quarterly ML Research-Engineering Sync: second Thursday of February, May, August, November, 45 minutes #cadence. Joint review of: active ML research directions, TFLite Micro operator roadmap changes, emerging TinyML techniques relevant to both research and product, and any research-stage ML findings approaching Technology Transfer readiness
+- Ad hoc ML consultation: Researcher available for ML-specific scientific consultation (model architecture review, training methodology questions, preprocessing clarification) with 5 business days' notice. Limited to 3 hours per month. Urgent consultation (production model incident with research-origin algorithm): response within 1 business day
 
 ---
 
@@ -388,7 +420,13 @@
 - Support in building data pipelines for experiment automation outputs where data volumes exceed manual collection capacity
 - Guidance on organizational data management policies and repository access
 
-**Cadence:** On-demand when research projects generate large or complex datasets requiring infrastructure support
+**Cadence:**
+- Experimental Dataset Archival: Researcher delivers FAIR-compliant (Findable, Accessible, Interoperable, Reusable) experimental datasets for archival at three points #cadence #research-data #interface-contract #HR-7: (a) at experiment completion, within 10 business days of final data collection, (b) at manuscript submission, concurrently with journal submission, and (c) at Technology Transfer, as part of the Technology Transfer Pack. Datasets include: raw sensor data, processed/cleaned data, labels, metadata (instrument calibration, environmental conditions, collection protocol), and a datasheet documenting dataset characteristics and limitations
+- Dataset Ingestion and Validation: [[DATA_ENGINEER_SKILL|Data Engineer]] acknowledges dataset receipt within 2 business days, completes schema validation and data quality checks within 10 business days, and provides a Data Ingestion Report (validation pass/fail, quality metrics, any data gaps or anomalies) within 15 business days of receipt #synchronization
+- Research-to-Training Data Pipeline: when a research dataset is identified as candidate training data for the [[EDGE_AI_ML_ENGINEER_SKILL|Edge AI/ML Engineer]], Researcher flags the dataset during Technology Transfer #synchronization. Data Engineer versions the dataset (DVC — Data Version Control — snapshot), establishes lineage from raw experimental data to training-ready format, and makes it available to Edge AI/ML Engineer within 10 business days of flag. Researcher provides scientific context for any domain-specific features within 5 business days of Data Engineer's questions
+- Quarterly Research Data Review: third Tuesday of February, May, August, November, 30 minutes #cadence. Joint review of: newly archived research datasets, data quality trends, storage utilization against allocation, and any data management policy updates
+- Data format and metadata standard evolution: Researcher and Data Engineer jointly review FAIR compliance and metadata standards annually (first Tuesday of September) #cadence. Output: updated Research Data Standards document if changes are needed
+- Urgent data access: if Researcher requires emergency access to archived experimental data for manuscript revision, patent filing, or incident investigation, Data Engineer provides access within 1 business day #synchronization
 
 ---
 
@@ -428,6 +466,33 @@
 - Authority to publish and present research findings (pre-publication review for IP clearance)
 
 **Cadence:** Quarterly research review; annual strategy planning; on-demand for major IP or publication decisions
+
+---
+
+### 6.9 [[SECURITY_ENGINEER_SKILL|Security Engineer]]
+
+**Researcher Provides:**
+
+- Technology Transfer Packs with flagged #security-relevant findings: novel wireless modalities, new sensor physics, experimental communication protocols, unconventional compute architectures, and novel data types with #privacy implications — each finding tagged with its potential #attack-surface category (#connectivity, #data-handling, #compute-architecture, #sensor-physics)
+- Pre-Transfer Security Review briefing document: a structured appendix to the Technology Transfer Pack summarizing the potential #attack-surface elements for each research finding, the Researcher's security assumptions made during experimental design, and any known limitations of the research prototype from a security standpoint
+- Early-stage research briefings on security-relevant research directions, delivered quarterly, covering: active research hypotheses with #security-relevant implications, new experimental modalities under investigation, and anticipated technology transfer candidates in the next 6–12 months
+- Characterization data for novel hardware security mechanisms under investigation: physical unclonable function (PUF) response characteristics, novel side-channel resistant transducer designs, experimental tamper-detection materials, and hardware-based entropy sources evaluated in research
+- Notification of research direction changes that introduce new #connectivity, #data-handling, or #compute-architecture elements, delivered within 5 business days of the direction change
+
+**Researcher Requires:**
+
+- #threat-model assessment of security-relevant research findings using STRIDE (Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege) methodology, delivered before Technology Transfer Pack finalization
+- Security requirements and constraints that may affect experimental design: encryption standards (AES-256-GCM — Advanced Encryption Standard with 256-bit key in Galois/Counter Mode, ChaCha20-Poly1305), secure boot chain implications, hardware root-of-trust requirements, key management protocols, and data classification requirements per organizational policy
+- Guidance on secure handling of sensitive research data: storage encryption requirements, access logging expectations, data minimization principles, and PII (Personally Identifiable Information) masking protocols where research data intersects with human-subject or user data
+- Feedback on the security feasibility of proposed novel architectures: identification of architectural elements that would require additional security controls in production, assessment of whether proposed approaches align with the organizational security baseline, and flagging of any research directions that are fundamentally incompatible with the security baseline
+- Quarterly threat landscape briefings incorporating research-stage insights: emerging #attack-surface categories relevant to active research directions, newly discovered vulnerability classes in related embedded/IoT domains, and updates to the adversary TTP (Tactics, Techniques, and Procedures) profile for the organization's deployment context
+
+**Cadence:**
+
+- **Pre-Transfer Security Review:** Researcher submits the Pre-Transfer Security Review briefing document ≥2 weeks (10 business days) before the scheduled Technology Transfer Pack handoff; the Security Engineer returns the #threat-model assessment within 10 business days of briefing receipt. This gate must be completed before the Technology Transfer Pack is finalized for the Technology Transfer Review Board
+- **Quarterly Research-Security Threat Landscape Review:** Joint session between Researcher and Security Engineer, scheduled for the first Tuesday of each calendar quarter (January, April, July, October). The Researcher presents active research directions; the Security Engineer presents the updated threat landscape. A joint summary document is produced and distributed to the Head of Research and CTO within 5 business days
+- **Ad hoc consultation — Research direction change:** Triggered when the Researcher initiates a new research direction that introduces #connectivity, #data-handling, or #compute-architecture elements not previously reviewed. The Researcher notifies the Security Engineer within 5 business days of the direction change. The Security Engineer acknowledges receipt within 3 business days and provides an initial security scoping assessment within 10 business days for standard complexity, or 20 business days for high complexity (novel wireless modality or unconventional compute architecture)
+- **Security requirements for experimental design:** Updated annually (aligned with the organizational fiscal year security baseline review) or upon significant organizational security baseline change (e.g., adoption of a new cryptographic standard, change in data classification policy), whichever comes first. The Security Engineer pushes updated requirements to the Researcher within 15 business days of the baseline change
 
 ---
 

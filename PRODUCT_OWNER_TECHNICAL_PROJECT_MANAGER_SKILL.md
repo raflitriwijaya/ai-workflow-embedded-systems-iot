@@ -292,6 +292,16 @@
 - **PO/TPM requires:** Field requirements, business priorities, success criteria validation, feedback from pilot/beta deployments.
 - **Cadence:** Per planning cycle for roadmap alignment; per release for rollout coordination; ad hoc for urgent field issues.
 
+### 6.13 Business Consultant
+
+- **PO/TPM provides:** Sprint plans, backlog status, release timelines, feature completion status, and escalation of any scope changes with business impact.
+- **PO/TPM requires:** Market-prioritized feature requests, business-value ranking of backlog items, market window analysis, GTM (Go-to-Market) readiness inputs, customer feedback synthesis, and business constraint updates.
+- **Cadence:**
+  - Weekly Business-Product Sync: 30-minute standing meeting every Monday #cadence. Business Consultant provides market intelligence updates, competitive moves, customer feedback, and any urgent business constraint changes. PO/TPM provides product status, milestone progress, and any technical feasibility findings that may affect market commitments.
+  - Monthly Business-Product Alignment Review: first Wednesday of each month, 90 minutes #cadence. Comprehensive review of product roadmap vs. market window alignment, feature prioritization against customer value and willingness-to-pay data, BOM (Bill of Materials) cost trends vs. target price point, competitive positioning update, and any business constraint changes.
+  - Quarterly Business-Product Strategy Session: second Thursday of January, April, July, October, half-day #cadence. Deep-dive on market evolution and emerging opportunities, product portfolio strategy and investment prioritization, make-vs-buy and partnership strategy, pricing and monetization model review, and long-range (12–36 month) product vision alignment.
+  - **Co-location During Planning and Early Development:** During the Planning stage (typically 2–4 weeks per release cycle) and the first 2 weeks of the Development stage, the [[BUSINESS_CONSULTANT_SKILL|Business Consultant]] co-locates (virtual or physical) with the PO/TPM for daily stand-up participation and is available for ad hoc consultation within 2 hours during business hours. This co-location ensures: (a) market requirements are immediately clarifiable during backlog refinement, (b) business constraint changes (BOM — Bill of Materials — ceiling, pricing, market window shifts) are surfaced to sprint planning in real time, and (c) the PO/TPM can validate feature acceptance criteria against market expectations before Development commits. Outside of Planning and early Development, the standard weekly and monthly cadences apply. Co-location may be virtual (dedicated chat channel + daily 15-minute video check-in) or physical, as organizational setup permits. #co-location #BIZ-PO-cadence #Planning #Development
+
 ---
 
 ## 7. Decision Authority & Governance

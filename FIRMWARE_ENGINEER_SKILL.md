@@ -65,6 +65,7 @@
 ### 3.3 Development
 
 - **Activities:** Implement peripheral/sensor drivers (I2C/SPI/UART) and sensor fusion; build RTOS tasks and IPC; integrate the TFLite Micro inference loop with ring-buffer preprocessing; implement MQTT/CoAP with TLS/mTLS (mutual TLS); implement the OTA client and rollback; implement low-power modes; write unit tests (Unity/Ceedling) and run static analysis (cppcheck, MISRA C); debug on target over JTAG (Joint Test Action Group) / SWD (Serial Wire Debug).
+- **Security Implementation Readiness Gate:** Before exiting Development, the Firmware Security Champion completes the Security Implementation Readiness self-assessment checklist and submits it to the [[SECURITY_ENGINEER_SKILL|Security Engineer]] (or Deputy). The checklist covers: (a) secure boot chain implementation verified against the security baseline (§8), (b) firmware image signing and verification functional, (c) mTLS (mutual Transport Layer Security) implementation verified with test certificates, (d) secure key storage implementation confirmed (no hardcoded keys in source), (e) debug port lockdown implemented per Hardware/Security specification (JTAG — Joint Test Action Group / SWD — Serial Wire Debug), (f) OTA (Over-the-Air) rollback path tested with a corrupted-image scenario, (g) static analysis (MISRA C:2012) and SAST (Static Application Security Testing) scans passing with zero Critical/High findings, (h) all third-party library licenses reviewed for security implications, (i) secure error handling verified (no sensitive information in error messages, no crash-dump exposure), (j) memory safety checks confirmed for all security-relevant code paths. Gate exit criteria: all checklist items marked CONFIRMED by the Security Champion; any UNCERTAIN item flagged to the Security Engineer for review within 5 business days. This gate runs in parallel with other Development completion activities — it does not serialize the Development stage. The Security Champion initiates the checklist review ≥2 weeks before the scheduled Development exit. #Security-Implementation-Readiness #Security-Champion #shift-left #security-verification #release-gate
 - **Deliverables:** Firmware modules, the HAL/driver layer, unit tests, clean static-analysis reports, and integration-ready builds.
 
 ### 3.4 Execution
@@ -226,6 +227,17 @@
 - **Requires:** Schematics, pin-mux assignments, sensor specifications (sampling rate, resolution, electrical limits), and board errata.
 - **Cadence:** Joint board bring-up; errata triage; schematic/layout review participation.
 
+**Shared Bring-Up Definition of Done:**
+The following joint DoD (Definition of Done) applies to every board bring-up. Both roles must confirm each item before bring-up is considered complete:
+1. Power rails: all voltages measured within ±5% of nominal, ripple within spec, sequencing order confirmed
+2. Clocks: main oscillator stable, PLLs (Phase-Locked Loops) locked, all peripheral clocks verified at expected frequencies
+3. Reset: reset vector confirmed, boot sequence completes to firmware entry point, watchdog timer operational
+4. Buses: I2C (Inter-Integrated Circuit) scan enumerates all expected addresses, SPI (Serial Peripheral Interface) loopback passes, UART (Universal Asynchronous Receiver-Transmitter) TX/RX confirmed
+5. Sensors: all sensors enumerated, sensor IDs or WHO_AM_I registers read correctly, sample data flows from sensor through driver to firmware buffer
+6. Debug/Programming: JTAG (Joint Test Action Group) / SWD (Serial Wire Debug) connection functional, firmware flash and verify successful
+7. Power budget: measured active and sleep current within the [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]]'s power budget
+Bring-up status (Pass/Fail per item, with measured values) is recorded in a joint Bring-Up Report signed by both [[HARDWARE_ENGINEER_SKILL|HW]] and [[FIRMWARE_ENGINEER_SKILL|FW]]. Items not passing block Development exit. #bring-up #joint-dod
+
 ### 6.3 Edge AI/ML Engineer
 
 - **Provides:** On-target inference latency and RAM measurements, the integrated inference loop, and confirmation of preprocessing parity against the spec.
@@ -261,6 +273,16 @@
 - **Provides:** Telemetry that conforms to the schema, with correct units, sampling rates, and timestamps, including edge-buffering/backfill behavior.
 - **Requires:** Telemetry schema details and any ingestion-driven constraints on payload format or rate.
 - **Cadence:** Schema alignment at planning; pipeline-integration checkpoints; schema-change ADR participation.
+
+**Schema-Change Coordination Process:**
+Any proposed change to the device telemetry schema (fields, types, units, encoding) follows this joint process:
+1. **Proposal:** Proposing role ([[FIRMWARE_ENGINEER_SKILL|FW]] or [[DATA_ENGINEER_SKILL|DATA]]) drafts a schema-change proposal including: changed fields, rationale, backward-compatibility assessment, and estimated impact on the other role
+2. **Joint Review:** Both roles review within 5 business days. Review covers: backward compatibility, migration path for existing data, edge-buffering implications, and any ingestion/validation rule changes
+3. **ADR if Breaking:** If the change is backward-incompatible, it must be escalated to an ADR (Architecture Decision Record) with the [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] as approver
+4. **Implementation Sequencing:** If approved, FW and DATA agree on implementation order (FW-side emission update vs. DATA-side ingestion update) and a transition window during which both old and new schemas are accepted
+5. **Edge-Buffering Semantics (shared responsibility):** For any schema change affecting device-side buffering (e.g., new field increases payload size beyond buffer capacity), FW specifies the new buffer requirements and DATA confirms the ingestion pipeline can accept the new format within the transition window
+6. **Schema Version Registry:** All schema versions are registered in the organizational schema registry (Git-based, with SemVer — Semantic Versioning). FW increments the schema version in the device telemetry header; DATA validates the version at ingest
+#schema-change #edge-buffering #joint-process
 
 ---
 

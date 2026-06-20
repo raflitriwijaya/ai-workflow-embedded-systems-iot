@@ -246,7 +246,15 @@
 - Feature completion status for GTM planning
 - Escalation of any scope changes with business impact
 
-**Cadence:** Weekly backlog alignment meeting; bi-weekly GTM readiness review; quarterly roadmap prioritization session
+**Cadence:**
+- Weekly Business-Product Sync: 30-minute standing meeting every Monday #cadence #market-product-alignment #interface-contract #HR-7. Business Consultant provides market intelligence updates, competitive moves, customer feedback, and any urgent business constraint changes. PO/TPM provides product status, milestone progress, and any technical feasibility findings that may affect market commitments. Output: updated shared action items log
+- Monthly Business-Product Alignment Review: first Wednesday of each month, 90 minutes #cadence. Comprehensive review of: (a) product roadmap vs. market window alignment, (b) feature prioritization against customer value and willingness-to-pay data, (c) BOM (Bill of Materials) cost trends vs. target price point, (d) competitive positioning update, (e) any business constraint changes (budget, timeline, regulatory). Output: updated Business-Product Alignment document with decisions and action items
+- Quarterly Business-Product Strategy Session: second Thursday of January, April, July, October, half-day #cadence. Deep-dive on: (a) market evolution and emerging opportunities, (b) product portfolio strategy and investment prioritization, (c) make-vs-buy and partnership strategy, (d) pricing and monetization model review, (e) long-range (12–36 month) product vision alignment. Output: updated Product Strategy Document presented to executive leadership
+- Market Requirement Change Notification: Business Consultant notifies PO/TPM of significant market requirement changes (new competitor entry, major customer loss/win, regulatory change, technology disruption) within 2 business days of confirmed intelligence #synchronization. PO/TPM provides initial product impact assessment within 5 business days
+- Pre-Sprint Backlog Input: Business Consultant provides market-prioritized feature requests and customer-facing requirements ≥3 business days before sprint planning #synchronization. PO/TPM incorporates into backlog prioritization and provides feedback on what was accepted/deferred and why within 1 business day after sprint planning
+- Release Go-to-Market Readiness Review: Business Consultant and PO/TPM conduct joint GTM (Go-to-Market) readiness review 2 weeks before each production release #cadence. Business Consultant confirms: pricing approved, sales team trained, marketing materials ready, customer communication prepared. PO/TPM confirms: release scope finalized, QA (Quality Assurance) sign-off complete, OTA (Over-the-Air) rollout plan approved
+- Annual Product-Market Strategy Offsite: first week of December, full-day #cadence. Joint review of annual product and market performance, strategic bets for the upcoming year, and long-range (3–5 year) vision. Output: Annual Product-Market Strategy document
+- **Co-location During Planning and Early Development:** During the Planning stage (typically 2–4 weeks per release cycle) and the first 2 weeks of the Development stage, the Business Consultant co-locates (virtual or physical) with the [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|PO/TPM]] for daily stand-up participation and is available for ad hoc consultation within 2 hours during business hours. This co-location ensures: (a) market requirements are immediately clarifiable during backlog refinement, (b) business constraint changes (BOM — Bill of Materials — ceiling, pricing, market window shifts) are surfaced to sprint planning in real time, and (c) the PO/TPM can validate feature acceptance criteria against market expectations before Development commits. Outside of Planning and early Development, the standard weekly and monthly cadences apply. Co-location may be virtual (dedicated chat channel + daily 15-minute video check-in) or physical, as organizational setup permits. #co-location #BIZ-PO-cadence #Planning #Development
 
 ---
 
@@ -265,7 +273,14 @@
 - Assessment of technical feasibility of market-driven feature requests
 - Lead time estimates for hardware development milestones
 
-**Cadence:** At architecture review gates; on-demand for major technical decision points; quarterly strategy alignment
+**Cadence:**
+- Monthly Business-Architecture Alignment: second Tuesday of each month, 60 minutes #cadence #business-architecture #interface-contract #HR-7. Business Consultant presents updated BOM (Bill of Materials) cost constraints, market window shifts, competitive technical intelligence, and any business-driven feature prioritization changes. [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Embedded Systems Architect]] presents architecture decisions with significant cost/timeline implications, platform selection trade-offs relevant to business strategy, and any technical feasibility findings affecting market commitments. Output: updated Business-Architecture Alignment log with decisions and action items
+- Business Impact Assessment of ADRs: when the Architect files an ADR (Architecture Decision Record) with significant cost, schedule, or market-window implications (tagged #business-impact), Architect notifies Business Consultant within 3 business days of ADR acceptance #synchronization. Business Consultant provides Business Impact Assessment (quantified cost impact, market window risk, competitive positioning impact) within 10 business days. The Business Impact Assessment is appended to the ADR as a business-impact appendix
+- **Business Impact Assessment SLA (Service-Level Agreement):** When the [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] notifies the Business Consultant of an ADR tagged #business-impact, the Business Consultant delivers the Business Impact Assessment (using the business-impact appendix format defined in the Architect's §7 ADR template) within 10 business days of notification. If the assessment cannot be completed within 10 business days (e.g., external cost data required), the Business Consultant provides an interim assessment with stated assumptions and a committed completion date within 5 additional business days. #business-impact #ADR-appendix #SLA
+- Business Constraint Change Notification: Business Consultant notifies Architect of significant business constraint changes (BOM ceiling revision >10%, market window acceleration >1 month, regulatory requirement change affecting certification path, new competitive threat requiring architecture response) within 2 business days of confirmed change #synchronization. Architect provides technical impact assessment within 10 business days
+- Quarterly Technology-Business Strategy Session: first Thursday of January, April, July, October, 90 minutes #cadence. Deep-dive on: (a) long-range technology roadmap vs. market evolution alignment, (b) make-vs-buy and platform selection strategy from business perspective, (c) emerging technology assessment (components, protocols, architectures) with business opportunity sizing, (d) certification and regulatory pathway cost-benefit analysis. Output: Technology-Business Strategy Update presented to executive leadership
+- Pre-Planning Business Input: Business Consultant delivers business constraints package (BOM ceiling per product, target price point, market window dates, volume forecasts) to Architect ≥2 weeks before the start of each Planning stage for a new product or major revision #synchronization
+- Annual Architecture Investment Review: first Tuesday of December, half-day #cadence. Joint review of: architecture platform strategy against long-range (3–5 year) business strategy, technology investment priorities, and build-vs-buy-vs-partner decisions for major architectural components
 
 ---
 
@@ -408,7 +423,13 @@
 - Certification cost and schedule for target compliance frameworks
 - Security incident response cost estimates for risk modeling
 
-**Cadence:** At product feasibility; before enterprise customer GTM; at compliance certification decision points
+**Cadence:**
+- Monthly Security-Business Alignment: third Wednesday of each month, 45 minutes #cadence #security-business #interface-contract #HR-7. Business Consultant presents any customer security requirements, contract security clauses, and market-visible security trends. [[SECURITY_ENGINEER_SKILL|Security Engineer]] presents: current security posture summary, any Critical or High-severity open findings with estimated remediation cost, upcoming security certification milestones, and any security investment requests. Output: updated Security-Business Alignment log
+- Security Investment Business Case Support: when Security Engineer identifies a security investment need (new hardware security module, penetration testing engagement, certification preparation, security tooling), Security Engineer submits a Security Investment Request with: threat addressed, proposed solution, estimated cost, and risk of non-investment #synchronization. Business Consultant provides Business Impact Analysis (quantified risk exposure, regulatory penalty exposure, customer trust impact, competitive differentiation opportunity) within 10 business days. Joint presentation to executive leadership for budget approval within the next monthly executive review
+- Security Incident Business Impact Assessment: if a security incident occurs (breach, vulnerability disclosure, or near-miss with business implications), Security Engineer notifies Business Consultant within 4 hours of confirmed incident #synchronization. Business Consultant provides: customer communication strategy assessment, contractual obligation analysis, regulatory notification requirements, and estimated business impact within 24 hours. Joint incident communication review before any external disclosure
+- Quarterly Security-Business Strategy Review: third Thursday of January, April, July, October, 60 minutes #cadence. Deep-dive on: (a) evolving threat landscape with business impact analysis, (b) security certification roadmap and business justification, (c) security-driven product differentiation opportunities, (d) regulatory compliance horizon scan (GDPR — General Data Protection Regulation, CCPA — California Consumer Privacy Act, NIST — National Institute of Standards and Technology, IEC 62443) with business impact, (e) security budget allocation review against risk exposure. Output: Security-Business Strategy Update
+- Customer Security Requirement Review: when Business Consultant receives customer-specific security requirements (RFQ — Request for Quotation — security clauses, enterprise security review, penetration test report request), Business Consultant forwards to Security Engineer within 2 business days #synchronization. Security Engineer provides compliance assessment (meets/partial-gap/full-gap with estimated remediation) within 5 business days. Business Consultant incorporates into customer response within 2 business days of receiving assessment
+- Annual Security-Business Offsite: second week of November, half-day #cadence. Joint review of: annual security posture and investment ROI (Return on Investment), multi-year security strategy aligned with business strategy, security as market differentiator assessment, and long-range regulatory horizon scan. Output: Annual Security-Business Strategy document
 
 ---
 
@@ -763,6 +784,18 @@ CONSTRAINTS:
 ---
 
 ## 10. Success Metrics & KPIs
+
+**North Star KPIs (Primary — drive executive decision-making):**
+
+These 5 KPIs (Key Performance Indicators) are the organization's top-level business performance indicators. All other KPIs in this section are diagnostic — they inform the North Star KPIs but do not independently drive executive decisions.
+
+1. **Product Revenue Growth Rate:** Quarter-over-quarter revenue growth from IoT (Internet of Things) and embedded product lines. Target: set per product and market segment, reviewed annually.
+2. **Product-Market Fit Score:** Percentage of target customers who rate the product as "must-have" or "very valuable" in quarterly customer surveys. Target: ≥40%.
+3. **Customer Lifetime Value to Customer Acquisition Cost Ratio (LTV:CAC):** LTV includes hardware margin + recurring subscription revenue over average customer lifespan; CAC (Customer Acquisition Cost) includes sales, marketing, and onboarding costs. Target: ≥3:1 for hardware + subscription products.
+4. **Gross Margin:** Per-product gross margin after BOM (Bill of Materials), manufacturing, cloud OpEx (Operational Expenditure), and support costs. Target: set per product segment per industry benchmark — typically 40–60% for hardware, 60–80% for software/subscription components.
+5. **Time-to-Market Accuracy:** Percentage of releases that ship within the planned market window (±2 weeks of committed date). Target: ≥80%.
+
+#North-Star-KPI #business-metrics
 
 ### Revenue & Financial Performance
 

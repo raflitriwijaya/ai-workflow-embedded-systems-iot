@@ -392,6 +392,26 @@ Output: Profiling summary, code changes, before/after performance comparison aga
 Vitals targets.
 ```
 
+**Template 6 — Accessibility Audit & Remediation**
+
+```
+Role: Frontend/Dashboard Engineer.
+Goal: Audit [DASHBOARD_VIEW/COMPONENT] for WCAG 2.1 AA (Web Content Accessibility Guidelines, version 2.1, Level AA) compliance and remediate all findings.
+Inputs:
+  - target component = [path/to/component]
+  - target user flows = [list of critical flows]
+  - known accessibility-sensitive elements = [real-time updating regions, chart widgets, alert notifications, device-management forms]
+Produce:
+  1. An automated audit report using axe-core or Lighthouse accessibility scanner — include all violations, their severity (Critical / Serious / Moderate / Minor), and impacted DOM (Document Object Model) elements with selectors.
+  2. A manual keyboard-navigation test log covering all interactive elements in the target flow: Tab/Shift+Tab navigation order, Enter/Space activation, Escape dismissal, and arrow key operation for chart data exploration.
+  3. A screen-reader test log (one desktop: NVDA — NonVisual Desktop Access — on Windows or VoiceOver on macOS; one mobile: TalkBack on Android or VoiceOver on iOS) for all dynamically updating regions. Verify ARIA (Accessible Rich Internet Applications) live regions announce updates at correct politeness levels — `polite` for routine telemetry updates, `assertive` for critical alerts only — without overwhelming the user.
+  4. A color-contrast verification report for all text and non-text interactive elements against WCAG 2.1 AA minimum ratios: 4.5:1 for normal text, 3:1 for large text (≥18pt or ≥14pt bold), 3:1 for UI (User Interface) components and graphical objects.
+  5. A code diff with all remediations applied: ARIA labels and descriptions, focus management, semantic HTML (HyperText Markup Language) corrections, color adjustments, and accessible names for all interactive elements.
+Constraints: Meet WCAG 2.1 AA for ALL applicable criteria. Real-time content must use ARIA live regions with appropriate politeness levels. Chart widgets must provide keyboard-accessible alternative data views (e.g., a data table companion). Test with at least one actual screen reader — automated scans are necessary but insufficient. If a remediation is technically infeasible, document the limitation in an ADR (Architecture Decision Record) and propose an alternative accommodation.
+```
+
+#accessibility #WCAG #prompt-template
+
 ---
 
 ## 10. Success Metrics & KPIs
@@ -399,7 +419,7 @@ Vitals targets.
 **Technical metrics:**
 
 - **Core Web Vitals compliance:** Percentage of dashboard views meeting Largest Contentful Paint, Interaction to Next Paint, and Cumulative Layout Shift targets under production load.
-- **Real-time connection uptime:** Percentage of WebSocket/MQTT session time without unrecovered disconnection.
+- **Client-side reconnection success rate:** Percentage of WebSocket and MQTT-over-WebSockets disconnection events that successfully reconnect within the target recovery window: ≤5 seconds for transient loss (brief network interruption), ≤30 seconds for sustained loss (network change, gateway restart). Target: ≥99.5% of disconnections successfully reconnect without requiring a full page reload. Measured client-side via the real-time data client module instrumentation and reported in the frontend observability dashboard. This metric reflects what the Frontend Engineer actually controls — reconnection logic, backoff strategy (exponential backoff with jitter), and error handling — rather than server-side or network uptime which is owned by [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps]] and [[BACKEND_CLOUD_ENGINEER_SKILL|Backend]]. #frontend-kpi #reconnection-metric
 - **Test coverage:** Percentage of critical user flows covered by automated end-to-end tests; unit test coverage percentage for core logic.
 - **Accessibility compliance rate:** Percentage of delivered UI surfaces passing WCAG 2.1 AA automated and manual audits.
 - **Defect escape rate:** Number of frontend defects identified in production versus caught pre-release by QA/CI.

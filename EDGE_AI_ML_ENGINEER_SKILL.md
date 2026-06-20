@@ -229,6 +229,16 @@
 - **Requires:** Curated, versioned datasets and engineered features that meet the stated requirements.
 - **Cadence:** Requirements handoff at planning; dataset delivery and iteration during development; data-quality reviews.
 
+**Data Quality Feedback Loop:**
+When the Edge AI/ML Engineer discovers data quality issues during training, the following feedback loop activates:
+1. **Issue Report:** ML files a Data Quality Issue Report (DQIR) in the shared issue tracker within 1 business day of identifying: missing values beyond expected rate, label noise above acceptable threshold, distribution shift from expected, feature engineering anomaly, or train/validation/test split leakage. DQIR includes: dataset version, affected features/samples, observed issue, estimated impact on model quality
+2. **Acknowledgment:** DATA acknowledges the DQIR within 1 business day and assigns a severity (Critical/High/Medium/Low) based on impact on downstream training
+3. **Root-Cause Analysis:** DATA completes root-cause analysis within 5 business days for Critical/High, 10 business days for Medium/Low. Analysis identifies: source of the issue (ingestion, pipeline stage, storage, labeling process), affected data range, and proposed fix
+4. **Pipeline Correction:** DATA implements the pipeline correction within the agreed timeline (Critical: 2 business days, High: 5 business days, Medium: next sprint, Low: backlog-prioritized)
+5. **Dataset Re-Release:** DATA re-releases the corrected dataset with a new DVC (Data Version Control) version and notifies ML within 1 business day of correction
+6. **DQIR Closure:** ML verifies the corrected dataset resolves the issue within 5 business days and closes the DQIR. Closed DQIRs are reviewed at the quarterly Data Quality Review
+#data-quality #feedback-loop #DQIR
+
 ### 6.4 MLOps Engineer
 
 - **Provides:** Reproducible training and conversion code, the model artifact and metadata, and the drift-monitoring metric definitions.
@@ -240,6 +250,15 @@
 - **Provides:** The sensor data requirements specification (sampling rate, resolution, dynamic range, SNR target).
 - **Requires:** Sensor characterization data (measured SNR, resolution, drift) to confirm the data spec is met in hardware.
 - **Cadence:** Data-spec handoff at planning; characterization review in execution; data-fidelity sign-off before production.
+
+**Sensor Data Fidelity Feedback Loop:**
+After sensor characterization ([[HARDWARE_ENGINEER_SKILL|HW]] §3.4), the following feedback loop ensures characterized sensor performance meets the ML data specification:
+1. **Characterization Data Delivery:** HW delivers sensor characterization report (measured SNR — Signal-to-Noise Ratio, resolution, dynamic range, drift, sampling jitter) to ML within 5 business days of characterization completion
+2. **ML Data Spec Conformance Check:** ML reviews the characterization report against the sensor data requirements specification within 10 business days. ML produces a conformance assessment: CONFIRMED (all specs met), CONDITIONAL (specs met with noted limitations), or REJECTED (specs not met — requires hardware redesign or ML spec adjustment)
+3. **CONDITIONAL Acceptance:** If CONDITIONAL, ML documents the limitations and their expected impact on model accuracy. HW and ML jointly present to the [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] for a trade-off decision within 5 business days
+4. **REJECTED:** If REJECTED, HW and ML jointly develop a remediation plan (sensor replacement, AFE — Analog Front-End — redesign, or ML spec relaxation) within 10 business days
+5. **Post-Bring-Up Re-Characterization:** If hardware changes are made (rework, component change), HW re-characterizes the sensor and re-enters the feedback loop at step 1
+#sensor-characterization #feedback-loop #ML-data-spec
 
 ### 6.6 QA & Test Automation Engineer
 
