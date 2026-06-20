@@ -79,6 +79,20 @@
 - **Activities:** Stand up production infrastructure and CI/CD with gates; enable production OTA with staged rollout and guaranteed rollback; complete observability, alerting, and on-call; implement disaster recovery and backups; document runbooks (deploy, rollback, incident, disaster recovery); make security hardening and signing live; optimize capacity and cost; obtain reliability (SLO) sign-off.
 - **Deliverables:** Production platform, OTA system, observability and alerting, disaster-recovery plan, runbooks, hardening sign-off, and an SLO/reliability report.
 
+### 3.6 Post-Launch/Market
+
+**Activities:**
+- **Infrastructure scaling monitoring:** Monitor cloud and edge infrastructure utilization (CPU, memory, storage, network) against capacity forecasts weekly. If any resource is trending to exceed 80% utilization within 30 days, initiate scaling within 5 business days. Review infrastructure costs monthly against budget. #post-launch
+- **Fleet OTA pipeline health monitoring:** Monitor OTA (Over-the-Air) distribution pipeline health continuously. If the pipeline experiences a failure (distribution halted, artifact corruption, signing failure), investigate within 30 minutes. Publish an OTA Pipeline Health Report after every fleet OTA campaign. #OTA-monitoring
+- **CI/CD pipeline reliability:** Monitor CI/CD (Continuous Integration / Continuous Deployment) pipeline success rates, build times, and test suite execution times weekly. If the pipeline success rate drops below 95% or build times increase >50% month-over-month, investigate within 3 business days. #field-reliability
+- **Security patch deployment:** When the [[SECURITY_ENGINEER_SKILL|Security Engineer]] issues a platform-level security advisory (infrastructure vulnerability, container image CVE — Common Vulnerabilities and Exposures, dependency vulnerability), deploy the remediation within the SLA defined by the Security Engineer.
+- **Field-driven infrastructure changes:** Provide platform engineering support for Sustaining Engineering requests requiring infrastructure changes (new monitoring, new deployment targets, scaling adjustments). Response SLA: 3 business days for standard changes, 10 business days for complex changes. #sustaining-engineering #lifecycle-gap #CR-5
+
+**Deliverables:**
+- Monthly Infrastructure Health & Cost Report
+- OTA Pipeline Health Report (per campaign)
+- Infrastructure change deployment records (per change)
+
 ---
 
 ## 4. Technical Competencies
@@ -218,6 +232,13 @@
 - **Requires:** Build entry points, toolchain and container requirements, image-format and signing inputs, the OTA artifact format, and the expectation that the device-side client handles on-device apply/rollback.
 - **Cadence:** CI integration at development start; pipeline and toolchain reviews; OTA rollout/rollback validation jointly in execution.
 
+**Model Artifact OTA Coordination (in addition to firmware OTA):** #model-OTA #OTA-Model-Artifact-Contract
+- DevOps delivers the model artifact distribution bundle to the Firmware OTA client endpoint following the OTA Model Artifact Contract. The bundle includes: model binary, compatibility manifest, MLOps signature, and DevOps co-signature.
+- Firmware verifies: (a) DevOps co-signature valid, (b) MLOps signature valid, (c) compatibility manifest matches device hardware ID and current firmware version, (d) flash-budget check passes (model fits within the allocated flash partition), (e) SHA-256 hash matches manifest.
+- Firmware reports verification status to DevOps within 1 minute of download completion: VERIFIED / VERIFICATION_FAILED with failure code.
+- If verification fails, Firmware does NOT apply the artifact and reports the failure. DevOps quarantines the distribution to the affected device cohort and investigates within 1 business hour.
+- Model artifact application uses the same A/B partition and rollback mechanism as firmware OTA. Firmware reports APPLYING / ACTIVE / ROLLED_BACK status per the OTA Model Artifact Contract status codes.
+
 ### 6.2 Backend/Cloud Engineer
 
 - **Provides:** Service deployment, container infrastructure, CI/CD, IaC, and observability for backend services.
@@ -229,6 +250,11 @@
 - **Provides:** The CI/CD platform, the Kubernetes/K3s cluster, the OTA distribution pipeline and its rollout/rollback mechanism, the IaC backend, and the observability stack.
 - **Requires:** ML pipeline stage requirements, model artifacts to be distributed, the model deployment strategy and cohorts (which run _on_ the OTA platform), and monitoring needs.
 - **Cadence:** Infrastructure alignment at planning; pipeline integration during development; shared incident response.
+
+**Model Artifact OTA Coordination (per the OTA Model Artifact Contract):** #model-OTA #OTA-Model-Artifact-Contract
+- **Provides (OTA-specific):** Distribution status per cohort (model artifact DISTRIBUTING / DISTRIBUTED / DISTRIBUTION_FAILED with per-device status for canary and each stage); rollout progress metrics (percentage of target devices running the new model version, health metric trends during observation periods, and any automatic rollback events); artifact distribution confirmation (SHA-256 hash verification at the distribution endpoint, confirming the artifact received matches the registered artifact); and OTA pipeline health (distribution pipeline operational status, any throttling or backpressure conditions, estimated time to complete the current staged rollout).
+- **Requires (OTA-specific):** OTA-ready model artifact in the packaging format specified by the OTA Model Artifact Contract; model rollout strategy parameters (target fleet cohorts, canary percentage, stage sizes, promotion criteria, rollback trigger thresholds); model artifact metadata for the OTA distribution manifest (artifact SHA-256 hash, artifact size, minimum firmware version, maximum flash budget consumption); and notification of model artifact registration with deployment-intent within 1 business hour of registry stage transition.
+- **Cadence (OTA-specific):** Model artifact handoff — MLOps notifies DevOps within 1 business hour; DevOps acknowledges receipt and begins distribution packaging within 2 business hours. Distribution status — per-cohort status every 4 hours during active rollout, every 24 hours during observation. Rollout completion notification — within 1 business hour of reaching 100% or triggering rollback. OTA pipeline sync — bi-weekly; joint review of pipeline capacity, upcoming releases, incidents. Urgent hotfix — DevOps acknowledges within 30 minutes, provides distribution timeline within 1 hour.
 
 ### 6.4 Security Engineer
 
@@ -259,6 +285,12 @@
 - **Provides:** Platform and deployment status, plus reliability and cost reporting.
 - **Requires:** Release priorities, the infrastructure budget, approved deployment windows, and the acceptable risk tolerance.
 - **Cadence:** Release planning; deployment-window coordination; reliability and cost reviews.
+
+### 6.9 [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL|IoT & Embedded Systems Researcher]]
+
+- **Provides:** Build-environment feasibility — whether a research prototype's build requirements (specialized toolchains, non-standard dependencies, exotic hardware targets) can be supported in the CI/CD (Continuous Integration / Continuous Delivery) pipeline; infrastructure requirements assessment (whether specialized compute, unusual storage, or non-standard networking can be provisioned within the organizational platform); reproducible research-environment support via containerization of research software; and fleet-data-access infrastructure providing secure access to production fleet data for research within the security-baseline constraints.
+- **Requires:** Specialized build/toolchain requirements (non-standard compilers, SDKs — Software Development Kits, build tools) for research prototypes; research infrastructure needs (GPU/CPU compute, storage, networking, or specialized hardware) for experiments; fleet-data-access requirements with justification and intended use; and containerization requirements for research software.
+- **Cadence:** Build-environment feasibility — DevOps responds within 10 business days of receiving specialized toolchain requirements. Infrastructure needs assessment — within 10 business days for standard requests, 20 business days for complex/specialized requests. Fleet data access — DevOps provisions access within 10 business days of an approved request (approval by Security and PO/TPM). Annual Research-Infrastructure Planning — first Tuesday of October, aligned with the Research-Hardware Technology Scan. #research-interface #infrastructure-feasibility #HR-1
 
 ---
 

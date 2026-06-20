@@ -78,6 +78,20 @@
 - **Activities:** Freeze and sign release images; verify the secure-boot chain; finalize the telemetry schema implementation; produce release notes and SBOM (Software Bill of Materials) input; tag the firmware version; run field-readiness checks (watchdog, brown-out handling, error recovery).
 - **Deliverables:** Signed production firmware binaries, OTA-ready images, release notes, the version tag, and a field-reliability sign-off.
 
+### 3.6 Post-Launch/Market
+
+**Activities:**
+- **Field crash and watchdog reset monitoring:** Review device crash reports and watchdog reset telemetry weekly. If crash rate or watchdog reset rate exceeds the reliability threshold (defined in the NFR — Non-Functional Requirement — Verification Matrix), initiate a root-cause investigation within 3 business days. Triage field-reported firmware bugs by severity: Critical (safety, data loss, bricking) — response within 1 business day; High (functional degradation) — response within 3 business days; Medium — next sprint; Low — backlog. #post-launch #field-reliability
+- **OTA update success rate monitoring:** Review OTA (Over-the-Air) update success/failure telemetry after every fleet OTA campaign. If the OTA failure rate exceeds the target threshold, halt the campaign and investigate within 1 business day. Publish an OTA Campaign Report within 3 business days of campaign completion, including: success rate, failure reason distribution, rollback count, and any device-side issues identified. #OTA-monitoring
+- **Field-reported bug triage and fix:** Triage field-reported firmware bugs filed by [[QA_TEST_AUTOMATION_ENGINEER_SKILL|QA]] or [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|PO/TPM]]. Critical bugs: develop, test, and release a hotfix via OTA within the SLA defined in the Sustaining Engineering backlog. Non-critical bugs: prioritize in the Sustaining Engineering backlog alongside new feature development. #field-defects
+- **Firmware revision planning:** Provide firmware engineering input to the Sustaining Engineering backlog. Estimate firmware change effort, risk, and OTA deployment complexity for each field-driven firmware change request. Response SLA: 3 business days for effort estimates, 10 business days for full feasibility assessment. #sustaining-engineering
+- **Security patch response:** When the [[SECURITY_ENGINEER_SKILL|Security Engineer]] issues a firmware security advisory, acknowledge within 1 business day. Develop, test, and release the security patch within the SLA defined by the Security Engineer (typically: Critical — 7 days, High — 30 days). #lifecycle-gap #CR-5
+
+**Deliverables:**
+- OTA Campaign Report (per campaign)
+- Field Crash Analysis Report (monthly, or on threshold breach)
+- Firmware revision feasibility assessments (on-demand)
+
 ---
 
 ## 4. Technical Competencies
@@ -250,6 +264,14 @@ Bring-up status (Pass/Fail per item, with measured values) is recorded in a join
 - **Requires:** The CI build pipeline, the OTA distribution pipeline, the artifact-signing mechanism, and reproducible-build infrastructure.
 - **Cadence:** CI integration at development start; pipeline reviews; release-packaging coordination.
 
+**Model Artifact OTA Coordination (in addition to firmware OTA):** #model-OTA #OTA-Model-Artifact-Contract
+- Firmware receives model artifact distribution bundles from the DevOps OTA delivery pipeline. The bundle includes: model binary, compatibility manifest, MLOps signature, and DevOps co-signature.
+- Firmware verifies: (a) DevOps co-signature valid, (b) MLOps signature valid, (c) compatibility manifest matches device hardware ID and current firmware version, (d) flash-budget check passes (model fits within the allocated flash partition), (e) SHA-256 hash matches manifest.
+- Firmware reports verification status within 1 minute of download completion: VERIFIED / VERIFICATION_FAILED with failure code.
+- Model artifact application uses the same A/B partition and rollback mechanism as firmware OTA. The tensor arena is re-allocated to the size specified in the compatibility manifest before inference begins.
+- Firmware reports APPLYING / ACTIVE / ROLLED_BACK status per the OTA Model Artifact Contract status codes. Status flows to the [[BACKEND_CLOUD_ENGINEER_SKILL|Backend]] desired-state control plane and is consumed by [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps]] and [[MLOPS_ENGINEER_SKILL|MLOps]] for rollout tracking.
+- Firmware runs an on-device model sanity check (one inference with a known test input, output compared to the expected output within tolerance) before reporting ACTIVE. If the sanity check fails, Firmware reports ROLLED_BACK.
+
 ### 6.5 QA & Test Automation Engineer
 
 - **Provides:** Testable builds, unit tests, debug hooks/instrumentation, and defect fixes with root-cause notes.
@@ -268,6 +290,12 @@ Bring-up status (Pass/Fail per item, with measured values) is recorded in a join
 - **Requires:** The broker endpoint and topology, the device shadow/twin contract, and the command/control interface definition.
 - **Cadence:** Contract alignment at planning; device-cloud integration checkpoints; shadow-state validation.
 
+**OTA Model Status Reporting (per the OTA Model Artifact Contract):** #model-OTA #OTA-Model-Artifact-Contract
+- Firmware reports OTA model artifact status to the Backend desired-state control plane at each state transition: DOWNLOADING, VERIFIED, APPLYING, ACTIVE, ROLLED_BACK, FAILED. Status messages include: device ID, model version, current state, previous state, timestamp, and failure code if applicable.
+- Firmware reports the ACTIVE model version in each telemetry heartbeat message, enabling Backend to reconcile fleet-wide model version distribution against the desired state.
+- If Firmware triggers a rollback (sanity check failure, watchdog reset during inference, or application failure), it reports ROLLED_BACK with the rollback reason code within 30 seconds of the rollback decision.
+- Firmware acknowledges desired-state model version commands from Backend within 5 seconds of receipt. If the desired version is already ACTIVE, Firmware reports ACTIVE with no action taken. If the desired version is unknown, Firmware reports FAILED with UNKNOWN_VERSION.
+
 ### 6.8 Data Engineer
 
 - **Provides:** Telemetry that conforms to the schema, with correct units, sampling rates, and timestamps, including edge-buffering/backfill behavior.
@@ -283,6 +311,12 @@ Any proposed change to the device telemetry schema (fields, types, units, encodi
 5. **Edge-Buffering Semantics (shared responsibility):** For any schema change affecting device-side buffering (e.g., new field increases payload size beyond buffer capacity), FW specifies the new buffer requirements and DATA confirms the ingestion pipeline can accept the new format within the transition window
 6. **Schema Version Registry:** All schema versions are registered in the organizational schema registry (Git-based, with SemVer — Semantic Versioning). FW increments the schema version in the device telemetry header; DATA validates the version at ingest
 #schema-change #edge-buffering #joint-process
+
+### 6.9 [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL|IoT & Embedded Systems Researcher]]
+
+- **Provides:** Firmware feasibility assessment of research algorithms — estimated CPU cycles, memory-budget impact (Flash/SRAM — Static Random-Access Memory), peripheral conflicts, RTOS (Real-Time Operating System) compatibility, real-time deadline feasibility, and any showstopper issues (within 15 business days of algorithm-specification handoff); fixed-point conversion feedback (Q-format recommendations, precision analysis, error bounds, and implementation results for Researcher validation); real-time deadline assessment (worst-case execution time, jitter analysis, scheduling feasibility on target MCU — Microcontroller Unit — platforms); support porting research-grade code to target embedded platforms; and a reusability assessment of Researcher-provided PoC (Proof-of-Concept) firmware (what can be adapted for production, what must be rewritten, estimated effort) within 10 business days of code delivery.
+- **Requires:** Algorithm specification packages — mathematical description, pseudocode, Python reference implementation, test vectors, and expected resource requirements — delivered ≥4 weeks before scheduled implementation start; research-grade PoC firmware (code repository, build instructions, known limitations) with documented algorithm logic; scientific rationale for algorithm design choices (e.g., filter architecture justified by sensor physics); preprocessing specifications with Python golden reference and test vectors for any signal-processing or feature-extraction step; and early-stage notification within 5 business days of research that may stress RTOS capabilities, memory budgets, or real-time deadlines.
+- **Cadence:** Algorithm Specification Handoff — ≥4 weeks before scheduled implementation start; Firmware feasibility assessment within 15 business days. Joint Algorithm-Firmware Review — bi-weekly 30-minute sync during active implementation of research-derived algorithms. Fixed-Point Conversion Support — Researcher provides guidance within 10 business days of request; Firmware Engineer provides implementation results for validation within 10 business days. Research-Grade Firmware Transfer — Firmware Engineer provides reusability assessment within 10 business days. Annual Research-Firmware Technology Scan — first Tuesday of November. #research-interface #firmware-feasibility #HR-1
 
 ---
 

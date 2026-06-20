@@ -77,6 +77,21 @@
 - **Activities:** Freeze the design; run the final DFM review; release the manufacturing package and test procedures; build and validate production test fixtures (in-circuit and functional); complete First Article Inspection; sign off reliability (HALT/HASS — Highly Accelerated Life/Stress Test — where applicable); finalize BOM lifecycle and second-source coverage; produce as-built documentation.
 - **Deliverables:** Released manufacturing package, test procedures and fixtures, First Article Inspection report, reliability sign-off, and a production BOM with second sources.
 
+### 3.6 Post-Launch/Market
+
+**Activities:**
+- **RMA (Return Merchandise Authorization) analysis:** Review every field-returned unit within 5 business days of receipt. Perform failure analysis (visual inspection, electrical test, root-cause determination) and classify each failure: manufacturing defect, component failure, environmental damage, design margin issue, or no-fault-found. Publish an RMA Analysis Report monthly with failure statistics, trends, and recommended corrective actions. #post-launch #field-defects
+- **Component lifecycle monitoring:** Track EOL (End of Life) and LTB (Last Time Buy) notices for all BOM (Bill of Materials) components quarterly. Flag any component with EOL within 24 months for redesign or lifetime-buy decision. Notify the [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] and [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|PO/TPM]] within 5 business days of a critical-component EOL notice.
+- **Field reliability trend analysis:** Monitor field failure rates (RMA rate per 1,000 units per month) against the reliability target. If the rate exceeds the target threshold for two consecutive months, initiate a reliability investigation within 10 business days. Publish a quarterly Field Reliability Report. #field-reliability
+- **Manufacturing yield monitoring:** Review manufacturing yield data (first-pass yield, test fallout) monthly. If yield drops below the target threshold, investigate within 5 business days and coordinate with the manufacturer on corrective action.
+- **Post-launch hardware revision support:** Provide hardware engineering input to the Sustaining Engineering backlog (maintained by [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|PO/TPM]]). Estimate hardware revision effort, cost, and lead time for field-driven hardware changes. Response SLA: 5 business days for effort estimates, 15 business days for a full revision feasibility assessment. #sustaining-engineering #lifecycle-gap #CR-5
+
+**Deliverables:**
+- Monthly RMA Analysis Report
+- Quarterly Field Reliability Report
+- Component Lifecycle Status Update (quarterly)
+- Hardware revision feasibility assessments (on-demand per Sustaining Engineering backlog)
+
 ---
 
 ## 4. Technical Competencies
@@ -276,6 +291,12 @@ After sensor characterization ([[HARDWARE_ENGINEER_SKILL|HW]] §3.4), the follow
 - **Provides:** Unit-cost estimates, BOM cost rollups, certification status, lead-time/supply risk, and manufacturing-readiness updates.
 - **Requires:** Field/deployment requirements, cost and schedule targets, certification scope, and volume forecasts.
 - **Cadence:** Requirement intake; cost/schedule reviews; release-gate manufacturing readiness.
+
+### 6.8 [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL|IoT & Embedded Systems Researcher]]
+
+- **Provides:** Hardware feasibility feedback on PoC (Proof-of-Concept) designs — manufacturability assessment, estimated BOM (Bill of Materials) cost range, identified single-source components, recommended fabrication process, and any showstopper issues (within 15 business days of PoC design handoff); component availability assessment — lead time, MOQ (Minimum Order Quantity), second-source options, and lifecycle status for novel or research-specified components; support sourcing low-volume specialty components and PCB (Printed Circuit Board) fabrication/assembly assistance for complex research prototype boards; manufacturability constraints (design rules, DFM — Design for Manufacturing — requirements, volume-production considerations); and preliminary regulatory-pathway guidance (CE, FCC, SDPPI, RoHS) flagging any showstopper certification issues.
+- **Requires:** PoC hardware designs — schematics, BOM, layout files, component characterization data, assembly notes, and known limitations — delivered ≥4 weeks before scheduled Hardware Engineer evaluation; component characterization data (datasheets, measured voltage/current/noise/thermal performance, application notes) for novel components; novel sensor assembly, bonding, or packaging guidance for research-grade prototypes; hardware-related Technology Transfer Packs (new sensor, material, form factor, or power source) ≥3 weeks before the quarterly Technology Transfer Review; and early-stage notification within 5 business days of a research direction that may require custom hardware.
+- **Cadence:** PoC Hardware Design Handoff — ≥4 weeks before scheduled evaluation; Hardware feasibility assessment within 15 business days. Novel Component Evaluation — Hardware Engineer responds within 10 business days of datasheet/characterization-data submission. Joint Prototype Review — bi-weekly 30-minute sync during active hardware prototyping (typically 4–12 weeks). Component characterization data delivery — within 5 business days of measurement completion; Hardware Engineer acknowledges and flags data gaps within 5 business days. Annual Research-Hardware Technology Scan — first Tuesday of October. #research-interface #hardware-feasibility #HR-1
 
 ---
 

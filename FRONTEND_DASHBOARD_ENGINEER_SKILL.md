@@ -99,6 +99,20 @@
 - Archive ADRs and close out any open infeasibility issues raised during development.
 - **Deliverables:** Production sign-off checklist; operational runbook; final accessibility and performance audit report.
 
+### 3.6 Post-Launch/Market
+
+**Activities:**
+- **Frontend error and performance monitoring:** Monitor frontend error rates (JavaScript exceptions, API — Application Programming Interface — call failures, rendering errors) and Core Web Vitals (LCP — Largest Contentful Paint, INP — Interaction to Next Paint, CLS — Cumulative Layout Shift) continuously. If the error rate exceeds the baseline or Core Web Vitals regress, investigate within 1 business day. Publish a monthly Frontend Health Report. #post-launch
+- **Field UX feedback triage:** Review user feedback and UX (User Experience) issues reported by field operators via the [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|PO/TPM]]. Triage by impact: blocks operator workflow — response within 2 business days; usability degradation — next sprint; cosmetic — backlog. Provide UX improvement recommendations to the Sustaining Engineering backlog. #field-defects
+- **Real-time data connection monitoring:** Monitor client-side WebSocket and MQTT-over-WebSockets (Message Queuing Telemetry Transport) reconnection success rate continuously. If the reconnection success rate drops below 99.5%, investigate within 1 business day. Coordinate with [[BACKEND_CLOUD_ENGINEER_SKILL|Backend]] if the root cause is server-side. #field-reliability
+- **Browser/device compatibility:** Monitor field-reported rendering or functionality issues on specific browser/device combinations. Maintain a compatibility test matrix updated with field-discovered issues. Response SLA for compatibility fixes: 5 business days for Critical (dashboard unusable), next sprint for Medium.
+- **Dashboard feature requests:** Implement dashboard improvements requested by field operators through the Sustaining Engineering backlog. Estimate effort within 3 business days. Implement within the sprint prioritization set by the [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|PO/TPM]]. #sustaining-engineering #lifecycle-gap #CR-5
+
+**Deliverables:**
+- Monthly Frontend Health Report (error rates, Core Web Vitals, reconnection success rate)
+- UX Improvement Recommendations (per Sustaining Engineering cycle)
+- Compatibility Test Matrix Update (quarterly)
+
 ---
 
 ## 4. Technical Competencies
@@ -253,6 +267,12 @@
 - **Provides to them:** Frontend authentication/authorization implementation details for review; dependency manifests for vulnerability scanning.
 - **Requires from them:** Security requirements for token handling, session management, and content security policies; vulnerability scan results.
 - **Cadence:** Security review at major release milestones; ad hoc consultation on authentication flow changes.
+
+### 6.8 [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL|IoT & Embedded Systems Researcher]]
+
+- **Provides to them:** Visualization feasibility assessment — whether a novel data type, real-time streaming requirement, or sensor modality from research can be effectively visualized with current dashboard tooling (Grafana, Plotly, D3.js, Recharts) or requires custom visualization development; UX (User Experience) impact analysis for research-driven features (what new dashboard views, controls, or alerting surfaces field operators would need); real-time streaming compatibility (whether a research data type's volume and velocity can render in a browser-based dashboard without performance degradation); and accessibility implications against WCAG 2.1 AA (Web Content Accessibility Guidelines 2.1, Level AA) standards.
+- **Requires from them:** Novel data-type visualization requirements (what the data represents, how it should be represented, update frequency, domain-specific conventions); real-time streaming requirements (expected data rate, latency tolerance, domain-specific rendering constraints); ML output presentation requirements (how confidence scores, uncertainty, or novel output formats should be presented to operators); and frontend-relevant Technology Transfer Packs with implications for dashboard visualization, real-time data rendering, or operator interaction patterns.
+- **Cadence:** Visualization feasibility assessment — Frontend responds within 15 business days of receiving novel data-type visualization requirements. Real-time streaming compatibility — assessed within 10 business days. Technology Transfer — frontend-relevant findings transferred at the quarterly Technology Transfer Review. Ad hoc consultation — Frontend available for research-stage UX/visualization questions with 5 business days' notice. #research-interface #visualization-feasibility #HR-1
 
 ---
 

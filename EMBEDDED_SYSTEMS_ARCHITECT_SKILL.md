@@ -9,6 +9,28 @@
     - **Senior Embedded Systems Architect:** Owns architecture for a single product line or subsystem; authors contracts under an existing reference architecture.
     - **Staff Embedded Systems Architect:** Owns architecture across multiple product lines; sets cross-cutting interface and platform standards.
     - **Principal Embedded Systems Architect:** Owns the organization-wide reference architecture, platform strategy, and long-horizon technology bets; final architectural authority and ADR (Architecture Decision Record) approver.
+- **Deputy Architect:** A designated alternate for the Embedded Systems Architect, drawn from the Staff [[FIRMWARE_ENGINEER_SKILL|Firmware Engineer]] or Staff [[BACKEND_CLOUD_ENGINEER_SKILL|Backend/Cloud Engineer]] tier. The Deputy Architect is appointed by the Architect with the concurrence of the CTO (Chief Technology Officer) and is reviewed and re-designated annually. The Deputy retains their primary role responsibilities; this is an additional duty with an estimated 20–30% capacity allocation, not a full-time architecture position.
+
+  **Deputy Architect Authority (exercisable when the Architect is unavailable or has delegated):**
+  - Maintain existing interface contracts — clarify, interpret, and document existing contracts without changing scope, budgets, or schemas. Contract changes (scope, budget, schema) still require an ADR (Architecture Decision Record)
+  - Approve non-breaking ADRs — ADRs that do not: change a platform selection, protocol choice, resource budget, security baseline, or OTA (Over-the-Air) strategy
+  - Chair the Architecture Review Board (ARB) — convene, facilitate, and document ARB meetings; the ARB can make decisions within its chartered authority regardless of who chairs
+  - Resolve Tier 2 (HIGH) decision requests within the SLA window defined in §7
+  - Serve as the primary architecture point of contact during the Architect's planned absence (vacation, conference, training)
+
+  **Deputy Architect Authority Limits (NOT authorized):**
+  - Cannot change resource budgets (Flash, SRAM — Static Random-Access Memory, power, latency) — these require the Architect or an ARB consensus vote
+  - Cannot create new interface contracts or deprecate existing contracts
+  - Cannot approve Security-Relevant ADRs (those tagged #security-impact)
+  - Cannot sign the production architecture release gate — this is reserved for the Architect
+  - Cannot modify the security baseline or OTA strategy
+
+  **Deputy Architect Qualification Requirements:**
+  - Must hold a Staff-level tier in Firmware or Backend/Cloud engineering
+  - Must have served as a Senior Engineer for ≥2 years in the organization
+  - Must complete the Architecture Governance training curriculum (ADR authoring, interface contract design, trade-study methodology, NFR — Non-Functional Requirement — specification)
+  - Must pass a qualification review conducted by the Architect and CTO, including: producing a shadow ADR for a real architectural decision, defending a trade study, and resolving a simulated contract dispute
+  #Deputy-Architect #bus-factor #resilience
 - **Summary:** The Embedded Systems Architect is the single technical authority for the end-to-end system spanning constrained MCU (Microcontroller Unit) edge nodes (STM32, ESP32), Linux-class MPU (Microprocessor Unit) gateways (Raspberry Pi), and cloud services. The role exists to convert product and field requirements into a coherent, resource-bounded, and parallelizable technical design: it selects compute platforms, partitions workloads between on-device inference and cloud aggregation, defines the communication topology and protocols, and freezes the interface contracts and resource budgets that gate every downstream team. Its unique value is enabling firmware, ML (Machine Learning), data, cloud, and frontend teams to build independently against stable, versioned interfaces while guaranteeing the integrated system meets its real-time, power, security, and reliability targets.
 
 ---
@@ -26,6 +48,7 @@
 - On-device ML deployment strategy: model format (TFLite Micro — TensorFlow Lite for Microcontrollers), tensor-arena sizing, and the edge-versus-cloud inference split.
 - Non-functional requirements: real-time deadlines, per-node compute/memory/power budgets, OTA (Over-the-Air) update path (A/B partitioning with rollback), and the security baseline.
 - **End-to-end system robustness:** The Architect is the primary guarantor of cross-layer system robustness — the property that the system behaves correctly under adverse conditions that span multiple architectural layers. This includes: (a) defining the #System-Robustness-Contract that specifies how each layer must respond to failures originating in other layers, (b) owning the system-level #FMEA (Failure Mode and Effects Analysis) or #FTA (Fault Tree Analysis) that traces failure chains across hardware, firmware, edge AI, communication, cloud, and data layers, (c) defining cross-layer robustness #NFR (Non-Functional Requirement) entries in the NFR Verification Matrix, (d) arbitrating robustness trade-offs between layers, and (e) signing off on end-to-end robustness at the production release gate. #quality-attribute #robustness
+- **End-to-end OTA (Over-the-Air) governance:** The Architect is the single governance owner of the end-to-end OTA update path spanning all four OTA layers: (a) on-device apply and rollback (owned by [[FIRMWARE_ENGINEER_SKILL|Firmware Engineer]]), (b) delivery transport and fleet rollout mechanism (owned by [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps/Platform Engineer]]), (c) cloud desired-state control plane (owned by [[BACKEND_CLOUD_ENGINEER_SKILL|Backend/Cloud Engineer]]), and (d) model rollout strategy (owned by [[MLOPS_ENGINEER_SKILL|MLOps Engineer]]). The Architect owns the OTA Model Artifact Contract (§5) that chains through all four roles, defines the end-to-end OTA validation requirements, arbitrates OTA-related disputes between the four layers, and signs off on OTA readiness at the production release gate. The Architect does not implement any layer's OTA mechanism — each role owns its layer's implementation to the OTA Model Artifact Contract. #OTA-governance #end-to-end-OTA #CR-3
 - The ADR repository and architecture governance.
 
 **Influences (advisory; does not implement):**
@@ -74,6 +97,7 @@
 ### 3.5 Production-Ready
 
 - **Activities:** Execute the final architecture release gate; confirm the SBOM (Software Bill of Materials), security baseline, and OTA governance are in place; define field-scaling considerations (fleet provisioning, MQTT broker scaling) with Backend/DevOps; capture the as-built architecture and lessons-learned ADRs; define the architecture maintenance and evolution plan.
+- **Architect Succession Exercise (annual):** Conduct an annual Architect Succession Exercise during the Production-Ready stage of the final release cycle of each calendar year (typically November–December). The Deputy Architect produces: (a) a shadow System Architecture Document (SAD) for a hypothetical next-generation product or a substantial feature expansion of the current product — demonstrating ability to define topology, select platforms, partition workloads, and freeze interface contracts independently, (b) a set of 3 shadow ADRs for architectural decisions that would arise from the shadow SAD — demonstrating trade-study methodology and governance discipline, and (c) a shadow resource budget table for at least two node types — demonstrating quantitative architecture reasoning. The Architect reviews the shadow artifacts against the same standards applied to production architecture artifacts. The exercise output is a Succession Readiness Assessment (Ready / Conditionally Ready / Not Ready) with specific development recommendations. This exercise verifies that the organization can sustain architectural continuity if the Architect transitions, and it identifies Deputy development needs before they become critical. Results are reviewed with the CTO and inform the Deputy Architect re-designation for the following year. Shadow artifacts are archived alongside production architecture artifacts for reference. #succession-exercise #organizational-resilience
 - **Deliverables:** Production architecture sign-off, as-built SAD, fleet-scaling guidance, and post-release ADRs.
 
 ---
@@ -173,6 +197,7 @@
 |Trade-Study Reports|Structured comparison behind platform/protocol choices|TPM, Hardware, Edge AI/ML|Markdown + decision matrix|Snapshot per decision; linked from ADR|
 |As-Built Architecture|Final, production-accurate architecture at release gate|All roles, future maintainers|Markdown + diagrams|Tagged to the release version|
 | System Robustness Contract | Authoritative cross-layer robustness specification defining: (a) failure domains and their boundaries (hardware, firmware, edge AI, communication, cloud, data), (b) required robustness behavior per layer when a failure originates in another layer (e.g., "FW must enter fail-safe state within 100ms of detecting corrupted sensor data regardless of corruption source"), (c) cross-layer failure chain taxonomy with severity classification (Critical / High / Medium / Low) based on system-level impact analysis using #FMEA (Failure Mode and Effects Analysis) methodology, (d) robustness #NFR entries with quantified targets per failure scenario, (e) shared robustness design patterns (#graceful-degradation paths, #failure-containment boundaries, fallback modes), and (f) robustness sign-off criteria for production release. Co-signed by [[HARDWARE_ENGINEER_SKILL|HW]], [[FIRMWARE_ENGINEER_SKILL|FW]], [[SECURITY_ENGINEER_SKILL|SEC]], [[BACKEND_CLOUD_ENGINEER_SKILL|BACK]], [[DATA_ENGINEER_SKILL|DATA]], with [[QA_TEST_AUTOMATION_ENGINEER_SKILL|QA]] as designated validator | [[HARDWARE_ENGINEER_SKILL|HW]], [[FIRMWARE_ENGINEER_SKILL|FW]], [[SECURITY_ENGINEER_SKILL|SEC]], [[BACKEND_CLOUD_ENGINEER_SKILL|BACK]], [[DATA_ENGINEER_SKILL|DATA]], [[QA_TEST_AUTOMATION_ENGINEER_SKILL|QA]], [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|PO/TPM]] | Markdown document in Git; references IEC 60812 (FMEA), IEC 61025 (FTA), and ISO/IEC 25010 (Reliability and Recoverability characteristics) | Semantic versioning (SemVer); major bump on failure domain addition or robustness NFR change; minor bump on pattern addition; reviewed at each Architecture Review Board milestone |
+| OTA Model Artifact Contract | Authoritative end-to-end specification for model artifact flow through the OTA pipeline. Defines: (a) Artifact format at each hop: MLOps packaging format → DevOps distribution bundle → Firmware MCUboot-compatible image, with format conversion requirements at each boundary, (b) Signing chain: signing authority per stage (MLOps signs the model artifact, DevOps co-signs the distribution bundle, Firmware verifies the final image against the hardware root of trust), (c) Compatibility manifest: mandatory fields (model version, target hardware ID, firmware compatibility range, tensor arena size requirement, flash-budget check result), validated at each hop before forwarding, (d) Deployment-status reporting: required status codes at each hop (MLOps: REGISTERED → DevOps: DISTRIBUTING/DISTRIBUTED → Backend: DESIRED_SET → Firmware: DOWNLOADING/VERIFIED/APPLYING/ACTIVE/ROLLED_BACK/FAILED) with maximum latency per status transition, (e) Rollback coordination: sequence of events when any hop triggers a rollback (Backend sets desired state to previous version → DevOps halts distribution → Firmware applies rollback → MLOps updates model registry with rollback status), (f) End-to-end timeout: maximum time from MLOps registration to Firmware ACTIVE status (default: 24 hours for staged rollout, 1 hour for urgent hotfix). #OTA-Model-Artifact-Contract #model-OTA #CR-3 | [[MLOPS_ENGINEER_SKILL\|MLOps]], [[DEVOPS_PLATFORM_ENGINEER_SKILL\|DevOps]], [[BACKEND_CLOUD_ENGINEER_SKILL\|Backend]], [[FIRMWARE_ENGINEER_SKILL\|Firmware]], [[QA_TEST_AUTOMATION_ENGINEER_SKILL\|QA]] | Markdown document in Git; references the OTA Strategy Specification for artifact format details and the OTA artifact format defined in LR-7 | Semantic versioning (SemVer); major bump on protocol change, signing chain change, or new required manifest field; reviewed at each Architecture Review Board milestone; change requires ADR with all four OTA roles as consulted parties |
 
 ### 5.1 NFR Verification Matrix — End-to-End System Robustness Category
 
@@ -260,6 +285,12 @@
 - **Requires:** Security baseline definition, threat-model findings, hardening requirements, and PKI (Public Key Infrastructure)/identity design — co-owned.
 - **Cadence:** Joint security-baseline authoring at planning; security architecture reviews; pre-production hardening sign-off.
 
+### 6.12 [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL|IoT & Embedded Systems Researcher]]
+
+- **Provides:** Long-term architecture roadmap — platform evolution direction, planned protocol/technology shifts, and the technology-horizon challenges and architectural constraints that seed and shape research direction (presented annually, first Tuesday of March); engineering feasibility feedback on research findings — whether a discovery can be productized within current or planned architecture, including identified gaps and required architecture changes, raised during PoC (Proof-of-Concept) review; system-level constraints for experimental design — resource budgets (power, form factor, communication bandwidth, latency, cost target) and target hardware profiles the Researcher should design experiments against for eventual technology transfer; ADR (Architecture Decision Record) notifications with research implications within 5 business days of acceptance; and facilitation of the quarterly Technology Transfer Review (chairing, ensuring all relevant engineering roles are represented and feasibility assessments are delivered ≥1 week before the meeting).
+- **Requires:** Technology Transfer Packs — complete research-finding documentation (scientific rationale, experimental validation, known limitations, preliminary architecture-impact assessment) submitted ≥3 weeks before the quarterly Technology Transfer Review; Feasibility Assessment Reports for novel sensing, communication, or computation paradigms assessing whether a candidate technology can meet system-level constraints; PoC demonstrations with characterized performance metrics sufficient to assess integration complexity and architecture compatibility; and on-demand scientific consultation on novel material or physics choices that affect architecture decisions (response within 5 business days).
+- **Cadence:** Scheduled Technology Transfer Review — quarterly, first Tuesday of February, May, August, November; Researcher submits the Technology Transfer Pack ≥3 weeks before, Architect provides written feasibility assessment ≥1 week before, 60-minute review meeting. Interim Technology Transfer — for time-sensitive findings (market window <3 months or patent filing deadline), Architect acknowledges within 3 business days and schedules within 10 business days, limited to 2 interim reviews per quarter. Long-term Architecture Roadmap Briefing — Architect presents annually, first Tuesday of March; Researcher provides research-direction feedback within 2 weeks. System-level constraint update — Architect notifies the Researcher within 5 business days of ADR acceptance; Researcher provides impact assessment on active research within 15 business days. Ad hoc scientific consultation — 5 business days' notice, limited to 4 hours/month; urgent (production incident requiring scientific expertise) within 1 business day. #research-interface #technology-transfer #HR-1
+
 ---
 
 ## 7. Decision Authority & Governance
@@ -289,6 +320,39 @@
 - **Business Impact (if tagged #business-impact):** For ADRs (Architecture Decision Records) with significant cost, schedule, or market-window implications. This appendix is authored by the [[BUSINESS_CONSULTANT_SKILL|Business Consultant]] per the Business-Architecture Alignment cadence (§6.2). Fields: (a) Quantified Cost Impact — one-time NRE (Non-Recurring Engineering), per-unit BOM (Bill of Materials) delta, annual cloud OpEx (Operational Expenditure) delta, (b) Schedule Impact — market window shift in weeks, competitive milestone risk, (c) Market Impact — competitive positioning effect, customer commitment risk, pricing implication, (d) Recommendation — Proceed / Proceed with Mitigation / Escalate to Executive Review — with business rationale. The Business Impact appendix is appended to the ADR within 10 business days of the Architect's notification.
 - **Status lifecycle:** Proposed → Accepted → (Superseded | Deprecated). ADRs are append-only and immutable once Accepted; changes are made by superseding with a new ADR.
 - **Review/merge:** Authored as Markdown, reviewed via pull request, and merged only after the required approvers (per decision class above) sign off. Each ADR is linked from the SAD and from any contract it governs.
+
+### 7.Z Architecture Review Board (ARB) Charter
+
+The Architecture Review Board (ARB) is a standing governance body that provides distributed architectural decision-making capacity, reducing the Architect as a single point of failure and enabling faster resolution of routine architectural questions.
+
+**ARB Membership:**
+- **Standing Members:** Embedded Systems Architect (Chair), Deputy Architect (Vice Chair), Senior [[FIRMWARE_ENGINEER_SKILL|Firmware Engineer]], Senior [[BACKEND_CLOUD_ENGINEER_SKILL|Backend/Cloud Engineer]], [[SECURITY_ENGINEER_SKILL|Security Engineer]]
+- **Rotating Members:** One additional Senior Engineer from the role most affected by the current release scope, rotating per release cycle. Invited by the Chair
+- **Quorum:** 3 of 5 standing members, including at least one of the Architect or Deputy Architect
+
+**ARB Decision Authority (majority vote of quorum):**
+- Resolve Tier 2 (HIGH) architecture decisions escalated from the Decision SLA queue
+- Approve non-breaking ADRs (same criteria as Deputy Architect authority)
+- Resolve Contract Clarification Records (CCRs) escalated from consumer/producer pairs when consensus is not reached within 3 business days
+- Approve routine budget rebalancing within defined tolerance bands (see §2 Budget Trade Tolerance Bands) when the implementing role requests ARB validation
+- Review and approve architecture implications of technology transfer from [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL|Researcher]] when the finding does not introduce novel platform, protocol, or security surface requirements
+- Authorize architecture exploration spikes and technology evaluations
+
+**ARB Decision Limits (NOT authorized; requires Architect):**
+- Platform/MCU/SoC selection changes
+- Protocol or communication topology changes
+- Resource budget creation, deletion, or changes beyond pre-authorized tolerance bands
+- OTA strategy changes
+- Security baseline modifications
+- Production release gate architecture sign-off
+
+**ARB Operations:**
+- **Regular Meeting:** Bi-weekly, 60 minutes. Standing agenda: open Tier 2 decisions, escalated CCRs, ADR review queue, cross-role architecture concerns, upcoming technology transfer assessments
+- **Urgent Meeting:** Convened within 1 business day by the Chair or Vice Chair for Tier 1 (CRITICAL) decisions when the Architect is unavailable
+- **Decision Record:** All ARB decisions are documented as ARB Decision Records (same format as ADRs, tagged #ARB-decision). ARB decisions that would normally require an ADR are cross-referenced from the ADR repository
+- **Escalation:** Any standing member may escalate an ARB decision to the Architect for review within 5 business days. The Architect may uphold, modify, or reverse the ARB decision via an ADR
+- **Annual Review:** The ARB charter is reviewed annually (first ARB meeting of December). Membership, authority, and operations are updated as the organization matures
+#Architecture-Review-Board #ARB #distributed-governance
 
 ---
 

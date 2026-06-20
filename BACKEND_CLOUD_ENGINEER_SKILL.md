@@ -80,6 +80,21 @@
 - **Activities:** Deploy to production with DevOps and enable autoscaling; complete observability (logs, metrics, traces), alerting, and SLOs; set up disaster recovery and backups for the databases; finalize API versioning and documentation (OpenAPI); make security hardening live (mTLS/PKI/authorization); implement rate limiting; write runbooks; optimize capacity and cost; obtain reliability sign-off.
 - **Deliverables:** Production services, observability and SLOs, a disaster-recovery plan, API documentation, security sign-off, and runbooks.
 
+### 3.6 Post-Launch/Market
+
+**Activities:**
+- **API and service SLO monitoring:** Monitor API (Application Programming Interface) latency (p50, p95, p99), error rate, and availability against defined SLOs (Service-Level Objectives) continuously. If any SLO is breached for >5 minutes, investigate within 1 business hour. Publish a monthly Service Health Report. #post-launch
+- **MQTT broker health monitoring:** Monitor MQTT (Message Queuing Telemetry Transport) broker connection count, message throughput, topic latency, and client disconnection rate continuously. If the broker experiences a throughput anomaly or connection drop affecting >1% of devices, investigate within 15 minutes. Coordinate with [[FIRMWARE_ENGINEER_SKILL|Firmware]] if the root cause is device-side connection behavior. #field-reliability
+- **Device twin synchronization monitoring:** Monitor device twin desired-vs-reported state drift across the fleet continuously. If >1% of devices show a state mismatch for >1 hour (24 hours for staged rollout), investigate within 1 business day. This is the primary indicator of OTA (Over-the-Air) campaign health from the backend perspective. #OTA-monitoring
+- **Backend-driven field issue response:** Triage backend-related field issues (API errors, authentication failures, command delivery failures) reported by [[QA_TEST_AUTOMATION_ENGINEER_SKILL|QA]], [[FRONTEND_DASHBOARD_ENGINEER_SKILL|Frontend]], or field operators. Critical (service down, auth broken): response within 1 business hour. High: response within 4 business hours. Medium: next business day. #field-defects
+- **Post-launch API evolution:** Implement backward-compatible API changes required by field-driven feature requests. Plan and communicate breaking API changes (requiring an ADR — Architecture Decision Record) at least one release cycle in advance. Support the Sustaining Engineering backlog with backend change estimates within 5 business days. #sustaining-engineering #lifecycle-gap #CR-5
+
+**Deliverables:**
+- Monthly Service Health Report (SLO compliance, incidents, latency trends)
+- MQTT Broker Health Dashboard (continuous)
+- Device Twin Synchronization Report (per OTA campaign)
+- API change impact assessments (on-demand)
+
 ---
 
 ## 4. Technical Competencies
@@ -225,6 +240,12 @@
 - **Requires:** Device-side protocol conformance (MQTT/CoAP, QoS, keepalive), telemetry/command message conformance, and correct on-device shadow behavior.
 - **Cadence:** Contract alignment at planning; device–cloud integration checkpoints; shadow-state and OTA desired-state validation.
 
+**OTA Model Status Reporting (per the OTA Model Artifact Contract):** #model-OTA #OTA-Model-Artifact-Contract
+- Backend receives OTA model artifact status from Firmware at each state transition and updates the device twin reported state within 1 second. The device twin model version field is the authoritative source for fleet-wide model version distribution.
+- Backend monitors fleet-wide model version distribution against the desired state. Devices with reported model version ≠ desired model version for >24 hours (for staged rollout) or >1 hour (for urgent hotfix) generate an alert to [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps]] and [[MLOPS_ENGINEER_SKILL|MLOps]].
+- Backend sets the desired model version in the device twin based on the [[MLOPS_ENGINEER_SKILL|MLOps]] rollout strategy (target cohorts, stage progression) and the [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps]] distribution status. The desired version is set only after DevOps confirms the artifact is DISTRIBUTED to the target cohort.
+- If a rollback is triggered (by Firmware, DevOps, or MLOps), Backend sets the desired model version to the rollback target version within 1 minute of the rollback trigger notification and monitors fleet-wide rollback progress.
+
 ### 6.3 Frontend/Dashboard Engineer
 
 - **Provides:** REST/gRPC APIs, WebSocket real-time streams, and user authentication (OAuth/JWT).
@@ -264,6 +285,12 @@ Backend and Data jointly own a telemetry-integrity SLO (Service-Level Objective)
 - **Requires:** The model-serving artifacts/endpoints and the serving requirements (latency, batching, scaling).
 - **Cadence:** Serving-integration alignment at planning; integration during development; serving-performance review.
 
+**OTA Model Status for MLOps (per the OTA Model Artifact Contract):** #model-OTA #OTA-Model-Artifact-Contract
+- Backend provides fleet-wide model version distribution status to MLOps: count of devices per model version, percentage of the target fleet at the desired version, devices stuck in a non-ACTIVE state >1 hour, and rollback count with reason codes.
+- Backend notifies MLOps when a stage's observation-period health metrics meet the promotion criteria (as defined in the MLOps rollout strategy), enabling MLOps to authorize the next stage.
+- Backend notifies MLOps within 5 minutes of any device reporting ROLLED_BACK or FAILED for a model artifact, with the device ID, model version, and failure code.
+- Backend provides fleet-wide OTA health dashboard data to MLOps: current active model versions histogram, rollout in-progress status, and rollback event timeline.
+
 ### 6.8 QA & Test Automation Engineer
 
 - **Provides:** Testable APIs, service test environments, and contract/integration test support.
@@ -275,6 +302,12 @@ Backend and Data jointly own a telemetry-integrity SLO (Service-Level Objective)
 - **Provides:** Service status, scaling/cost reporting, and API readiness.
 - **Requires:** Product and API requirements, prioritization, and SLAs (Service-Level Agreements).
 - **Cadence:** Requirement intake; milestone reviews; cost/SLA review.
+
+### 6.10 [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL|IoT & Embedded Systems Researcher]]
+
+- **Provides:** API and broker impact assessment — whether a novel data type, communication paradigm, or device-interaction pattern from research can be accommodated within the existing API and MQTT (Message Queuing Telemetry Transport) broker architecture; device-twin schema impact analysis (whether a finding requires new device-twin fields, desired/reported-state semantics, or provisioning flows); cloud-side feasibility feedback on latency, throughput, and scaling implications of research-proposed data flows or device behaviors; and telemetry-schema compatibility assessment for novel data types.
+- **Requires:** Novel data-type specifications (schema, units, expected volume and velocity) for any new data type generated by research sensors or algorithms; communication-paradigm proposals (new QoS — Quality of Service — requirement, topic structure, or message sequencing); device-interaction pattern proposals (new command/control or device-management interactions); and backend-relevant Technology Transfer Packs with implications for cloud services, APIs, broker topology, or the device-twin model.
+- **Cadence:** API/broker impact assessment — Backend responds within 15 business days of receiving novel data-type or communication-paradigm specifications. Device-twin schema impact — assessed within 10 business days. Technology Transfer — backend-relevant findings transferred at the quarterly Technology Transfer Review. Ad hoc consultation — Backend available for research-stage architectural questions with 5 business days' notice. #research-interface #cloud-feasibility #HR-1
 
 ---
 

@@ -99,6 +99,22 @@
 - Update the roadmap based on production learnings and field feedback loops.
 - **Deliverables:** Release notes, OTA rollout plan, post-release retrospective report, updated roadmap and KPI dashboard.
 
+### 3.6 Post-Launch/Market
+
+**Activities:**
+- **Sustaining Engineering backlog ownership:** Maintain a Sustaining Engineering backlog as a track separate from the new-feature backlog. Prioritize field issues (defects, reliability concerns, security patches) against new feature development using a defined triage matrix: Safety/Security > Fleet Reliability > Operator Workflow Blockers > Feature Requests. Review backlog prioritization weekly with input from [[QA_TEST_AUTOMATION_ENGINEER_SKILL|QA]], [[SECURITY_ENGINEER_SKILL|Security]], and the [[BUSINESS_CONSULTANT_SKILL|Business Consultant]]. #post-launch #sustaining-engineering
+- **OTA release calendar management:** Maintain a rolling OTA (Over-the-Air) release calendar covering planned feature releases, scheduled maintenance releases, and emergency hotfix windows. Coordinate OTA campaign scheduling with [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps]] (pipeline capacity) and [[BUSINESS_CONSULTANT_SKILL|Business Consultant]] (market window constraints). Communicate the OTA calendar to all stakeholders monthly. #OTA-monitoring
+- **Field operator feedback loop:** Collect and triage field operator feedback through established channels (support tickets, operator surveys, field visits). Surface recurring issues to the Sustaining Engineering backlog. Close the feedback loop with field operators: communicate what was fixed, what was deferred, and why. #field-defects
+- **Product performance monitoring:** Monitor product-level KPIs (device activation rate, feature adoption rate, user engagement, churn indicators) monthly. If a KPI trends negatively for two consecutive months, initiate a product performance investigation with the relevant engineering leads within 10 business days. #field-reliability
+- **End-of-life and sunset planning:** Monitor product lifecycle stage against the long-range roadmap. Initiate end-of-life planning (last OTA update, data export/migration support, customer communication) at least 6 months before planned product sunset. #lifecycle-gap #CR-5
+
+**Deliverables:**
+- Sustaining Engineering Backlog (continuously maintained; a separate track from the new-feature backlog)
+- OTA Release Calendar (updated monthly, published to all stakeholders)
+- Monthly Product Performance Dashboard
+- Field Operator Feedback Summary (monthly)
+- End-of-Life/Sunset Plan (per product, initiated 6 months before sunset)
+
 ---
 
 ## 4. Technical Competencies
@@ -301,6 +317,12 @@
   - Monthly Business-Product Alignment Review: first Wednesday of each month, 90 minutes #cadence. Comprehensive review of product roadmap vs. market window alignment, feature prioritization against customer value and willingness-to-pay data, BOM (Bill of Materials) cost trends vs. target price point, competitive positioning update, and any business constraint changes.
   - Quarterly Business-Product Strategy Session: second Thursday of January, April, July, October, half-day #cadence. Deep-dive on market evolution and emerging opportunities, product portfolio strategy and investment prioritization, make-vs-buy and partnership strategy, pricing and monetization model review, and long-range (12–36 month) product vision alignment.
   - **Co-location During Planning and Early Development:** During the Planning stage (typically 2–4 weeks per release cycle) and the first 2 weeks of the Development stage, the [[BUSINESS_CONSULTANT_SKILL|Business Consultant]] co-locates (virtual or physical) with the PO/TPM for daily stand-up participation and is available for ad hoc consultation within 2 hours during business hours. This co-location ensures: (a) market requirements are immediately clarifiable during backlog refinement, (b) business constraint changes (BOM — Bill of Materials — ceiling, pricing, market window shifts) are surfaced to sprint planning in real time, and (c) the PO/TPM can validate feature acceptance criteria against market expectations before Development commits. Outside of Planning and early Development, the standard weekly and monthly cadences apply. Co-location may be virtual (dedicated chat channel + daily 15-minute video check-in) or physical, as organizational setup permits. #co-location #BIZ-PO-cadence #Planning #Development
+
+### 6.14 [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL|IoT & Embedded Systems Researcher]]
+
+- **PO/TPM provides:** Product vision and strategic direction, updated product roadmap, and market-driven feature priorities that focus research direction; market-driven problem statements and research questions derived from customer feedback, competitive analysis, and field-operator needs; prioritization guidance for technology-transfer requests when engineering bandwidth is limited; resource allocation for research activities (budget, equipment, external-collaboration approvals within the PO/TPM's authority, plus advocacy to executive leadership); and curated field-operator feedback and product-timeline visibility (release roadmap, milestone dates, market windows) that constrain Technology Transfer timing.
+- **PO/TPM requires:** Research roadmap aligned with product vision — active research directions, expected Technology Transfer readiness dates (with confidence levels), and resource requirements, updated at each Quarterly Research-Product Alignment Review; research-horizon briefings (1–3 year technology outlook); feasibility input on research-intensive features (whether a proposed feature requires fundamental research, likely duration, and probability of success); literature-survey summaries on emerging technologies; research-direction change notification within 5 business days; and a sprint-level research liaison during active Technology Transfer.
+- **Cadence:** Quarterly Research-Product Alignment Review — second Tuesday of February, May, August, November; joint output is the updated Research-Product Alignment document. Research Direction Change Notification — Researcher notifies within 5 business days; PO/TPM provides product-impact assessment within 10 business days. Sprint-level research liaison — one sprint planning session per month during active Technology Transfer, with sprint context provided ≥1 week in advance. Annual Innovation Portfolio Review — first Tuesday of December; output is the prioritized research portfolio for the upcoming year. Urgent strategic alignment — either party may call with 3 business days' notice. #research-interface #product-alignment #HR-1
 
 ---
 

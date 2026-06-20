@@ -151,6 +151,23 @@
 
 ---
 
+### 3.7 Post-Launch/Market
+
+**Activities:**
+- **Field data mining for research opportunities:** Review field telemetry, device performance data, and operator feedback (via the [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|PO/TPM]] field operator feedback loop) quarterly to identify patterns that suggest new research directions. Publish a Field Insights for Research brief within 15 business days of the quarterly review if significant patterns are found. #post-launch
+- **Research assumption validation:** Compare research-stage assumptions (sensor behavior, environmental models, degradation curves) against field data from deployed devices. If field data contradicts research assumptions, document the discrepancy and initiate a research review within 30 business days. Update research models accordingly. #field-reliability
+- **Technology transfer post-mortem:** Review the field performance of any technology transferred from research to product 6 and 12 months post-launch. Assess: did the technology perform as predicted? Were the research-stage performance claims validated at fleet scale? Publish a Technology Transfer Post-Mortem within 30 business days of the review date.
+- **Reverse technology transfer:** When field data reveals a novel phenomenon, unexpected device behavior, or emergent system property not explained by current research models, document it as a Reverse Technology Transfer finding and initiate a new research investigation within 30 business days.
+- **Field-driven research prioritization:** Provide scientific input to the Sustaining Engineering backlog when field issues have a fundamental science component (e.g., sensor physics degradation mechanism, novel environmental interaction). Response SLA: 10 business days for research assessment. #sustaining-engineering #lifecycle-gap #CR-5
+
+**Deliverables:**
+- Field Insights for Research brief (quarterly, if significant patterns found)
+- Technology Transfer Post-Mortem (6 and 12 months post-launch per transferred technology)
+- Reverse Technology Transfer findings (on-demand, when field phenomena warrant new research)
+- Research assessments for Sustaining Engineering (on-demand, 10 business day SLA)
+
+---
+
 ## 4. Technical Competencies
 
 ### 4.1 Core Experimental Science & Methodology
@@ -493,6 +510,131 @@
 - **Quarterly Research-Security Threat Landscape Review:** Joint session between Researcher and Security Engineer, scheduled for the first Tuesday of each calendar quarter (January, April, July, October). The Researcher presents active research directions; the Security Engineer presents the updated threat landscape. A joint summary document is produced and distributed to the Head of Research and CTO within 5 business days
 - **Ad hoc consultation — Research direction change:** Triggered when the Researcher initiates a new research direction that introduces #connectivity, #data-handling, or #compute-architecture elements not previously reviewed. The Researcher notifies the Security Engineer within 5 business days of the direction change. The Security Engineer acknowledges receipt within 3 business days and provides an initial security scoping assessment within 10 business days for standard complexity, or 20 business days for high complexity (novel wireless modality or unconventional compute architecture)
 - **Security requirements for experimental design:** Updated annually (aligned with the organizational fiscal year security baseline review) or upon significant organizational security baseline change (e.g., adoption of a new cryptographic standard, change in data classification policy), whichever comes first. The Security Engineer pushes updated requirements to the Researcher within 15 business days of the baseline change
+
+---
+
+### 6.10 [[QA_TEST_AUTOMATION_ENGINEER_SKILL|QA & Test Automation Engineer]]
+
+**Researcher Provides:**
+
+- Testable acceptance criteria with each Technology Transfer Pack: quantified, measurable criteria the [[QA_TEST_AUTOMATION_ENGINEER_SKILL|QA & Test Automation Engineer]] can independently verify (e.g., sensor SNR — Signal-to-Noise Ratio — ≥45 dB under specified field conditions)
+- Test vectors and golden-reference outputs for any research algorithm being transferred, enabling independent parity validation
+- Documented known limitations and edge cases in the Technology Transfer Pack, enabling QA to design targeted validation scenarios
+- Scientific context for complex validation scenarios requiring domain knowledge (e.g., environmental conditions for a novel sensor, biological variability expectations)
+
+**Researcher Requires:**
+
+- Testability feedback on research artifacts: assessment of whether a transferred finding includes sufficient acceptance criteria and test vectors for independent validation
+- Validation-criteria gap analysis identifying missing testable specifications in Technology Transfer Packs, so the Researcher can supplement before the transfer is finalized
+- Independent verification of research claims: measured validation results for productized research findings, providing objective field-performance data
+- Field-failure data relevant to research: curated field defect and performance data indicating any gap between research-stage predictions and production reality
+
+**Cadence:**
+
+- **Testability review:** QA reviews each Technology Transfer Pack for testability and returns a gap analysis within 10 business days of receipt #research-interface #testability #HR-1
+- **Technology Transfer validation:** QA validates productized research findings during the Execution stage and provides results to the Researcher within 15 business days of validation completion
+- **Field-failure feedback:** QA includes research-relevant field-defect summaries in the quarterly Field Quality Report
+- **Ad hoc scientific consultation for test design:** QA requests Researcher input with 5 business days' notice; the Researcher responds within 5 business days
+
+---
+
+### 6.11 [[MLOPS_ENGINEER_SKILL|MLOps Engineer]]
+
+**Researcher Provides:**
+
+- Novel ML deployment requirements: any non-standard model artifact format, unconventional conversion step, or unique deployment constraint identified during research
+- Research training-environment specifications: dependencies, framework versions, and hardware requirements for research models that will enter the MLOps (Machine Learning Operations) pipeline
+- Proposed drift-monitoring metrics and thresholds based on research-stage understanding of model behavior
+- Early-stage notification of ML research that may require pipeline changes, within 10 business days of research-direction approval
+
+**Researcher Requires:**
+
+- Pipeline feasibility assessment for research-stage ML: whether a novel architecture, training methodology, or deployment requirement can be accommodated within the existing pipeline, or what changes are needed
+- Model-registry schema impact analysis: whether a research model requires new metadata fields, artifact types, or stage definitions in the MLflow Model Registry
+- Drift-monitoring feasibility: whether proposed drift metrics can be implemented with available fleet telemetry
+- Reproducibility consultation: guidance on structuring research training code and data for a seamless transition to the production pipeline
+
+**Cadence:**
+
+- **Pipeline feasibility assessment:** the [[MLOPS_ENGINEER_SKILL|MLOps Engineer]] responds within 15 business days of receiving novel ML deployment requirements #research-interface #MLOps-feasibility #HR-1
+- **Registry schema impact:** assessed within 10 business days of model-architecture documentation receipt
+- **Early-stage ML research notification:** the Researcher notifies MLOps within 10 business days of direction approval; MLOps provides an initial pipeline-impact scan within 10 business days
+- **Quarterly pipeline alignment:** aligned with the quarterly ML Research-Engineering Sync (second Thursday of February, May, August, November)
+
+---
+
+### 6.12 [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps/Platform Engineer]]
+
+**Researcher Provides:**
+
+- Specialized build/toolchain requirements: non-standard compilers, SDKs (Software Development Kits), or build tools required for research prototypes
+- Research infrastructure needs: compute (GPU/CPU — Graphics/Central Processing Unit), storage, networking, or specialized hardware required for research experiments
+- Fleet-data-access requirements: which production fleet data the Researcher needs for field-data-driven research, with justification and intended use
+- Containerization requirements for reproducible research software environments
+
+**Researcher Requires:**
+
+- Build-environment feasibility: whether a research prototype's build requirements (specialized toolchains, non-standard dependencies, exotic hardware targets) can be supported in the CI/CD (Continuous Integration / Continuous Delivery) pipeline
+- Infrastructure requirements assessment: whether specialized compute, unusual storage, or non-standard networking can be provisioned within the organizational platform
+- Reproducible research-environment support: containerization of research software for reproducible experiments
+- Fleet-data-access infrastructure: secure access to production fleet data for research, within the security-baseline constraints
+
+**Cadence:**
+
+- **Build-environment feasibility:** the [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps/Platform Engineer]] responds within 10 business days of receiving specialized toolchain requirements #research-interface #infrastructure-feasibility #HR-1
+- **Infrastructure needs assessment:** within 10 business days for standard requests, 20 business days for complex/specialized requests
+- **Fleet data access:** DevOps provisions access within 10 business days of an approved request (approval by the [[SECURITY_ENGINEER_SKILL|Security Engineer]] and [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|Product Owner/TPM]])
+- **Annual Research-Infrastructure Planning:** first Tuesday of October, aligned with the Research-Hardware Technology Scan
+
+---
+
+### 6.13 [[BACKEND_CLOUD_ENGINEER_SKILL|Backend/Cloud Engineer]]
+
+**Researcher Provides:**
+
+- Novel data-type specifications: schema, units, expected volume, and expected velocity for any new data type generated by research sensors or algorithms
+- Communication-paradigm proposals: any non-standard device-to-cloud pattern (new QoS — Quality of Service — requirement, topic structure, or message sequencing) identified during research
+- Device-interaction pattern proposals: any new command/control or device-management interaction required by a research prototype
+- Backend-relevant Technology Transfer Packs: research findings with implications for cloud services, APIs, broker topology, or the device-twin model
+
+**Researcher Requires:**
+
+- API and broker impact assessment: whether a novel data type, communication paradigm, or device-interaction pattern can be accommodated within the existing API (Application Programming Interface) and MQTT (Message Queuing Telemetry Transport) broker architecture
+- Device-twin schema impact analysis: whether a finding requires new device-twin fields, desired/reported-state semantics, or provisioning flows
+- Cloud-side feasibility feedback: latency, throughput, and scaling implications of research-proposed data flows or device behaviors
+- Telemetry-schema compatibility assessment for novel data types
+
+**Cadence:**
+
+- **API/broker impact assessment:** the [[BACKEND_CLOUD_ENGINEER_SKILL|Backend/Cloud Engineer]] responds within 15 business days of receiving novel data-type or communication-paradigm specifications #research-interface #cloud-feasibility #HR-1
+- **Device-twin schema impact:** assessed within 10 business days
+- **Technology Transfer:** backend-relevant findings transferred at the quarterly Technology Transfer Review
+- **Ad hoc consultation:** Backend available for research-stage architectural questions with 5 business days' notice
+
+---
+
+### 6.14 [[FRONTEND_DASHBOARD_ENGINEER_SKILL|Frontend/Dashboard Engineer]]
+
+**Researcher Provides:**
+
+- Novel data-type visualization requirements: what the data represents, how it should be visually represented, update frequency, and any domain-specific visualization conventions
+- Real-time streaming requirements: expected data rate, latency tolerance, and any domain-specific rendering constraints for research data displayed in dashboards
+- ML output presentation requirements: for research-stage models, how confidence scores, uncertainty, or novel output formats should be presented to operators
+- Frontend-relevant Technology Transfer Packs: research findings with implications for dashboard visualization, real-time data rendering, or operator interaction patterns
+
+**Researcher Requires:**
+
+- Visualization feasibility assessment: whether a novel data type, real-time streaming requirement, or sensor modality can be effectively visualized with current dashboard tooling (Grafana, Plotly, D3.js, Recharts) or requires custom development
+- UX (User Experience) impact analysis for research-driven features: what new dashboard views, controls, or alerting surfaces field operators would need
+- Real-time streaming compatibility: whether a research data type's volume and velocity can render in a browser-based dashboard without performance degradation
+- Accessibility implications: whether a novel visualization requirement can meet WCAG 2.1 AA (Web Content Accessibility Guidelines 2.1, Level AA) standards
+
+**Cadence:**
+
+- **Visualization feasibility assessment:** the [[FRONTEND_DASHBOARD_ENGINEER_SKILL|Frontend/Dashboard Engineer]] responds within 15 business days of receiving novel data-type visualization requirements #research-interface #visualization-feasibility #HR-1
+- **Real-time streaming compatibility:** assessed within 10 business days
+- **Technology Transfer:** frontend-relevant findings transferred at the quarterly Technology Transfer Review
+- **Ad hoc consultation:** Frontend available for research-stage UX/visualization questions with 5 business days' notice
 
 ---
 
