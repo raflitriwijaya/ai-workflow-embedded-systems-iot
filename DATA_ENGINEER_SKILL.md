@@ -316,6 +316,12 @@ When the Edge AI/ML Engineer discovers data quality issues during training, the 
 - **Requires:** FAIR-compliant experimental datasets — raw sensor data, processed/cleaned data, labels, and metadata (instrument calibration, environmental conditions, collection protocol) — delivered at three points: experiment completion (within 10 business days of final data collection), manuscript submission (concurrent with journal submission), and Technology Transfer (as part of the Technology Transfer Pack); a datasheet per dataset following the organizational datasheet standard (intended use, collection methodology, known biases, limitations); data schema documentation for all experimental data structures; and an explicit research-to-training data flag identifying ML training candidates with guidance on features, labels, and domain-specific considerations.
 - **Cadence:** Experimental Dataset Archival — Researcher delivers at experiment completion, manuscript submission, and Technology Transfer; Data Engineer acknowledges within 2 business days, completes schema validation and quality checks within 10 business days, and delivers the Data Ingestion Report within 15 business days. Research-to-Training Data Pipeline — Data Engineer versions and makes the dataset available within 10 business days of the flag; Researcher provides scientific context for domain-specific features within 5 business days. Quarterly Research Data Review — third Tuesday of February, May, August, November, 30 minutes. Annual FAIR-compliance / Research Data Standards review — first Tuesday of September. Urgent data access — Data Engineer provides archived data within 1 business day. #research-interface #data-archival #HR-1
 
+### 6.11 [[BUSINESS_CONSULTANT_SKILL|Business Consultant]]
+
+- **Provides:** Cloud data storage and processing cost estimates per device per month at target fleet scale; data-pipeline architecture options with associated operational cost profiles; and data-privacy compliance implementation cost estimates.
+- **Requires:** Data-product requirements derived from the monetization strategy (what data must be captured, aggregated, and exposed); data subscription tier definitions (which analytics capabilities sit in free vs. paid tiers); and business constraints on data retention and privacy-compliance cost.
+- **Cadence:** At data-monetization-strategy definition; quarterly cloud cost review. #business-interface #HR-2
+
 ---
 
 ## 7. Decision Authority & Governance

@@ -298,6 +298,12 @@ After sensor characterization ([[HARDWARE_ENGINEER_SKILL|HW]] §3.4), the follow
 - **Requires:** PoC hardware designs — schematics, BOM, layout files, component characterization data, assembly notes, and known limitations — delivered ≥4 weeks before scheduled Hardware Engineer evaluation; component characterization data (datasheets, measured voltage/current/noise/thermal performance, application notes) for novel components; novel sensor assembly, bonding, or packaging guidance for research-grade prototypes; hardware-related Technology Transfer Packs (new sensor, material, form factor, or power source) ≥3 weeks before the quarterly Technology Transfer Review; and early-stage notification within 5 business days of a research direction that may require custom hardware.
 - **Cadence:** PoC Hardware Design Handoff — ≥4 weeks before scheduled evaluation; Hardware feasibility assessment within 15 business days. Novel Component Evaluation — Hardware Engineer responds within 10 business days of datasheet/characterization-data submission. Joint Prototype Review — bi-weekly 30-minute sync during active hardware prototyping (typically 4–12 weeks). Component characterization data delivery — within 5 business days of measurement completion; Hardware Engineer acknowledges and flags data gaps within 5 business days. Annual Research-Hardware Technology Scan — first Tuesday of October. #research-interface #hardware-feasibility #HR-1
 
+### 6.9 [[BUSINESS_CONSULTANT_SKILL|Business Consultant]]
+
+- **Provides:** Detailed BOM (Bill of Materials) with component costs and vendor sources; NRE (Non-Recurring Engineering) cost estimates for tooling, test fixtures, and mold tooling; lead-time estimates for prototype and production hardware; and certification-testing cost and schedule estimates.
+- **Requires:** Target BOM cost ceiling per market segment and pricing strategy; second-sourcing requirements driven by supply-chain-risk business policy; and volume forecasts for procurement planning.
+- **Cadence:** At product feasibility stage; at design freeze; at manufacturing ramp-up decision. #business-interface #HR-2
+
 ---
 
 ## 7. Decision Authority & Governance

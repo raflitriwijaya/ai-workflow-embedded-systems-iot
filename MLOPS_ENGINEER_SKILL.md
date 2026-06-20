@@ -275,6 +275,12 @@
 - **Requires:** Novel ML deployment requirements (non-standard model artifact formats, unconventional conversion steps, unique deployment constraints) identified during research; research training-environment specifications (dependencies, framework versions, hardware requirements) for models that will enter the pipeline; proposed drift-monitoring metrics and thresholds based on research-stage understanding of model behavior; and early-stage notification of ML research that may require pipeline changes within 10 business days of research-direction approval.
 - **Cadence:** Pipeline feasibility assessment — MLOps responds within 15 business days of receiving novel ML deployment requirements. Registry schema impact — assessed within 10 business days of model-architecture documentation receipt. Early-stage ML research notification — Researcher notifies within 10 business days of direction approval; MLOps provides an initial pipeline-impact scan within 10 business days. Quarterly pipeline alignment — aligned with the quarterly ML Research-Engineering Sync (second Thursday of February, May, August, November). #research-interface #MLOps-feasibility #HR-1
 
+### 6.11 [[BUSINESS_CONSULTANT_SKILL|Business Consultant]]
+
+- **Provides:** Cloud infrastructure cost estimates for the MLOps (Machine Learning Operations) pipeline at target fleet scale; model-deployment and retraining operational cost projections; and infrastructure-scaling assumptions for financial-model inputs.
+- **Requires:** Fleet-scale deployment requirements that determine MLOps infrastructure investment; the business case for model-retraining cadence (data-freshness value vs. cloud-compute cost); and operational cost budget constraints for cloud-based MLOps pipelines.
+- **Cadence:** At scaling stage; quarterly operational cost review. #business-interface #HR-2
+
 ---
 
 ## 7. Decision Authority & Governance

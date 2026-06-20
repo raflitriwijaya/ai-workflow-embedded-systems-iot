@@ -292,6 +292,12 @@
 - **Requires:** Specialized build/toolchain requirements (non-standard compilers, SDKs — Software Development Kits, build tools) for research prototypes; research infrastructure needs (GPU/CPU compute, storage, networking, or specialized hardware) for experiments; fleet-data-access requirements with justification and intended use; and containerization requirements for research software.
 - **Cadence:** Build-environment feasibility — DevOps responds within 10 business days of receiving specialized toolchain requirements. Infrastructure needs assessment — within 10 business days for standard requests, 20 business days for complex/specialized requests. Fleet data access — DevOps provisions access within 10 business days of an approved request (approval by Security and PO/TPM). Annual Research-Infrastructure Planning — first Tuesday of October, aligned with the Research-Hardware Technology Scan. #research-interface #infrastructure-feasibility #HR-1
 
+### 6.10 [[BUSINESS_CONSULTANT_SKILL|Business Consultant]]
+
+- **Provides:** Platform infrastructure operational cost estimates; and reliability and uptime metrics that affect customer SLA (Service-Level Agreement) commitments and contract terms.
+- **Requires:** Business SLA requirements that drive infrastructure-reliability investment; and cost-budget constraints for CI/CD (Continuous Integration / Continuous Delivery) and platform tooling.
+- **Cadence:** At GTM (Go-to-Market) planning; quarterly operational review. #business-interface #HR-2
+
 ---
 
 ## 7. Decision Authority & Governance

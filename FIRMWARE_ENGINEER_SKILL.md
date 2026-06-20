@@ -318,6 +318,12 @@ Any proposed change to the device telemetry schema (fields, types, units, encodi
 - **Requires:** Algorithm specification packages — mathematical description, pseudocode, Python reference implementation, test vectors, and expected resource requirements — delivered ≥4 weeks before scheduled implementation start; research-grade PoC firmware (code repository, build instructions, known limitations) with documented algorithm logic; scientific rationale for algorithm design choices (e.g., filter architecture justified by sensor physics); preprocessing specifications with Python golden reference and test vectors for any signal-processing or feature-extraction step; and early-stage notification within 5 business days of research that may stress RTOS capabilities, memory budgets, or real-time deadlines.
 - **Cadence:** Algorithm Specification Handoff — ≥4 weeks before scheduled implementation start; Firmware feasibility assessment within 15 business days. Joint Algorithm-Firmware Review — bi-weekly 30-minute sync during active implementation of research-derived algorithms. Fixed-Point Conversion Support — Researcher provides guidance within 10 business days of request; Firmware Engineer provides implementation results for validation within 10 business days. Research-Grade Firmware Transfer — Firmware Engineer provides reusability assessment within 10 business days. Annual Research-Firmware Technology Scan — first Tuesday of November. #research-interface #firmware-feasibility #HR-1
 
+### 6.10 [[BUSINESS_CONSULTANT_SKILL|Business Consultant]]
+
+- **Provides:** Firmware development timeline estimates for the business case and GTM (Go-to-Market) planning; OTA (Over-the-Air) update infrastructure operational cost inputs; and RTOS (Real-Time Operating System) and third-party library licensing cost information.
+- **Requires:** Business prioritization of firmware features (e.g., OTA update capability prioritized for subscription-model viability); market-driven connectivity requirements (protocol-selection rationale); and RTOS licensing constraint inputs (open-source vs. commercial RTOS business risk).
+- **Cadence:** At product feasibility and GTM planning stages; on-demand for roadmap prioritization. #business-interface #HR-2
+
 ---
 
 ## 7. Decision Authority & Governance
