@@ -102,11 +102,14 @@ cssclass: skill-card
 - **Device twin synchronization monitoring:** Monitor device twin desired-vs-reported state drift across the fleet continuously. If >1% of devices show a state mismatch for >1 hour (24 hours for staged rollout), investigate within 1 business day. This is the primary indicator of OTA (Over-the-Air) campaign health from the backend perspective. #ota-monitoring
 - **Backend-driven field issue response:** Triage backend-related field issues (API errors, authentication failures, command delivery failures) reported by [[QA_TEST_AUTOMATION_ENGINEER_SKILL|QA]], [[FRONTEND_DASHBOARD_ENGINEER_SKILL|Frontend]], or field operators. Critical (service down, auth broken): response within 1 business hour. High: response within 4 business hours. Medium: next business day. #field-defects
 - **Post-launch API evolution:** Implement backward-compatible API changes required by field-driven feature requests. Plan and communicate breaking API changes (requiring an ADR — Architecture Decision Record) at least one release cycle in advance. Support the Sustaining Engineering backlog with backend change estimates within 5 business days. #sustaining-engineering #lifecycle-gap #CR-5
+- **OTA chain-level timeout monitoring:** Own the end-to-end OTA (Over-the-Air) transaction time across the full OTA chain ([[MLOPS_ENGINEER_SKILL|MLOps]] model artifact registration → [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps]] artifact distribution → [[FIRMWARE_ENGINEER_SKILL|Firmware]] download/apply → Backend ACTIVE status). Monitor the wall-clock time from MLOps model artifact registration to Firmware ACTIVE status for every OTA campaign. Alert if: (a) any device exceeds the end-to-end timeout defined in the OTA Model Artifact Contract (24 hours for staged rollout, 1 hour for urgent hotfix) without reaching ACTIVE or ROLLED_BACK, (b) any stage fails to complete within its allocated window, or (c) the campaign-level completion rate stalls (no progress for >2 hours during active rollout). Chain-level timeout alerts notify [[MLOPS_ENGINEER_SKILL|MLOps]], [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps]], and [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|PO/TPM]] within 5 minutes. Publish an OTA Chain Performance Report within 1 business day of campaign completion including: per-hop latency distribution, chain-level timeout incidents, and root causes of any timeout breach. #ota-chain-timeout #F1
+- **Incident response participation:** Respond to [[INCIDENT_COMMANDER|Incident Commander]] direction during declared cross-layer incidents within the role's defined response SLA. Provide role-specific expertise to the war room and document any temporary deviations from standard process for retroactive ADR formalization within 5 business days of incident closure. Participate in the annual cross-layer incident drill. #cross-layer-incident #incident-commander #emergency-tempo
 
 **Deliverables:**
 - Monthly Service Health Report (SLO compliance, incidents, latency trends)
 - MQTT Broker Health Dashboard (continuous)
 - Device Twin Synchronization Report (per OTA campaign)
+- OTA Chain Performance Report (per OTA campaign, within 1 business day of completion)
 - API change impact assessments (on-demand)
 
 ---
@@ -484,6 +487,7 @@ Constraints: honor the schema; resilient to serving failures (timeouts, retries,
 - **Telemetry integrity:** Near-zero ingest loss; correct routing; schema conformance at the boundary.
 - **Security:** 100% of devices on mTLS and users authenticated; no critical API vulnerabilities; certificates rotated.
 - **Twin consistency:** Desired/reported reconciliation correct across the fleet.
+- **OTA chain-level timeout compliance:** ≥99% of OTA campaigns complete within the end-to-end timeout (24 hours for staged rollout, 1 hour for urgent hotfix). Zero devices exceed the timeout without triggering an alert. Measured per campaign; reported in the OTA Chain Performance Report. #ota-chain-timeout #F1
 
 **Process & team metrics:**
 

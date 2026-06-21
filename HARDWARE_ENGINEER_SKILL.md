@@ -97,6 +97,7 @@ cssclass: skill-card
 - **Field reliability trend analysis:** Monitor field failure rates (RMA rate per 1,000 units per month) against the reliability target. If the rate exceeds the target threshold for two consecutive months, initiate a reliability investigation within 10 business days. Publish a quarterly Field Reliability Report. #field-reliability
 - **Manufacturing yield monitoring:** Review manufacturing yield data (first-pass yield, test fallout) monthly. If yield drops below the target threshold, investigate within 5 business days and coordinate with the manufacturer on corrective action.
 - **Post-launch hardware revision support:** Provide hardware engineering input to the Sustaining Engineering backlog (maintained by [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|PO/TPM]]). Estimate hardware revision effort, cost, and lead time for field-driven hardware changes. Response SLA: 5 business days for effort estimates, 15 business days for a full revision feasibility assessment. #sustaining-engineering #lifecycle-gap #CR-5
+- **Incident response participation:** Respond to [[INCIDENT_COMMANDER|Incident Commander]] direction during declared cross-layer incidents within the role's defined response SLA. Provide role-specific expertise to the war room and document any temporary deviations from standard process for retroactive ADR formalization within 5 business days of incident closure. Participate in the annual cross-layer incident drill. #cross-layer-incident #incident-commander #emergency-tempo
 
 **Deliverables:**
 - Monthly RMA Analysis Report

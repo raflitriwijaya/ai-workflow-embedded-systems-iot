@@ -92,6 +92,19 @@ cssclass: skill-card
 - **Activities:** Freeze the model version; finalize the model card (intended use, metrics, data, limitations); register the model with MLOps; define drift-monitoring metrics and retraining triggers; confirm OTA (Over-the-Air) model-delivery readiness; document a reproducible training recipe.
 - **Deliverables:** Released model artifact and version, final model card, drift-monitoring specification, reproducible training recipe, and a model-registry entry.
 
+### 3.6 Post-Launch/Market
+
+**Activities:**
+- **Model drift monitoring:** Monitor deployed model performance metrics (inference accuracy, confidence distribution, prediction drift indicators) against the drift thresholds defined in the drift-monitoring specification. If any metric exceeds its threshold for >24 hours, initiate a retraining investigation within 3 business days. Coordinate with [[DATA_ENGINEER_SKILL|Data Engineer]] for field dataset refresh and [[MLOPS_ENGINEER_SKILL|MLOps]] for pipeline execution. #post-launch #field-reliability
+- **Field model performance analysis:** Review inference accuracy and false-positive/false-negative rates from field telemetry quarterly. If field performance diverges from validation benchmarks, investigate root cause (data distribution shift, hardware variation, environmental change) and produce a Model Performance Analysis Report within 15 business days. #field-defects
+- **Sustaining model maintenance:** Provide model engineering support for Sustaining Engineering backlog items requiring model updates (retraining on new data, architecture tweaks, performance regression fixes). Produce updated model artifacts and revised model cards. Response SLA: 10 business days for scope assessment, delivery per agreed sprint. #sustaining-engineering #lifecycle-gap #CR-5
+- **Incident response participation:** Respond to [[INCIDENT_COMMANDER|Incident Commander]] direction during declared cross-layer incidents within the role's defined response SLA. Provide role-specific expertise to the war room and document any temporary deviations from standard process for retroactive ADR formalization within 5 business days of incident closure. Participate in the annual cross-layer incident drill. #cross-layer-incident #incident-commander #emergency-tempo
+
+**Deliverables:**
+- Model drift alerts (continuous, automated)
+- Quarterly Model Performance Analysis Report
+- Updated model artifacts and model cards (per Sustaining Engineering cycle)
+
 ---
 
 ## 4. Technical Competencies

@@ -1,0 +1,741 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_INFLUXDB",
+      "label": "InfluxDB",
+      "description": "InfluxDB data source for engineering metrics",
+      "type": "datasource",
+      "pluginId": "influxdb",
+      "pluginName": "InfluxDB"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "9.0.0"
+    },
+    {
+      "type": "datasource",
+      "id": "influxdb",
+      "name": "InfluxDB",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "gauge",
+      "name": "Gauge",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "barchart",
+      "name": "Bar chart",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Engineering Process Health Dashboard — powered by the Engineering Metrics Pipeline. Tracks ADR governance, contract clarity, shift-left quality, and process improvement KPIs.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "ADR Governance",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "description": "ADR resolution time vs tier SLA target. Green = within SLA, Yellow = up to 1.5× SLA, Red = exceeded.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 1.5 }
+            ]
+          },
+          "unit": "none",
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
+      "id": 1,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "sizing": "auto",
+        "text": {}
+      },
+      "pluginVersion": "9.5.0",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"${influxdb_bucket_agg}\")\n  |> range(start: $__timeFrom(), stop: $__timeTo())\n  |> filter(fn: (r) => r._measurement == \"adr_metrics\")\n  |> filter(fn: (r) => r._field == \"turnaround_hours\")\n  |> group(columns: [\"tier\"])\n  |> mean(column: \"_value\")\n  |> map(fn: (r) => ({r with\n       _value: if r.tier == \"1\" then r._value / 4.0\n               else if r.tier == \"2\" then r._value / 48.0\n               else if r.tier == \"3\" then r._value / 120.0\n               else r._value / 240.0\n   }))",
+          "refId": "A"
+        }
+      ],
+      "title": "ADR Turnaround vs SLA Target (ratio — 1.0 = exactly on target)",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": { "mode": "rows", "valueLabel": "tier" }
+        }
+      ],
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "description": "% of ADRs resolved within their tier SLA in the selected time window. Target: ≥85%.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 70 },
+              { "color": "green", "value": 85 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 1 },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.5.0",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"${influxdb_bucket_agg}\")\n  |> range(start: $__timeFrom(), stop: $__timeTo())\n  |> filter(fn: (r) => r._measurement == \"process_health_kpis\")\n  |> filter(fn: (r) => r.metric_category == \"adr_governance\")\n  |> filter(fn: (r) => r._field == \"adr_sla_compliance_overall\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "ADR SLA Compliance — Overall (%)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
+      "id": 101,
+      "title": "Governance — Contract Clarity",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "description": "Contract Clarity Index = CCRs escalated to ADRs ÷ total CCRs. Lower is better. Target ≤20%.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.15 },
+              { "color": "red", "value": 0.20 }
+            ]
+          },
+          "unit": "percentunit",
+          "min": 0,
+          "max": 0.5,
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 10 },
+      "id": 3,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "9.5.0",
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"${influxdb_bucket_agg}\")\n  |> range(start: $__timeFrom(), stop: $__timeTo())\n  |> filter(fn: (r) => r._measurement == \"process_health_kpis\")\n  |> filter(fn: (r) => r.metric_category == \"governance\")\n  |> filter(fn: (r) => r._field == \"contract_clarity_index\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Contract Clarity Index (CCR Escalation Rate) — Target ≤20%",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "description": "Contract clarity index trend over time. Upward trend signals increasing contract ambiguity.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Escalation rate",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line+area" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "transparent", "value": null },
+              { "color": "red", "value": 0.20 }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 10 },
+      "id": 4,
+      "options": {
+        "legend": { "calcs": ["mean", "last"], "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"${influxdb_bucket_agg}\")\n  |> range(start: $__timeFrom(), stop: $__timeTo())\n  |> filter(fn: (r) => r._measurement == \"process_health_kpis\")\n  |> filter(fn: (r) => r.metric_category == \"governance\")\n  |> filter(fn: (r) => r._field == \"contract_clarity_index\")\n  |> aggregateWindow(every: $__interval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "Contract Clarity Index Trend",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 },
+      "id": 102,
+      "title": "Shift-Left Quality — Defects",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "description": "Distribution of defect discovery by stage. Target: ≥60% Development, ≤10% Production.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "% of defects",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "lineWidth": 1
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Production" },
+            "properties": [
+              { "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "red", "value": 10 }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Development" },
+            "properties": [
+              { "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 19 },
+      "id": 5,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": { "calcs": ["mean"], "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "orientation": "auto",
+        "showValue": "always",
+        "stacking": "normal",
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 200
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"${influxdb_bucket_raw}\")\n  |> range(start: $__timeFrom(), stop: $__timeTo())\n  |> filter(fn: (r) => r._measurement == \"jira_metrics\")\n  |> filter(fn: (r) => r.metric_type == \"defect\")\n  |> filter(fn: (r) => r._field == \"defect_count\")\n  |> group(columns: [\"discovery_stage\"])\n  |> sum(column: \"_value\")",
+          "refId": "A"
+        }
+      ],
+      "title": "Defect Discovery Stage Distribution",
+      "type": "barchart"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "description": "Shift-left ratio trend. Target ≥60% defects found in Development stage.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "green", "value": 60 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 19 },
+      "id": 6,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "vertical",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"${influxdb_bucket_agg}\")\n  |> range(start: $__timeFrom(), stop: $__timeTo())\n  |> filter(fn: (r) => r._measurement == \"process_health_kpis\")\n  |> filter(fn: (r) => r.metric_category == \"defect_shift_left\")\n  |> filter(fn: (r) => r._field == \"shift_left_ratio\" or r._field == \"production_defect_rate\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Shift-Left Ratio (Dev %) and Production Defect Rate (%)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 28 },
+      "id": 103,
+      "title": "Shift-Left Quality — Security Findings",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "description": "Security finding stage distribution. Target: ≥70% at Design or Implementation Review, ≤5% Post-Release.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "% of findings",
+            "fillOpacity": 80,
+            "lineWidth": 1
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Post-Release" },
+            "properties": [
+              { "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Design Review" },
+            "properties": [
+              { "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Implementation Review" },
+            "properties": [
+              { "id": "color", "value": { "fixedColor": "light-green", "mode": "fixed" } }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 29 },
+      "id": 7,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "orientation": "auto",
+        "showValue": "always",
+        "stacking": "normal",
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"${influxdb_bucket_raw}\")\n  |> range(start: $__timeFrom(), stop: $__timeTo())\n  |> filter(fn: (r) => r._measurement == \"cicd_metrics\" or r._measurement == \"security_findings\")\n  |> filter(fn: (r) => r._field == \"finding_count\")\n  |> group(columns: [\"discovery_stage\"])\n  |> sum(column: \"_value\")",
+          "refId": "A"
+        }
+      ],
+      "title": "Security Finding Stage Distribution",
+      "type": "barchart"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "description": "Security shift-left ratio (Design + Implementation Review combined) vs Post-Release rate.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 60 },
+              { "color": "green", "value": 70 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "security_post_release_rate" },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "yellow", "value": 3 },
+                    { "color": "red", "value": 5 }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 29 },
+      "id": 8,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "vertical",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"${influxdb_bucket_agg}\")\n  |> range(start: $__timeFrom(), stop: $__timeTo())\n  |> filter(fn: (r) => r._measurement == \"process_health_kpis\")\n  |> filter(fn: (r) => r.metric_category == \"security_shift_left\")\n  |> filter(fn: (r) => r._field == \"security_shift_left_ratio\" or r._field == \"security_post_release_rate\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Security Shift-Left (≥70% target) and Post-Release Rate (≤5% target)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 38 },
+      "id": 104,
+      "title": "Process Improvement",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "description": "% of process improvement initiatives completed by their target date. Target ≥80%.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 65 },
+              { "color": "green", "value": 80 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 39 },
+      "id": 9,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"${influxdb_bucket_agg}\")\n  |> range(start: $__timeFrom(), stop: $__timeTo())\n  |> filter(fn: (r) => r._measurement == \"process_health_kpis\")\n  |> filter(fn: (r) => r.metric_category == \"process_improvement\")\n  |> filter(fn: (r) => r._field == \"initiative_completion_rate\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Process Improvement Initiative Completion Rate — Target ≥80%",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "description": "Initiative completion rate over time with 80% target reference line.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "spanNulls": false,
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "transparent", "value": null },
+              { "color": "red", "value": 0 },
+              { "color": "green", "value": 80 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 39 },
+      "id": 10,
+      "options": {
+        "legend": { "calcs": ["mean", "last"], "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"${influxdb_bucket_agg}\")\n  |> range(start: $__timeFrom(), stop: $__timeTo())\n  |> filter(fn: (r) => r._measurement == \"process_health_kpis\")\n  |> filter(fn: (r) => r.metric_category == \"process_improvement\")\n  |> filter(fn: (r) => r._field == \"initiative_completion_rate\")\n  |> aggregateWindow(every: $__interval, fn: mean, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "Initiative Completion Rate Trend",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 47 },
+      "id": 105,
+      "title": "Cross-Role Process KPI Trends",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+      "description": "All process KPIs over time. Use the metric_category variable to filter. Time range is selectable.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 5,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "showPoints": "auto",
+            "spanNulls": false
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byRegexp", "options": ".*_rate$|.*_ratio$|.*_index$|.*_pct$" },
+            "properties": [{ "id": "unit", "value": "percent" }]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": ".*_hours$" },
+            "properties": [{ "id": "unit", "value": "h" }]
+          }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 48 },
+      "id": 11,
+      "options": {
+        "legend": {
+          "calcs": ["mean", "last", "min", "max"],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "${DS_INFLUXDB}" },
+          "query": "from(bucket: \"${influxdb_bucket_agg}\")\n  |> range(start: $__timeFrom(), stop: $__timeTo())\n  |> filter(fn: (r) => r._measurement == \"process_health_kpis\")\n  |> filter(fn: (r) => if \"${metric_category}\" == \"all\" then true else r.metric_category == \"${metric_category}\")\n  |> aggregateWindow(every: $__interval, fn: mean, createEmpty: false)\n  |> yield(name: \"kpis\")",
+          "refId": "A"
+        }
+      ],
+      "title": "Cross-Role Process KPI Trends (by metric_category: ${metric_category})",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "5m",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [
+    "engineering-metrics-pipeline",
+    "process-health",
+    "build"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 0,
+        "includeAll": false,
+        "label": "InfluxDB Bucket (Raw)",
+        "name": "influxdb_bucket_raw",
+        "options": [],
+        "query": "engineering_metrics_raw",
+        "refresh": 0,
+        "type": "textbox"
+      },
+      {
+        "current": {},
+        "hide": 0,
+        "includeAll": false,
+        "label": "InfluxDB Bucket (Aggregated)",
+        "name": "influxdb_bucket_agg",
+        "options": [],
+        "query": "engineering_metrics_agg",
+        "refresh": 0,
+        "type": "textbox"
+      },
+      {
+        "current": { "selected": true, "text": "all", "value": "all" },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Metric Category",
+        "multi": false,
+        "name": "metric_category",
+        "options": [
+          { "selected": true, "text": "All", "value": "all" },
+          { "selected": false, "text": "ADR Governance", "value": "adr_governance" },
+          { "selected": false, "text": "Governance", "value": "governance" },
+          { "selected": false, "text": "Defect Shift-Left", "value": "defect_shift_left" },
+          { "selected": false, "text": "Security Shift-Left", "value": "security_shift_left" },
+          { "selected": false, "text": "Process Improvement", "value": "process_improvement" }
+        ],
+        "query": "all,adr_governance,governance,defect_shift_left,security_shift_left,process_improvement",
+        "refresh": 0,
+        "type": "custom"
+      }
+    ]
+  },
+  "time": { "from": "now-30d", "to": "now" },
+  "timepicker": {
+    "refresh_intervals": ["5m", "15m", "1h", "6h", "1d"],
+    "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "7d", "30d", "90d"]
+  },
+  "timezone": "browser",
+  "title": "Engineering Process Health Dashboard",
+  "uid": "eng-process-health-v1",
+  "version": 1,
+  "weekStart": "monday"
+}

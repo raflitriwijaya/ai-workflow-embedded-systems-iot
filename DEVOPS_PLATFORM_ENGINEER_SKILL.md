@@ -103,6 +103,7 @@ cssclass: skill-card
 - **CI/CD pipeline reliability:** Monitor CI/CD (Continuous Integration / Continuous Deployment) pipeline success rates, build times, and test suite execution times weekly. If the pipeline success rate drops below 95% or build times increase >50% month-over-month, investigate within 3 business days. #field-reliability
 - **Security patch deployment:** When the [[SECURITY_ENGINEER_SKILL|Security Engineer]] issues a platform-level security advisory (infrastructure vulnerability, container image CVE — Common Vulnerabilities and Exposures, dependency vulnerability), deploy the remediation within the SLA defined by the Security Engineer.
 - **Field-driven infrastructure changes:** Provide platform engineering support for Sustaining Engineering requests requiring infrastructure changes (new monitoring, new deployment targets, scaling adjustments). Response SLA: 3 business days for standard changes, 10 business days for complex changes. #sustaining-engineering #lifecycle-gap #CR-5
+- **Incident response participation:** Respond to [[INCIDENT_COMMANDER|Incident Commander]] direction during declared cross-layer incidents within the role's defined response SLA. Provide role-specific expertise to the war room and document any temporary deviations from standard process for retroactive ADR formalization within 5 business days of incident closure. Participate in the annual cross-layer incident drill. #cross-layer-incident #incident-commander #emergency-tempo
 
 **Deliverables:**
 - Monthly Infrastructure Health & Cost Report

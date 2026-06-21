@@ -88,6 +88,19 @@ cssclass: skill-card
 - **Activities:** Enable production deployment with safety gates; finalize monitoring/alerting and SLOs (Service-Level Objectives); document runbooks (deploy, rollback, incident); confirm the audit trail (model → data → code lineage); enable the automated retraining loop; obtain governance sign-off.
 - **Deliverables:** Production pipeline with gates, monitoring/alerting and SLOs, runbooks, an audit/lineage report, the retraining loop, and governance sign-off.
 
+### 3.6 Post-Launch/Market
+
+**Activities:**
+- **Production pipeline health monitoring:** Monitor training, validation, and deployment pipeline health (job success rates, execution times, data freshness, model artifact registration latency) continuously. If any pipeline stage fails or stalls for >2 hours, investigate within 30 minutes. Publish a monthly MLOps Pipeline Health Report. #post-launch #field-reliability
+- **Retraining loop execution:** Execute field-driven model retraining campaigns when triggered by [[EDGE_AI_ML_ENGINEER_SKILL|Edge AI/ML Engineer]] drift investigations or [[DATA_ENGINEER_SKILL|Data Engineer]] dataset refresh deliveries. Maintain full lineage and audit trail for every retraining run. Deliver retrained model artifacts to the [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]]-approved registry within the agreed sprint cycle. #lifecycle-gap #CR-5
+- **OTA model artifact distribution:** Register model artifacts for OTA distribution in coordination with [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps]] (artifact pipeline) and [[BACKEND_CLOUD_ENGINEER_SKILL|Backend]] (OTA chain timeout monitoring). Ensure artifacts are signed, versioned, and registered within the OTA Model Artifact Contract timelines. #ota-monitoring #sustaining-engineering
+- **Incident response participation:** Respond to [[INCIDENT_COMMANDER|Incident Commander]] direction during declared cross-layer incidents within the role's defined response SLA. Provide role-specific expertise to the war room and document any temporary deviations from standard process for retroactive ADR formalization within 5 business days of incident closure. Participate in the annual cross-layer incident drill. #cross-layer-incident #incident-commander #emergency-tempo
+
+**Deliverables:**
+- Monthly MLOps Pipeline Health Report
+- Retraining audit/lineage report (per retraining campaign)
+- Model artifact registration records (per OTA campaign)
+
 ---
 
 ## 4. Technical Competencies

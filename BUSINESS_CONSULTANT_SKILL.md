@@ -117,6 +117,19 @@ cssclass: skill-card
 - Recommend strategic pivots, partnerships, or acquisitions based on portfolio analysis
 - Produce Portfolio Performance Report for executive leadership and board
 
+### 3.6 Post-Launch/Market
+
+**Activities:**
+- **Commercial performance monitoring:** Monitor product-level commercial KPIs (revenue per device, customer acquisition cost, churn rate, NPS — Net Promoter Score) monthly against the business case. If any KPI trends negatively for two consecutive months, initiate a commercial performance review with the [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|PO/TPM]] within 10 business days. Publish a quarterly Business Performance Report. #post-launch
+- **Market and competitive intelligence:** Monitor competitive landscape quarterly for new entrants, feature releases, and pricing changes that affect product positioning. Provide competitive intelligence briefings to the [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|PO/TPM]] and engineering leads to inform the Sustaining Engineering backlog and roadmap prioritization. #field-reliability
+- **Business case updates for sustaining investment:** Provide updated ROI analysis and business cases for Sustaining Engineering investments. Estimate commercial impact of field-reported issues (customer churn risk, support cost per incident, warranty cost exposure) to inform backlog prioritization. Response SLA: 5 business days for business impact assessment. #sustaining-engineering #lifecycle-gap #CR-5
+- **Incident response participation:** Respond to [[INCIDENT_COMMANDER|Incident Commander]] direction during declared cross-layer incidents within the role's defined response SLA. Provide role-specific expertise to the war room — including commercial impact assessment of the incident (customer exposure, SLA breach risk, regulatory reporting obligations) — and document any temporary deviations from standard process for retroactive ADR formalization within 5 business days of incident closure. Participate in the annual cross-layer incident drill. #cross-layer-incident #incident-commander #emergency-tempo
+
+**Deliverables:**
+- Quarterly Business Performance Report
+- Competitive Intelligence Brief (quarterly)
+- Business impact assessments (on-demand per Sustaining Engineering backlog)
+
 ---
 
 ## 4. Technical Competencies
