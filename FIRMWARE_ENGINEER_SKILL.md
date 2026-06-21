@@ -1,3 +1,14 @@
+---
+title: "Firmware Engineer — Skill Card"
+date: 2026-06-20
+status: final
+tags:
+  - skill-card
+  - embedded-iot
+  - firmware
+cssclass: skill-card
+---
+
 # FIRMWARE_ENGINEER_SKILL.md
 
 ## 1. Role Identity
@@ -61,11 +72,14 @@
 
 - **Activities:** Decompose firmware into modules against the interface contracts; define the HAL/driver API surface; design the RTOS task/priority map; draft the memory map and linker layout within the Flash/SRAM budget; plan the A/B OTA partition layout with the bootloader; plan the device-side telemetry schema implementation (Protocol Buffers / CBOR — Concise Binary Object Representation); estimate per-task stack sizes and the tensor-arena size.
 - **Deliverables:** Firmware module breakdown, task/priority plan, draft memory map, unit-test plan, and effort estimates.
+- **Security Design Review Report:** Received from [[SECURITY_ENGINEER_SKILL|Security Engineer]] before the Planning→Development transition. Outcome must be APPROVED or CONDITIONAL. CONDITIONAL requirements are added to the Security Implementation Readiness checklist (§3.3). BLOCKED means Development must not start until re-reviewed and cleared by the Security Engineer. #shift-left #security-design-review #MR-10
 
 ### 3.3 Development
 
 - **Activities:** Implement peripheral/sensor drivers (I2C/SPI/UART) and sensor fusion; build RTOS tasks and IPC; integrate the TFLite Micro inference loop with ring-buffer preprocessing; implement MQTT/CoAP with TLS/mTLS (mutual TLS); implement the OTA client and rollback; implement low-power modes; write unit tests (Unity/Ceedling) and run static analysis (cppcheck, MISRA C); debug on target over JTAG (Joint Test Action Group) / SWD (Serial Wire Debug).
-- **Security Implementation Readiness Gate:** Before exiting Development, the Firmware Security Champion completes the Security Implementation Readiness self-assessment checklist and submits it to the [[SECURITY_ENGINEER_SKILL|Security Engineer]] (or Deputy). The checklist covers: (a) secure boot chain implementation verified against the security baseline (§8), (b) firmware image signing and verification functional, (c) mTLS (mutual Transport Layer Security) implementation verified with test certificates, (d) secure key storage implementation confirmed (no hardcoded keys in source), (e) debug port lockdown implemented per Hardware/Security specification (JTAG — Joint Test Action Group / SWD — Serial Wire Debug), (f) OTA (Over-the-Air) rollback path tested with a corrupted-image scenario, (g) static analysis (MISRA C:2012) and SAST (Static Application Security Testing) scans passing with zero Critical/High findings, (h) all third-party library licenses reviewed for security implications, (i) secure error handling verified (no sensitive information in error messages, no crash-dump exposure), (j) memory safety checks confirmed for all security-relevant code paths. Gate exit criteria: all checklist items marked CONFIRMED by the Security Champion; any UNCERTAIN item flagged to the Security Engineer for review within 5 business days. This gate runs in parallel with other Development completion activities — it does not serialize the Development stage. The Security Champion initiates the checklist review ≥2 weeks before the scheduled Development exit. #Security-Implementation-Readiness #Security-Champion #shift-left #security-verification #release-gate
+- **Weekly integration smoke tests:** Run weekly integration smoke tests for each firmware interface contract pair: (a) FW↔BACK: device-cloud MQTT telemetry round-trip, device shadow sync, OTA desired-state flow — using the virtualized cloud backend, (b) FW↔ML: TFLite Micro (TensorFlow Lite for Microcontrollers) model loading, preprocessing parity check, inference sanity test — using emulated firmware with the quantized model, (c) FW↔SEC: secure boot chain verification, mTLS (mutual Transport Layer Security) handshake, signed image verification — using the security test harness. Test results logged to the integration test dashboard. Consecutive failures (≥2 weeks) on any pair block the Firmware Development→Execution transition. #integration-testing #shift-left #HR-5
+- **Integration Readiness Declaration:** Before Development exit, co-sign Integration Readiness Declarations with [[BACKEND_CLOUD_ENGINEER_SKILL|BACK]], [[EDGE_AI_ML_ENGINEER_SKILL|ML]], and [[SECURITY_ENGINEER_SKILL|SEC]]. Each declaration confirms: all minimum integration smoke test scenarios passing, any known integration limitations documented, and both roles agree the contract pair is ready for full Execution-stage integration. #integration-testing #shift-left #HR-5
+- **Security Implementation Readiness Gate:** Before exiting Development, the Firmware Security Champion completes the Security Implementation Readiness self-assessment checklist and submits it to the [[SECURITY_ENGINEER_SKILL|Security Engineer]] (or Deputy). The checklist covers: (a) secure boot chain implementation verified against the security baseline (§8), (b) firmware image signing and verification functional, (c) mTLS (mutual Transport Layer Security) implementation verified with test certificates, (d) secure key storage implementation confirmed (no hardcoded keys in source), (e) debug port lockdown implemented per Hardware/Security specification (JTAG — Joint Test Action Group / SWD — Serial Wire Debug), (f) OTA (Over-the-Air) rollback path tested with a corrupted-image scenario, (g) static analysis (MISRA C:2012) and SAST (Static Application Security Testing) scans passing with zero Critical/High findings, (h) all third-party library licenses reviewed for security implications, (i) secure error handling verified (no sensitive information in error messages, no crash-dump exposure), (j) memory safety checks confirmed for all security-relevant code paths. Gate exit criteria: all checklist items marked CONFIRMED by the Security Champion; any UNCERTAIN item flagged to the Security Engineer for review within 5 business days. This gate runs in parallel with other Development completion activities — it does not serialize the Development stage. The Security Champion initiates the checklist review ≥2 weeks before the scheduled Development exit. #security-implementation-readiness #security-champion #shift-left #security-verification #release-gate
 - **Deliverables:** Firmware modules, the HAL/driver layer, unit tests, clean static-analysis reports, and integration-ready builds.
 
 ### 3.4 Execution
@@ -82,7 +96,7 @@
 
 **Activities:**
 - **Field crash and watchdog reset monitoring:** Review device crash reports and watchdog reset telemetry weekly. If crash rate or watchdog reset rate exceeds the reliability threshold (defined in the NFR — Non-Functional Requirement — Verification Matrix), initiate a root-cause investigation within 3 business days. Triage field-reported firmware bugs by severity: Critical (safety, data loss, bricking) — response within 1 business day; High (functional degradation) — response within 3 business days; Medium — next sprint; Low — backlog. #post-launch #field-reliability
-- **OTA update success rate monitoring:** Review OTA (Over-the-Air) update success/failure telemetry after every fleet OTA campaign. If the OTA failure rate exceeds the target threshold, halt the campaign and investigate within 1 business day. Publish an OTA Campaign Report within 3 business days of campaign completion, including: success rate, failure reason distribution, rollback count, and any device-side issues identified. #OTA-monitoring
+- **OTA update success rate monitoring:** Review OTA (Over-the-Air) update success/failure telemetry after every fleet OTA campaign. If the OTA failure rate exceeds the target threshold, halt the campaign and investigate within 1 business day. Publish an OTA Campaign Report within 3 business days of campaign completion, including: success rate, failure reason distribution, rollback count, and any device-side issues identified. #ota-monitoring
 - **Field-reported bug triage and fix:** Triage field-reported firmware bugs filed by [[QA_TEST_AUTOMATION_ENGINEER_SKILL|QA]] or [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|PO/TPM]]. Critical bugs: develop, test, and release a hotfix via OTA within the SLA defined in the Sustaining Engineering backlog. Non-critical bugs: prioritize in the Sustaining Engineering backlog alongside new feature development. #field-defects
 - **Firmware revision planning:** Provide firmware engineering input to the Sustaining Engineering backlog. Estimate firmware change effort, risk, and OTA deployment complexity for each field-driven firmware change request. Response SLA: 3 business days for effort estimates, 10 business days for full feasibility assessment. #sustaining-engineering
 - **Security patch response:** When the [[SECURITY_ENGINEER_SKILL|Security Engineer]] issues a firmware security advisory, acknowledge within 1 business day. Develop, test, and release the security patch within the SLA defined by the Security Engineer (typically: Critical — 7 days, High — 30 days). #lifecycle-gap #CR-5
@@ -184,15 +198,15 @@
 
 ### 4.8 Build Systems, Toolchains & Debugging
 
-|Skill|Proficiency|Application Context|Technologies/Tools|
-|---|---|---|---|
-|Cross-compilation toolchains|Expert|Building for ARM targets|arm-none-eabi-gcc, LLVM/Clang|
-|Build systems|Expert|Reproducible, parameterized builds|CMake, West (Zephyr), PlatformIO, ESP-IDF `idf.py`|
-|Version control|Expert|Source and branch management|Git|
-|On-target debugging|Expert|Stepping and inspecting on hardware|JTAG/SWD, J-Link, OpenOCD, GDB (GNU Debugger)|
-|Trace & runtime profiling|Advanced|Timing and performance analysis|SWO/ITM trace, SEGGER SystemView|
-|Logic analyzer / oscilloscope use|Advanced|Signal-level debugging of buses|Saleae, bench oscilloscope|
-|Reproducible/containerized builds|Advanced|Build parity with the CI pipeline|Docker toolchain images|
+| Skill                             | Proficiency | Application Context                 | Technologies/Tools                                 |
+| --------------------------------- | ----------- | ----------------------------------- | -------------------------------------------------- |
+| Cross-compilation toolchains      | Expert      | Building for ARM targets            | arm-none-eabi-gcc, LLVM/Clang                      |
+| Build systems                     | Expert      | Reproducible, parameterized builds  | CMake, West (Zephyr), PlatformIO, ESP-IDF `idf.py` |
+| Version control                   | Expert      | Source and branch management        | Git                                                |
+| On-target debugging               | Expert      | Stepping and inspecting on hardware | JTAG/SWD, J-Link, OpenOCD, GDB (GNU Debugger)      |
+| Trace & runtime profiling         | Advanced    | Timing and performance analysis     | SWO/ITM trace, SEGGER SystemView                   |
+| Logic analyzer / oscilloscope use | Advanced    | Signal-level debugging of buses     | Saleae, bench oscilloscope                         |
+| Reproducible/containerized builds | Advanced    | Build parity with the CI pipeline   | Docker toolchain images                            |
 
 ### 4.9 Testing, Static Analysis & Code Quality
 
@@ -250,7 +264,7 @@ The following joint DoD (Definition of Done) applies to every board bring-up. Bo
 5. Sensors: all sensors enumerated, sensor IDs or WHO_AM_I registers read correctly, sample data flows from sensor through driver to firmware buffer
 6. Debug/Programming: JTAG (Joint Test Action Group) / SWD (Serial Wire Debug) connection functional, firmware flash and verify successful
 7. Power budget: measured active and sleep current within the [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]]'s power budget
-Bring-up status (Pass/Fail per item, with measured values) is recorded in a joint Bring-Up Report signed by both [[HARDWARE_ENGINEER_SKILL|HW]] and [[FIRMWARE_ENGINEER_SKILL|FW]]. Items not passing block Development exit. #bring-up #joint-dod
+Bring-up status (Pass/Fail per item, with measured values) is recorded in a joint Bring-Up Report signed by both [[HARDWARE_ENGINEER_SKILL|HW]] and **FW**. Items not passing block Development exit. #bring-up #joint-dod
 
 ### 6.3 Edge AI/ML Engineer
 
@@ -264,7 +278,7 @@ Bring-up status (Pass/Fail per item, with measured values) is recorded in a join
 - **Requires:** The CI build pipeline, the OTA distribution pipeline, the artifact-signing mechanism, and reproducible-build infrastructure.
 - **Cadence:** CI integration at development start; pipeline reviews; release-packaging coordination.
 
-**Model Artifact OTA Coordination (in addition to firmware OTA):** #model-OTA #OTA-Model-Artifact-Contract
+**Model Artifact OTA Coordination (in addition to firmware OTA):** #model-ota #ota-model-artifact-contract
 - Firmware receives model artifact distribution bundles from the DevOps OTA delivery pipeline. The bundle includes: model binary, compatibility manifest, MLOps signature, and DevOps co-signature.
 - Firmware verifies: (a) DevOps co-signature valid, (b) MLOps signature valid, (c) compatibility manifest matches device hardware ID and current firmware version, (d) flash-budget check passes (model fits within the allocated flash partition), (e) SHA-256 hash matches manifest.
 - Firmware reports verification status within 1 minute of download completion: VERIFIED / VERIFICATION_FAILED with failure code.
@@ -290,7 +304,7 @@ Bring-up status (Pass/Fail per item, with measured values) is recorded in a join
 - **Requires:** The broker endpoint and topology, the device shadow/twin contract, and the command/control interface definition.
 - **Cadence:** Contract alignment at planning; device-cloud integration checkpoints; shadow-state validation.
 
-**OTA Model Status Reporting (per the OTA Model Artifact Contract):** #model-OTA #OTA-Model-Artifact-Contract
+**OTA Model Status Reporting (per the OTA Model Artifact Contract):** #model-ota #ota-model-artifact-contract
 - Firmware reports OTA model artifact status to the Backend desired-state control plane at each state transition: DOWNLOADING, VERIFIED, APPLYING, ACTIVE, ROLLED_BACK, FAILED. Status messages include: device ID, model version, current state, previous state, timestamp, and failure code if applicable.
 - Firmware reports the ACTIVE model version in each telemetry heartbeat message, enabling Backend to reconcile fleet-wide model version distribution against the desired state.
 - If Firmware triggers a rollback (sanity check failure, watchdog reset during inference, or application failure), it reports ROLLED_BACK with the rollback reason code within 30 seconds of the rollback decision.
@@ -304,7 +318,7 @@ Bring-up status (Pass/Fail per item, with measured values) is recorded in a join
 
 **Schema-Change Coordination Process:**
 Any proposed change to the device telemetry schema (fields, types, units, encoding) follows this joint process:
-1. **Proposal:** Proposing role ([[FIRMWARE_ENGINEER_SKILL|FW]] or [[DATA_ENGINEER_SKILL|DATA]]) drafts a schema-change proposal including: changed fields, rationale, backward-compatibility assessment, and estimated impact on the other role
+1. **Proposal:** Proposing role (**FW** or [[DATA_ENGINEER_SKILL|DATA]]) drafts a schema-change proposal including: changed fields, rationale, backward-compatibility assessment, and estimated impact on the other role
 2. **Joint Review:** Both roles review within 5 business days. Review covers: backward compatibility, migration path for existing data, edge-buffering implications, and any ingestion/validation rule changes
 3. **ADR if Breaking:** If the change is backward-incompatible, it must be escalated to an ADR (Architecture Decision Record) with the [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] as approver
 4. **Implementation Sequencing:** If approved, FW and DATA agree on implementation order (FW-side emission update vs. DATA-side ingestion update) and a transition window during which both old and new schemas are accepted
@@ -323,6 +337,18 @@ Any proposed change to the device telemetry schema (fields, types, units, encodi
 - **Provides:** Firmware development timeline estimates for the business case and GTM (Go-to-Market) planning; OTA (Over-the-Air) update infrastructure operational cost inputs; and RTOS (Real-Time Operating System) and third-party library licensing cost information.
 - **Requires:** Business prioritization of firmware features (e.g., OTA update capability prioritized for subscription-model viability); market-driven connectivity requirements (protocol-selection rationale); and RTOS licensing constraint inputs (open-source vs. commercial RTOS business risk).
 - **Cadence:** At product feasibility and GTM planning stages; on-demand for roadmap prioritization. #business-interface #HR-2
+
+### 6.11 [[MLOPS_ENGINEER_SKILL|MLOps Engineer]]
+
+- **Provides:** The OTA image format specification (MCUboot-compatible binary layout, manifest header, signing envelope); the on-device bundling and verification mechanism (A/B partition slot, signature-chain verification, SHA-256 hash validation); device-side compatibility constraints (hardware ID matching, firmware version range check, flash-budget check); and on-device inference resource measurements (tensor arena usage, flash consumption, inference latency) to feed back into model packaging requirements.
+- **Requires:** The OTA-ready model artifact in the packaging format specified by the OTA Model Artifact Contract — TFLite Micro (TensorFlow Lite for Microcontrollers) model binary, compatibility manifest (model version, target hardware ID, firmware compatibility range, tensor arena size, flash-budget check result), and MLOps signature; the artifact signature for on-device verification; and flash-budget-fit confirmation (model artifact size ≤ allocated flash partition for model storage).
+- **Cadence:** Artifact-format alignment at planning (joint review of OTA artifact format with MLOps and [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps]]); OTA integration during development (model artifact handoff, on-device verification testing); compatibility verification before fleet rollout (confirmation that the compatibility manifest matches device hardware and current firmware). #interface-contract #HR-4
+
+### 6.12 [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|Product Owner / Technical Project Manager (TPM)]]
+
+- **Provides:** Firmware milestone status (development progress against sprint commitments, integration readiness dates); known firmware risks and blockers with impact assessment and mitigation status; OTA (Over-the-Air) readiness confirmation for firmware releases; and firmware feasibility input for proposed features (effort estimates, technical risk, OTA deployment complexity).
+- **Requires:** Feature requirements and acceptance criteria for firmware-delivered capability (functional requirements, NFR — Non-Functional Requirement — constraints, and testable acceptance conditions); the OTA release train schedule (planned firmware release cadence, release windows, and field-deployment timing); and prioritization of firmware work (backlog ordering with business-value rationale, sprint-level commitment scope).
+- **Cadence:** Sprint-level sync — standups and sprint reviews for progress tracking; immediate escalation on milestone slippage affecting the critical path (notification within 1 business day of a confirmed slip); release-gate firmware readiness review. #interface-contract #HR-4
 
 ---
 

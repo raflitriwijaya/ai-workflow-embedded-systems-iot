@@ -1,3 +1,14 @@
+---
+title: "Data Engineer — Skill Card"
+date: 2026-06-20
+status: final
+tags:
+  - skill-card
+  - embedded-iot
+  - data-engineering
+cssclass: skill-card
+---
+
 # DATA_ENGINEER_SKILL.md
 
 ## 1. Role Identity
@@ -61,6 +72,7 @@
 
 - **Activities:** Design the ingestion topology (MQTT/Kafka → time-series DB + lake); design storage schemas, partitioning, and retention; design ETL/ELT and feature pipelines; plan the data-quality framework (validation rules, deduplication, late-data/watermark strategy); plan versioning and lineage; define data contracts with Backend (ingest) and Edge AI/ML (features); set data-quality SLOs (Service-Level Objectives).
 - **Deliverables:** Data architecture document, storage/partition/retention specification, pipeline design, data-quality plan, versioning/lineage plan, and data contracts.
+- **Security Design Review Report:** Received from [[SECURITY_ENGINEER_SKILL|Security Engineer]] before the Planning→Development transition. Outcome must be APPROVED or CONDITIONAL. CONDITIONAL requirements are added to the Security Implementation Readiness checklist (§3.3). BLOCKED means Development must not start until re-reviewed and cleared by the Security Engineer. #shift-left #security-design-review #MR-10
 
 ### 3.3 Development
 
@@ -217,7 +229,8 @@
 |Retention/partition/downsampling config|Storage lifecycle and layout rules|DevOps, Architect, TPM|Config (declarative)|Versioned; change → review|
 |Representative datasets|Calibration subsets for quantization|Edge AI/ML|Versioned subset|Versioned with the source dataset|
 |Query-ready views / serving|Aggregations and endpoints for dashboards|Frontend, QA|SQL views/APIs|Versioned with the schema|
-|Data Security & Governance Policy|Joint policy co-owned with [[SECURITY_ENGINEER_SKILL|Security Engineer]] defining: #data-classification schema (Public / Internal / Confidential / Restricted), #encryption-at-rest requirements (AES-256-GCM — Advanced Encryption Standard 256-bit Galois/Counter Mode), #encryption-in-transit requirements (TLS 1.3 — Transport Layer Security), #access-control model (RBAC — Role-Based Access Control — definitions: Data Administrator, Data Operator, Data Consumer, Read-Only Auditor; least-privilege guidance; MFA — Multi-Factor Authentication — for administrative roles), #audit-logging requirements (event catalog, retention periods, log integrity, SIEM — Security Information and Event Management — integration), #PII-masking and #data-minimization standards (tokenization, k-anonymity, GDPR — General Data Protection Regulation — Article 5(1)(c) data minimization, right-to-deletion per GDPR Article 17 and CCPA — California Consumer Privacy Act — §1798.105), #vulnerability-scanning requirements (scope, frequency, remediation SLA — Service-Level Agreement), #data-breach notification procedures (4-hour initial, 24-hour detailed report), and quarterly Joint Data Security & Governance Review cadence. The Data Engineer is responsible for implementing the technical controls specified in this policy across all data infrastructure (time-series databases, data lake, ETL/ELT — Extract, Transform, Load / Extract, Load, Transform — pipelines, feature stores, training datasets, and metadata stores)|[[SECURITY_ENGINEER_SKILL|Security Engineer]], [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps/Platform Engineer]], [[BACKEND_CLOUD_ENGINEER_SKILL|Backend/Cloud Engineer]], [[MLOPS_ENGINEER_SKILL|MLOps Engineer]], [[EDGE_AI_ML_ENGINEER_SKILL|Edge AI/ML Engineer]]|Markdown document in Git; references NIST SP 800-53 (Security and Privacy Controls for Information Systems and Organizations), GDPR Article 32 (Security of Processing), and organizational security baseline|Semantic versioning (SemVer); major bump on classification schema change or new regulatory requirement; minor bump on procedural update; reviewed and re-authorized quarterly at the Joint Data Security & Governance Review|
+|Data Security & Governance Policy|Joint policy co-owned with [[SECURITY_ENGINEER_SKILL\|Security Engineer]] defining: #data-classification schema (Public / Internal / Confidential / Restricted), #encryption-at-rest requirements (AES-256-GCM — Advanced Encryption Standard 256-bit Galois/Counter Mode), #encryption-in-transit requirements (TLS 1.3 — Transport Layer Security), #access-control model (RBAC — Role-Based Access Control — definitions: Data Administrator, Data Operator, Data Consumer, Read-Only Auditor; least-privilege guidance; MFA — Multi-Factor Authentication — for administrative roles), #audit-logging requirements (event catalog, retention periods, log integrity, SIEM — Security Information and Event Management — integration), #PII-masking and #data-minimization standards (tokenization, k-anonymity, GDPR — General Data Protection Regulation — Article 5(1)(c) data minimization, right-to-deletion per GDPR Article 17 and CCPA — California Consumer Privacy Act — §1798.105), #vulnerability-scanning requirements (scope, frequency, remediation SLA — Service-Level Agreement), #data-breach notification procedures (4-hour initial, 24-hour detailed report), and quarterly Joint Data Security & Governance Review cadence. The Data Engineer is responsible for implementing the technical controls specified in this policy across all data infrastructure (time-series databases, data lake, ETL/ELT — Extract, Transform, Load / Extract, Load, Transform — pipelines, feature stores, training datasets, and metadata stores)|[[SECURITY_ENGINEER_SKILL\|Security Engineer]], [[DEVOPS_PLATFORM_ENGINEER_SKILL\|DevOps/Platform Engineer]], [[BACKEND_CLOUD_ENGINEER_SKILL\|Backend/Cloud Engineer]], [[MLOPS_ENGINEER_SKILL\|MLOps Engineer]], [[EDGE_AI_ML_ENGINEER_SKILL\|Edge AI/ML Engineer]]|Markdown document in Git; references NIST SP 800-53 (Security and Privacy Controls for Information Systems and Organizations), GDPR Article 32 (Security of Processing), and organizational security baseline|Semantic versioning (SemVer); major bump on classification schema change or new regulatory requirement; minor bump on procedural update; reviewed and re-authorized quarterly at the Joint Data Security & Governance Review|
+|Engineering Metrics Pipeline|Data pipeline ingesting engineering process metrics from Git (commit/PR (Pull Request)/review cadence), Jira (sprint velocity, defect discovery stage, cycle time), CI/CD (build success rate, test pass rate, deployment frequency), ADR repository (ADR turnaround time per tier), CCR (Contract Clarification Record) log (escalation rate), and the Engineering Process Health Dashboard (process KPI (Key Performance Indicator) trends). Transforms and serves metrics via shared Grafana dashboards, enabling data-driven Engineering Process Reviews by the Process Architect ([[QA_TEST_AUTOMATION_ENGINEER_SKILL\|QA]]) and the Architecture Review Board (ARB)|[[QA_TEST_AUTOMATION_ENGINEER_SKILL\|QA/Process Architect]], [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL\|Architect]], [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL\|PO/TPM]], ARB members, all Senior/Staff engineers|Pipeline-as-code (Python, Apache Airflow/Prefect) + Grafana dashboards; data validated with Great Expectations (same framework used for product data)|Versioned in Git; dashboard config as code; pipeline health monitored via the Data Pipeline Health Dashboard #engineering-metrics #MR-2|
 
 ---
 
@@ -248,7 +261,7 @@ Backend and Data jointly own a telemetry-integrity SLO (Service-Level Objective)
 
 **Schema-Change Coordination Process:**
 Any proposed change to the device telemetry schema (fields, types, units, encoding) follows this joint process:
-1. **Proposal:** Proposing role ([[FIRMWARE_ENGINEER_SKILL|FW]] or [[DATA_ENGINEER_SKILL|DATA]]) drafts a schema-change proposal including: changed fields, rationale, backward-compatibility assessment, and estimated impact on the other role
+1. **Proposal:** Proposing role ([[FIRMWARE_ENGINEER_SKILL|FW]] or **DATA**) drafts a schema-change proposal including: changed fields, rationale, backward-compatibility assessment, and estimated impact on the other role
 2. **Joint Review:** Both roles review within 5 business days. Review covers: backward compatibility, migration path for existing data, edge-buffering implications, and any ingestion/validation rule changes
 3. **ADR if Breaking:** If the change is backward-incompatible, it must be escalated to an ADR (Architecture Decision Record) with the [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] as approver
 4. **Implementation Sequencing:** If approved, FW and DATA agree on implementation order (FW-side emission update vs. DATA-side ingestion update) and a transition window during which both old and new schemas are accepted
@@ -477,6 +490,7 @@ Constraints: control cardinality; meet query-latency targets; respect retention 
 - **Query/serving performance:** Dashboard and training queries within their latency targets.
 - **Storage cost:** Within budget via retention, downsampling, and tiering.
 - **Lineage coverage:** 100% of training datasets carry full lineage.
+- **Engineering Metrics Pipeline uptime and freshness:** Pipeline uptime ≥99.5% (measured monthly). Metric freshness: all process KPIs updated within 1 hour of source data availability. Measured by the Data Pipeline Health Dashboard. #engineering-metrics #MR-2
 
 **Process & team metrics:**
 

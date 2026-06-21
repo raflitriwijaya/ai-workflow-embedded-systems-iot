@@ -1,7 +1,7 @@
 ---
 title: "Organizational SKILL.md Review Report — Phase 4: AI Workflow"
 date: 2026-06-19
-status: draft
+status: superseded
 tags:
   - review
   - organizational-design
@@ -16,7 +16,7 @@ cssclass: review-report
 
 ## Prefatory Note
 
-The workflow document (`EMBEDDED_IOT_AI_WORKFLOW_ENGINEERING_TEAM.md`) declares a team of **12 roles**, not the 13 stated in the Phase 4 task specification. This report uses the actual count of 12. The 14 `SKILL.md` files in the project include all 12 workflow-defined roles plus two additional roles not present in the workflow document: [[BUSINESS_CONSULTANT_SKILL]] and [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL]]. The consistency matrix in §2.1 reflects the 12 workflow-defined roles only; the two extra roles are analyzed separately in §1.1.
+The workflow document (`EMBEDDED_IOT_AI_WORKFLOW_ENGINEERING_TEAM.md`) declares a team of **12 roles**, not the 13 stated in the Phase 4 task specification. This report uses the actual count of 12. The 14 `SKILL.md` files in the project include all 12 workflow-defined roles plus two additional roles not present in the workflow document: [[BUSINESS_CONSULTANT_SKILL|Business Consultant]] and [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL|Researcher]]. The consistency matrix in §2.1 reflects the 12 workflow-defined roles only; the two extra roles are analyzed separately in §1.1.
 
 ---
 
@@ -28,26 +28,26 @@ The workflow document (`EMBEDDED_IOT_AI_WORKFLOW_ENGINEERING_TEAM.md`) declares 
 
 | # | Workflow Role | Corresponding SKILL.md |
 |---|---|---|
-| 1 | Embedded Systems Architect | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL]] |
-| 2 | Firmware Engineer | [[FIRMWARE_ENGINEER_SKILL]] |
-| 3 | Hardware Engineer | [[HARDWARE_ENGINEER_SKILL]] |
-| 4 | Edge AI/ML Engineer | [[EDGE_AI_ML_ENGINEER_SKILL]] |
-| 5 | MLOps Engineer | [[MLOPS_ENGINEER_SKILL]] |
-| 6 | Data Engineer | [[DATA_ENGINEER_SKILL]] |
-| 7 | DevOps/Platform Engineer | [[DEVOPS_PLATFORM_ENGINEER_SKILL]] |
-| 8 | Backend/Cloud Engineer | [[BACKEND_CLOUD_ENGINEER_SKILL]] |
-| 9 | Frontend/Dashboard Engineer | [[FRONTEND_DASHBOARD_ENGINEER_SKILL]] |
-| 10 | QA & Test Automation Engineer | [[QA_TEST_AUTOMATION_ENGINEER_SKILL]] |
-| 11 | Product Owner / Technical Project Manager | [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL]] |
-| 12 | Security Engineer (Embedded/IoT Focus) | [[SECURITY_ENGINEER_SKILL]] |
+| 1 | Embedded Systems Architect | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL\|Architect]] |
+| 2 | Firmware Engineer | [[FIRMWARE_ENGINEER_SKILL\|Firmware Engineer]] |
+| 3 | Hardware Engineer | [[HARDWARE_ENGINEER_SKILL\|Hardware Engineer]] |
+| 4 | Edge AI/ML Engineer | [[EDGE_AI_ML_ENGINEER_SKILL\|Edge AI/ML Engineer]] |
+| 5 | MLOps Engineer | [[MLOPS_ENGINEER_SKILL\|MLOps Engineer]] |
+| 6 | Data Engineer | [[DATA_ENGINEER_SKILL\|Data Engineer]] |
+| 7 | DevOps/Platform Engineer | [[DEVOPS_PLATFORM_ENGINEER_SKILL\|DevOps Engineer]] |
+| 8 | Backend/Cloud Engineer | [[BACKEND_CLOUD_ENGINEER_SKILL\|Backend/Cloud Engineer]] |
+| 9 | Frontend/Dashboard Engineer | [[FRONTEND_DASHBOARD_ENGINEER_SKILL\|Frontend Engineer]] |
+| 10 | QA & Test Automation Engineer | [[QA_TEST_AUTOMATION_ENGINEER_SKILL\|QA Engineer]] |
+| 11 | Product Owner / Technical Project Manager | [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL\|PO/TPM]] |
+| 12 | Security Engineer (Embedded/IoT Focus) | [[SECURITY_ENGINEER_SKILL\|Security Engineer]] |
 
 **SKILL.md roles MISSING from the workflow document:** #workflow-gap
 
-1. **[[BUSINESS_CONSULTANT_SKILL]]** — The Business Consultant (IoT & Embedded Systems Specialist) defines market strategy, business cases, pricing models, GTM planning, and monetization for the IoT product portfolio. This role has 13 interface contracts defined in its `SKILL.md` — including with the Product Owner/TPM, Embedded Systems Architect, all engineering roles, and executive leadership. Its absence from the workflow means there is **no formal mechanism for market requirements, pricing constraints, or business viability assessments to flow into the engineering pipeline**. The workflow's Product Owner role partially absorbs business-facing duties but is defined as the translator of existing business/field needs, not as the originator of market strategy. This is a critical structural gap.
+1. **[[BUSINESS_CONSULTANT_SKILL|Business Consultant]]** — The Business Consultant (IoT & Embedded Systems Specialist) defines market strategy, business cases, pricing models, GTM planning, and monetization for the IoT product portfolio. This role has 13 interface contracts defined in its `SKILL.md` — including with the Product Owner/TPM, Embedded Systems Architect, all engineering roles, and executive leadership. Its absence from the workflow means there is **no formal mechanism for market requirements, pricing constraints, or business viability assessments to flow into the engineering pipeline**. The workflow's Product Owner role partially absorbs business-facing duties but is defined as the translator of existing business/field needs, not as the originator of market strategy. This is a critical structural gap.
 
    **Recommendation:** Add the Business Consultant as a role in the workflow, interfacing with the Product Owner/TPM (providing market requirements and pricing constraints), the Embedded Systems Architect (providing business framing of architectural trade-offs), and executive leadership. The Business Consultant feeds the "why" (market viability, pricing, GTM timing) that the PO/TPM operationalizes into backlog priorities. #recommendation
 
-2. **[[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL]]** — The IoT & Embedded Systems Researcher conducts fundamental scientific research at the intersection of embedded systems, chemistry, physics, biology, and AI/Math. This role owns the research lifecycle from hypothesis formation through peer-reviewed publication, patent filing, and technology transfer to the engineering team. Its `SKILL.md` defines 8 interface contracts including direct interfaces with the Embedded Systems Architect, Product Owner, Hardware Engineer, Firmware Engineer, Edge AI/ML Engineer, and Data Engineer. The workflow has **no research-to-engineering handoff mechanism**, meaning novel sensing principles, energy-harvesting paradigms, or bio-inspired architectures discovered in research have no defined path into the product pipeline.
+2. **[[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL|Researcher]]** — The IoT & Embedded Systems Researcher conducts fundamental scientific research at the intersection of embedded systems, chemistry, physics, biology, and AI/Math. This role owns the research lifecycle from hypothesis formation through peer-reviewed publication, patent filing, and technology transfer to the engineering team. Its `SKILL.md` defines 8 interface contracts including direct interfaces with the Embedded Systems Architect, Product Owner, Hardware Engineer, Firmware Engineer, Edge AI/ML Engineer, and Data Engineer. The workflow has **no research-to-engineering handoff mechanism**, meaning novel sensing principles, energy-harvesting paradigms, or bio-inspired architectures discovered in research have no defined path into the product pipeline.
 
    **Recommendation:** Add the IoT & Embedded Systems Researcher as a role in the workflow, with explicit technology-transfer interface contracts flowing to the Embedded Systems Architect (PoC evaluation, feasibility reports), Hardware Engineer (novel sensor/component characterization), and Edge AI/ML Engineer (novel ML-based sensing approaches). The researcher feeds the "what is newly possible" into the architecture pipeline. #recommendation
 
@@ -78,33 +78,33 @@ The Mermaid diagram at §14 of the workflow document is a **simplified subset** 
 | Missing Edge | Source of Definition |
 |---|---|
 | ARCH → EDGE (memory/latency/power budgets) | Workflow §2.3, §5.3; SKILL.md §6.1 |
-| ARCH → MLOPS (deployment topology, OTA constraints) | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL]] §6.5 |
-| ARCH → DATA (telemetry schema, data-flow topology) | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL]] §6.6 |
-| ARCH → DEVOPS (OTA strategy, gateway orchestration) | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL]] §6.7 |
-| ARCH → QA (NFR targets, requirements traceability) | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL]] §6.10 |
-| ARCH → SEC (security-by-design, architecture surfaces) | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL]] §6.11 |
-| ARCH → FE (data/event contracts, stream topology) | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL]] §6.9 |
-| EDGE → HW (sensor data requirements spec) | [[EDGE_AI_ML_ENGINEER_SKILL]] §6.5 |
-| EDGE → DATA (dataset/labeling requirements) | [[EDGE_AI_ML_ENGINEER_SKILL]] §6.3 |
-| MLOPS → FW (OTA-ready model artifacts) | [[MLOPS_ENGINEER_SKILL]] §6.3 |
-| MLOPS → EDGE (pipeline, registry, drift telemetry) | [[MLOPS_ENGINEER_SKILL]] §6.1 |
-| FW → BE (device-side protocol conformance) | [[FIRMWARE_ENGINEER_SKILL]] §6.7 |
-| FW → DEVOPS (build entry points, toolchain requirements) | [[FIRMWARE_ENGINEER_SKILL]] §6.4 |
-| FW → SEC (implementation conformance evidence) | [[FIRMWARE_ENGINEER_SKILL]] §6.6 |
-| DATA → FE (query-ready data, serving views) | [[DATA_ENGINEER_SKILL]] §6.4 |
-| DEVOPS → MLOPS (CI/CD platform, OTA distribution) | [[DEVOPS_PLATFORM_ENGINEER_SKILL]] §6.3 |
-| DEVOPS → QA (CI/CD test stages) | [[DEVOPS_PLATFORM_ENGINEER_SKILL]] §6.6 |
-| DEVOPS → HW (device provisioning/enrollment) | [[DEVOPS_PLATFORM_ENGINEER_SKILL]] §6.7 |
-| DEVOPS → SEC (signing/secrets implementation) | [[DEVOPS_PLATFORM_ENGINEER_SKILL]] §6.4 |
-| QA → FW (HIL results, defect reports) | [[QA_TEST_AUTOMATION_ENGINEER_SKILL]] §6.1 |
-| QA → EDGE (model validation results) | [[QA_TEST_AUTOMATION_ENGINEER_SKILL]] §6.2 |
-| QA → BE (API/integration test results) | [[QA_TEST_AUTOMATION_ENGINEER_SKILL]] §6.3 |
-| SEC → HW (secure-element requirements, debug lockdown) | [[SECURITY_ENGINEER_SKILL]] §6.3 |
-| SEC → DEVOPS (signing/key/PKI requirements) | [[SECURITY_ENGINEER_SKILL]] §6.5 |
-| SEC → MLOPS (model-signing/integrity requirements) | [[SECURITY_ENGINEER_SKILL]] §6.6 |
-| SEC → EDGE (model integrity, anti-tampering requirements) | [[SECURITY_ENGINEER_SKILL]] §6.7 |
-| HW → SEC (secure-element placement, tamper resistance) | [[HARDWARE_ENGINEER_SKILL]] §6.4 |
-| FE → BE (API/streaming contract feedback) | [[FRONTEND_DASHBOARD_ENGINEER_SKILL]] §6.1 |
+| ARCH → MLOPS (deployment topology, OTA constraints) | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL\|Architect]] §6.5 |
+| ARCH → DATA (telemetry schema, data-flow topology) | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL\|Architect]] §6.6 |
+| ARCH → DEVOPS (OTA strategy, gateway orchestration) | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL\|Architect]] §6.7 |
+| ARCH → QA (NFR targets, requirements traceability) | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL\|Architect]] §6.10 |
+| ARCH → SEC (security-by-design, architecture surfaces) | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL\|Architect]] §6.11 |
+| ARCH → FE (data/event contracts, stream topology) | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL\|Architect]] §6.9 |
+| EDGE → HW (sensor data requirements spec) | [[EDGE_AI_ML_ENGINEER_SKILL\|Edge AI/ML Engineer]] §6.5 |
+| EDGE → DATA (dataset/labeling requirements) | [[EDGE_AI_ML_ENGINEER_SKILL\|Edge AI/ML Engineer]] §6.3 |
+| MLOPS → FW (OTA-ready model artifacts) | [[MLOPS_ENGINEER_SKILL\|MLOps Engineer]] §6.3 |
+| MLOPS → EDGE (pipeline, registry, drift telemetry) | [[MLOPS_ENGINEER_SKILL\|MLOps Engineer]] §6.1 |
+| FW → BE (device-side protocol conformance) | [[FIRMWARE_ENGINEER_SKILL\|Firmware Engineer]] §6.7 |
+| FW → DEVOPS (build entry points, toolchain requirements) | [[FIRMWARE_ENGINEER_SKILL\|Firmware Engineer]] §6.4 |
+| FW → SEC (implementation conformance evidence) | [[FIRMWARE_ENGINEER_SKILL\|Firmware Engineer]] §6.6 |
+| DATA → FE (query-ready data, serving views) | [[DATA_ENGINEER_SKILL\|Data Engineer]] §6.4 |
+| DEVOPS → MLOPS (CI/CD platform, OTA distribution) | [[DEVOPS_PLATFORM_ENGINEER_SKILL\|DevOps Engineer]] §6.3 |
+| DEVOPS → QA (CI/CD test stages) | [[DEVOPS_PLATFORM_ENGINEER_SKILL\|DevOps Engineer]] §6.6 |
+| DEVOPS → HW (device provisioning/enrollment) | [[DEVOPS_PLATFORM_ENGINEER_SKILL\|DevOps Engineer]] §6.7 |
+| DEVOPS → SEC (signing/secrets implementation) | [[DEVOPS_PLATFORM_ENGINEER_SKILL\|DevOps Engineer]] §6.4 |
+| QA → FW (HIL results, defect reports) | [[QA_TEST_AUTOMATION_ENGINEER_SKILL\|QA Engineer]] §6.1 |
+| QA → EDGE (model validation results) | [[QA_TEST_AUTOMATION_ENGINEER_SKILL\|QA Engineer]] §6.2 |
+| QA → BE (API/integration test results) | [[QA_TEST_AUTOMATION_ENGINEER_SKILL\|QA Engineer]] §6.3 |
+| SEC → HW (secure-element requirements, debug lockdown) | [[SECURITY_ENGINEER_SKILL\|Security Engineer]] §6.3 |
+| SEC → DEVOPS (signing/key/PKI requirements) | [[SECURITY_ENGINEER_SKILL\|Security Engineer]] §6.5 |
+| SEC → MLOPS (model-signing/integrity requirements) | [[SECURITY_ENGINEER_SKILL\|Security Engineer]] §6.6 |
+| SEC → EDGE (model integrity, anti-tampering requirements) | [[SECURITY_ENGINEER_SKILL\|Security Engineer]] §6.7 |
+| HW → SEC (secure-element placement, tamper resistance) | [[HARDWARE_ENGINEER_SKILL\|Hardware Engineer]] §6.4 |
+| FE → BE (API/streaming contract feedback) | [[FRONTEND_DASHBOARD_ENGINEER_SKILL\|Frontend Engineer]] §6.1 |
 | PO → ALL (requirements, backlog, acceptance criteria) | Workflow §12.3; SKILL.md §6 |
 
 **Diagram issues specific to edge labels:** #workflow-gap
@@ -145,15 +145,15 @@ The Mermaid diagram at §14 of the workflow document is a **simplified subset** 
 
 **Minor misalignment in scope articulation:** #consistency-issue
 
-- **[[EMBEDDED_SYSTEMS_ARCHITECT_SKILL]]** explicitly lists 7 items under "Owns (unilateral authority, subject to the ADR process)" plus 6 items under "Influences (advisory; does not implement)" plus 5 items under "Explicitly Does NOT Own." The workflow document (§2.1) covers 6 bullet points of JD that map to the "Owns" items but omits the "Influences" and "Does NOT Own" distinctions entirely. This matters because an AI agent reading only the workflow might attempt to write firmware or design ML models — actions the SKILL.md explicitly forbids.
+- **[[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]]** explicitly lists 7 items under "Owns (unilateral authority, subject to the ADR process)" plus 6 items under "Influences (advisory; does not implement)" plus 5 items under "Explicitly Does NOT Own." The workflow document (§2.1) covers 6 bullet points of JD that map to the "Owns" items but omits the "Influences" and "Does NOT Own" distinctions entirely. This matters because an AI agent reading only the workflow might attempt to write firmware or design ML models — actions the SKILL.md explicitly forbids.
 
-- **[[SECURITY_ENGINEER_SKILL]]** defines the role as one that "*defines and verifies, it does not implement*" — Security sets the baseline that Firmware, Hardware, Backend, DevOps, and MLOps implement. The workflow document's JD (§13.1) uses active verbs like "Defines and implements," "Implements device identity," "Conducts threat modeling," "Hardens devices," and "Performs penetration testing." The word "implements" applied to controls is a **meaningful ambiguity** — the SKILL.md clarifies that Security *defines the specification* and *verifies conformance*, while the implementing roles build the controls. The workflow's phrasing could lead an AI agent to implement controls directly. #consistency-issue
+- **[[SECURITY_ENGINEER_SKILL|Security Engineer]]** defines the role as one that "*defines and verifies, it does not implement*" — Security sets the baseline that Firmware, Hardware, Backend, DevOps, and MLOps implement. The workflow document's JD (§13.1) uses active verbs like "Defines and implements," "Implements device identity," "Conducts threat modeling," "Hardens devices," and "Performs penetration testing." The word "implements" applied to controls is a **meaningful ambiguity** — the SKILL.md clarifies that Security *defines the specification* and *verifies conformance*, while the implementing roles build the controls. The workflow's phrasing could lead an AI agent to implement controls directly. #consistency-issue
 
-- **[[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL]]** explicitly states the PO/TPM "does NOT own: Technical architecture or design decisions." The workflow document does not include this explicit exclusion, though it also does not positively assert architecture ownership.
+- **[[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|PO/TPM]]** explicitly states the PO/TPM "does NOT own: Technical architecture or design decisions." The workflow document does not include this explicit exclusion, though it also does not positively assert architecture ownership.
 
 ### 2.3 Skill Requirement Mismatches
 
-**[[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL]] — Major conflict.** #consistency-issue
+**[[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|PO/TPM]] — Major conflict.** #consistency-issue
 
 The workflow document's "Required Skills" section for the PO/TPM (§12.2) lists 5 categories:
 1. **Process:** Agile/Scrum/Kanban; roadmap and backlog management; risk management; OKRs.
@@ -273,13 +273,13 @@ The SKILL.md files define several explicit human-in-the-loop mechanisms that the
 
 1. **ADR Process** — Every SKILL.md requires that any contract/budget/specification deviation be raised as a formal ADR with measured evidence. ADRs are reviewed via pull request with required approvers. This is the **primary human review mechanism** embedded in the architecture, referenced in all 12 technical SKILL.md files but only mentioned implicitly in the workflow (§2.1: "records decisions as version-controlled ADRs").
 
-2. **Security Release Gate** — [[SECURITY_ENGINEER_SKILL]] grants the Security Engineer **veto authority** to block a release on security grounds. This is a mandatory human-in-the-loop checkpoint. The workflow document mentions security review in the Threat Model context but does not explicitly state the Security Engineer's release-blocking authority.
+2. **Security Release Gate** — [[SECURITY_ENGINEER_SKILL|Security Engineer]] grants the Security Engineer **veto authority** to block a release on security grounds. This is a mandatory human-in-the-loop checkpoint. The workflow document mentions security review in the Threat Model context but does not explicitly state the Security Engineer's release-blocking authority.
 
-3. **QA Go/No-Go Recommendation** — [[QA_TEST_AUTOMATION_ENGINEER_SKILL]] states QA produces a release-readiness assessment and recommendation; the final go/no-go decision is shared with the TPM and Architect. The workflow mentions QA's test reports but not the release-gate authority.
+3. **QA Go/No-Go Recommendation** — [[QA_TEST_AUTOMATION_ENGINEER_SKILL|QA Engineer]] states QA produces a release-readiness assessment and recommendation; the final go/no-go decision is shared with the TPM and Architect. The workflow mentions QA's test reports but not the release-gate authority.
 
-4. **PO Feasibility-vs-Priority Conflict Escalation** — [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL]] defines a formal escalation process when business priority and technical feasibility conflict: the PO/TPM **must not resolve this conflict alone** but must surface it to executive stakeholders with documented options from the Architect. The workflow has no mention of this conflict-resolution mechanism.
+4. **PO Feasibility-vs-Priority Conflict Escalation** — [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|PO/TPM]] defines a formal escalation process when business priority and technical feasibility conflict: the PO/TPM **must not resolve this conflict alone** but must surface it to executive stakeholders with documented options from the Architect. The workflow has no mention of this conflict-resolution mechanism.
 
-5. **Model Validation Gate (MLOps)** — [[MLOPS_ENGINEER_SKILL]] specifies that a model failing validation must never be auto-promoted and may require a human approval gate for production. The workflow does not mention this gate.
+5. **Model Validation Gate (MLOps)** — [[MLOPS_ENGINEER_SKILL|MLOps Engineer]] specifies that a model failing validation must never be auto-promoted and may require a human approval gate for production. The workflow does not mention this gate.
 
 **Missing feedback loops:** #ai-readiness #risk
 
@@ -317,12 +317,12 @@ Cross-referencing the lifecycle stages from Phase 2 (**Research → Planning →
 
 | Lifecycle Stage | Covered in Workflow? | Evidence |
 |---|---|---|
-| **Research** | ❌ Not covered | The workflow has no research-stage activities. All 12 roles are engineering roles. The [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL]] covers this stage, but it is not in the workflow. |
+| **Research** | ❌ Not covered | The workflow has no research-stage activities. All 12 roles are engineering roles. The [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL\|Researcher]] covers this stage, but it is not in the workflow. |
 | **Planning** | ⚠️ Implicit | The workflow mentions "Delivers to all engineering roles the System Architecture Document... that gate downstream development" (§2.3), implying a planning stage, but no planning-stage activities or deliverables are defined for any role. |
 | **Development** | ✅ Covered | Each role's JD describes implementation activities. |
 | **Execution** | ⚠️ Implicit | The workflow mentions "Delivers" artifacts, implying execution outputs, but does not describe integration, testing, or validation activities. |
 | **Production-Ready** | ❌ Not covered | No role in the workflow describes production-readiness activities (final sign-off, hardening, runbooks, disaster recovery). Every SKILL.md §3.5 covers this stage in detail. |
-| **Post-Launch/Market** | ❌ Not covered | No role describes post-launch activities (field monitoring, customer feedback, OTA update governance, incident response, product-market fit assessment). The [[BUSINESS_CONSULTANT_SKILL]] covers post-launch in §3.4–3.5, but is not in the workflow. |
+| **Post-Launch/Market** | ❌ Not covered | No role describes post-launch activities (field monitoring, customer feedback, OTA update governance, incident response, product-market fit assessment). The [[BUSINESS_CONSULTANT_SKILL\|Business Consultant]] covers post-launch in §3.4–3.5, but is not in the workflow. |
 
 **Finding:** The workflow document covers only the **Development** stage explicitly. Planning and Execution are implicit. Research, Production-Ready, and Post-Launch/Market are **entirely absent**. This is a critical gap — the workflow describes a team that builds things but does not describe how the team researches what to build, validates readiness for production, or operates and improves after launch. #workflow-gap #risk
 
@@ -342,9 +342,9 @@ The following **critical** interface contracts are defined in SKILL.md files but
 
 5. **DEVOPS → HW (device provisioning/enrollment).** The DevOps Engineer provides the provisioning infrastructure that the Hardware Engineer's production-programming interface feeds. This interface is critical for manufacturing and fleet onboarding but is absent.
 
-6. **Business viability flow (Business Consultant → PO → ARCH).** Since [[BUSINESS_CONSULTANT_SKILL]] is not in the workflow, the entire market-requirements-to-engineering-constraints translation chain is missing. The PO/TPM SKILL.md defines this interface with the Business Consultant, but the workflow has no Business Consultant role for the PO to interface with.
+6. **Business viability flow (Business Consultant → PO → ARCH).** Since [[BUSINESS_CONSULTANT_SKILL|Business Consultant]] is not in the workflow, the entire market-requirements-to-engineering-constraints translation chain is missing. The PO/TPM SKILL.md defines this interface with the Business Consultant, but the workflow has no Business Consultant role for the PO to interface with.
 
-7. **Research-to-engineering transfer (Researcher → ARCH → HW/FW/EDGE).** Since [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL]] is not in the workflow, there is no defined path for novel research findings to enter the product pipeline.
+7. **Research-to-engineering transfer (Researcher → ARCH → HW/FW/EDGE).** Since [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL|Researcher]] is not in the workflow, there is no defined path for novel research findings to enter the product pipeline.
 
 **Recommendation:** Add the missing interface contracts to the Mermaid diagram as a minimum. For the Business Consultant and Researcher, either integrate them into the workflow or explicitly state that they are external roles with defined SKILL.md interfaces that feed into the workflow at specific touchpoints (Business Consultant → PO/TPM; Researcher → Architect). #recommendation
 
@@ -362,7 +362,7 @@ The following **critical** interface contracts are defined in SKILL.md files but
 - **Role pairs affected:** Business Consultant → Product Owner/TPM → Embedded Systems Architect → all engineering roles.
 - **Description:** The Business Consultant role (which owns market viability, pricing, GTM strategy, and post-launch product-market fit assessment) is absent from the workflow. Without it, there is no defined mechanism for: (a) market requirements and pricing constraints to enter the engineering pipeline, (b) competitive intelligence to inform architecture trade-offs, (c) post-launch field data (revenue, churn, NPS) to feed back into the backlog.
 - **Product impact:** The engineering team builds to the PO's backlog without market-validated prioritization. Features may be technically sound but commercially non-viable. Pricing may not cover BOM + cloud OpEx. GTM timing may miss seasonal deployment windows (critical for agricultural IoT). Post-launch, there is no defined owner for monitoring product-market fit or recommending pivots.
-- **Mitigation:** Integrate the Business Consultant into the workflow as a strategic input role feeding the Product Owner/TPM, with a defined cadence (weekly backlog alignment, quarterly roadmap prioritization, per-release GTM readiness review) per [[BUSINESS_CONSULTANT_SKILL]] §6.1.
+- **Mitigation:** Integrate the Business Consultant into the workflow as a strategic input role feeding the Product Owner/TPM, with a defined cadence (weekly backlog alignment, quarterly roadmap prioritization, per-release GTM readiness review) per [[BUSINESS_CONSULTANT_SKILL|Business Consultant]] §6.1.
 
 **Risk 3: Research-to-Production Gap with No Technology Transfer Mechanism** #risk #recommendation
 
@@ -376,7 +376,7 @@ The following **critical** interface contracts are defined in SKILL.md files but
 - **Role pairs affected:** Embedded Systems Architect → all 11 other roles.
 - **Description:** The workflow positions the Architect as the sole source of interface contracts, resource budgets, protocol specifications, OTA strategy, and security baseline co-ownership. The Mermaid diagram reinforces this by showing the Architect as the root node from which all primary flows originate (directly or indirectly). If the Architect role is not staffed, is staffed late, or produces incomplete/ambiguous contracts, **every downstream role is blocked**. The workflow has no mechanism for contract delegation, provisional contracts, or contract dispute resolution beyond the ADR process (which itself depends on the Architect as ADR approver).
 - **Product impact:** A delayed or incomplete System Architecture Document blocks hardware component procurement, firmware development, ML model sizing, cloud API design, and frontend dashboard development — effectively the entire team. In an AI-assisted workflow, if the Architect AI agent hallucinates a budget or misses a constraint, the error propagates to every downstream role undetected until integration testing.
-- **Mitigation:** (a) Define a "minimum viable architecture" — the subset of contracts needed to unblock each role — so that hardware, firmware, and ML can begin in parallel with partial contracts, (b) Add the Senior/Staff Architect tier distinction from [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL]] §1 to clarify that architecture is a capability, not a single person, (c) Define an architecture review board (Architect + affected leads + TPM) for contract dispute resolution when the Architect is unavailable or contested.
+- **Mitigation:** (a) Define a "minimum viable architecture" — the subset of contracts needed to unblock each role — so that hardware, firmware, and ML can begin in parallel with partial contracts, (b) Add the Senior/Staff Architect tier distinction from [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] §1 to clarify that architecture is a capability, not a single person, (c) Define an architecture review board (Architect + affected leads + TPM) for contract dispute resolution when the Architect is unavailable or contested.
 
 **Risk 5: Mermaid Diagram as Authoritative Reference — Misleading Simplification** #risk #recommendation
 
@@ -391,20 +391,20 @@ The following **critical** interface contracts are defined in SKILL.md files but
 
 | # | SKILL.md File | In Workflow? | Workflow Section |
 |---|---|---|---|
-| 1 | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL]] | ✅ | §2 |
-| 2 | [[FIRMWARE_ENGINEER_SKILL]] | ✅ | §3 |
-| 3 | [[HARDWARE_ENGINEER_SKILL]] | ✅ | §4 |
-| 4 | [[EDGE_AI_ML_ENGINEER_SKILL]] | ✅ | §5 |
-| 5 | [[MLOPS_ENGINEER_SKILL]] | ✅ | §6 |
-| 6 | [[DATA_ENGINEER_SKILL]] | ✅ | §7 |
-| 7 | [[DEVOPS_PLATFORM_ENGINEER_SKILL]] | ✅ | §8 |
-| 8 | [[BACKEND_CLOUD_ENGINEER_SKILL]] | ✅ | §9 |
-| 9 | [[FRONTEND_DASHBOARD_ENGINEER_SKILL]] | ✅ | §10 |
-| 10 | [[QA_TEST_AUTOMATION_ENGINEER_SKILL]] | ✅ | §11 |
-| 11 | [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL]] | ✅ | §12 |
-| 12 | [[SECURITY_ENGINEER_SKILL]] | ✅ | §13 |
-| 13 | [[BUSINESS_CONSULTANT_SKILL]] | ❌ | — |
-| 14 | [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL]] | ❌ | — |
+| 1 | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL\|Architect]] | ✅ | §2 |
+| 2 | [[FIRMWARE_ENGINEER_SKILL\|Firmware Engineer]] | ✅ | §3 |
+| 3 | [[HARDWARE_ENGINEER_SKILL\|Hardware Engineer]] | ✅ | §4 |
+| 4 | [[EDGE_AI_ML_ENGINEER_SKILL\|Edge AI/ML Engineer]] | ✅ | §5 |
+| 5 | [[MLOPS_ENGINEER_SKILL\|MLOps Engineer]] | ✅ | §6 |
+| 6 | [[DATA_ENGINEER_SKILL\|Data Engineer]] | ✅ | §7 |
+| 7 | [[DEVOPS_PLATFORM_ENGINEER_SKILL\|DevOps Engineer]] | ✅ | §8 |
+| 8 | [[BACKEND_CLOUD_ENGINEER_SKILL\|Backend/Cloud Engineer]] | ✅ | §9 |
+| 9 | [[FRONTEND_DASHBOARD_ENGINEER_SKILL\|Frontend Engineer]] | ✅ | §10 |
+| 10 | [[QA_TEST_AUTOMATION_ENGINEER_SKILL\|QA Engineer]] | ✅ | §11 |
+| 11 | [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL\|PO/TPM]] | ✅ | §12 |
+| 12 | [[SECURITY_ENGINEER_SKILL\|Security Engineer]] | ✅ | §13 |
+| 13 | [[BUSINESS_CONSULTANT_SKILL\|Business Consultant]] | ❌ | — |
+| 14 | [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL\|Researcher]] | ❌ | — |
 
 ## Appendix B: Tag Index
 

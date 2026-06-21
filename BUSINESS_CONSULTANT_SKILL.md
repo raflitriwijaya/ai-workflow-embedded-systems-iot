@@ -1,3 +1,14 @@
+---
+title: "Business Consultant — Skill Card"
+date: 2026-06-20
+status: final
+tags:
+  - skill-card
+  - embedded-iot
+  - business
+cssclass: skill-card
+---
+
 # BUSINESS_CONSULTANT_SKILL.md
 
 ---
@@ -43,6 +54,7 @@
 - Technical trade-off decisions (informed by cost/risk/market-window analysis)
 - Supply chain and manufacturing strategy (assessed from cost, risk, and scalability lens)
 - Cloud and edge infrastructure decisions (evaluated from operational cost and monetization potential)
+- **Interface consolidation note:** Routine technical coordination with [[FIRMWARE_ENGINEER_SKILL|Firmware Engineer]], [[MLOPS_ENGINEER_SKILL|MLOps Engineer]], and [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps/Platform Engineer]] is routed through the [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|PO/TPM]] (for feature effort, timeline, and prioritization) or the [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] (for cost estimation, resource budgets, and technical constraints). The Business Consultant retains the right to initiate direct contact with any role for strategic decisions (market window shifts >1 month, BOM ceiling changes >15%, competitive threats requiring immediate technical response). #interface-consolidation #MR-5
 
 **Explicitly Does NOT Own:**
 
@@ -303,25 +315,7 @@
 
 ---
 
-### 6.4 Firmware Engineer
-
-**Business Consultant Provides:**
-
-- Business prioritization of firmware features (e.g., OTA update capability prioritized for subscription model viability)
-- Market-driven connectivity requirements (protocol selection rationale)
-- RTOS licensing constraint inputs (open-source vs. commercial RTOS business risk)
-
-**Business Consultant Requires:**
-
-- Firmware development timeline estimates for business case and GTM planning
-- OTA update infrastructure operational cost inputs
-- RTOS and third-party library licensing cost information
-
-**Cadence:** At product feasibility and GTM planning stages; on-demand for roadmap prioritization
-
----
-
-### 6.5 Edge AI/ML Engineer
+### 6.4 Edge AI/ML Engineer
 
 **Business Consultant Provides:**
 
@@ -339,25 +333,7 @@
 
 ---
 
-### 6.6 MLOps Engineer
-
-**Business Consultant Provides:**
-
-- Fleet-scale deployment requirements that determine MLOps infrastructure investment
-- Business case for model retraining cadence (data freshness value vs. cloud compute cost)
-- Operational cost budget constraints for cloud-based MLOps pipelines
-
-**Business Consultant Requires:**
-
-- Cloud infrastructure cost estimates for MLOps pipeline at target fleet scale
-- Model deployment and retraining operational cost projections
-- Infrastructure scaling assumptions for financial model inputs
-
-**Cadence:** At scaling stage; quarterly operational cost review
-
----
-
-### 6.7 Data Engineer
+### 6.5 Data Engineer
 
 **Business Consultant Provides:**
 
@@ -375,7 +351,7 @@
 
 ---
 
-### 6.8 Backend/Cloud Engineer
+### 6.6 Backend/Cloud Engineer
 
 **Business Consultant Provides:**
 
@@ -393,23 +369,7 @@
 
 ---
 
-### 6.9 DevOps/Platform Engineer
-
-**Business Consultant Provides:**
-
-- Business SLA requirements that drive infrastructure reliability investment
-- Cost budget constraints for CI/CD and platform tooling
-
-**Business Consultant Requires:**
-
-- Platform infrastructure operational cost estimates
-- Reliability and uptime metrics that affect customer SLA commitments and contract terms
-
-**Cadence:** At GTM planning; quarterly operational review
-
----
-
-### 6.10 Security Engineer
+### 6.7 Security Engineer
 
 **Business Consultant Provides:**
 
@@ -433,7 +393,7 @@
 
 ---
 
-### 6.11 IoT & Embedded Systems Researcher
+### 6.8 IoT & Embedded Systems Researcher
 
 **Business Consultant Provides:**
 
@@ -451,7 +411,7 @@
 
 ---
 
-### 6.12 Executive Leadership / C-Suite
+### 6.9 Executive Leadership / C-Suite
 
 **Business Consultant Provides:**
 
@@ -472,7 +432,7 @@
 
 ---
 
-### 6.13 External Clients & Investors
+### 6.10 External Clients & Investors
 
 **Business Consultant Provides:**
 
@@ -795,7 +755,7 @@ These 5 KPIs (Key Performance Indicators) are the organization's top-level busin
 4. **Gross Margin:** Per-product gross margin after BOM (Bill of Materials), manufacturing, cloud OpEx (Operational Expenditure), and support costs. Target: set per product segment per industry benchmark — typically 40–60% for hardware, 60–80% for software/subscription components.
 5. **Time-to-Market Accuracy:** Percentage of releases that ship within the planned market window (±2 weeks of committed date). Target: ≥80%.
 
-#North-Star-KPI #business-metrics
+#north-star-kpi #business-metrics
 
 ### Revenue & Financial Performance
 

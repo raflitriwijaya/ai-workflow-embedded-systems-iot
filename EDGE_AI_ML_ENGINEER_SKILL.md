@@ -1,3 +1,14 @@
+---
+title: "Edge AI/ML Engineer — Skill Card"
+date: 2026-06-20
+status: final
+tags:
+  - skill-card
+  - embedded-iot
+  - edge-ai
+cssclass: skill-card
+---
+
 # EDGE_AI_ML_ENGINEER_SKILL.md
 
 ## 1. Role Identity
@@ -283,6 +294,12 @@ After sensor characterization ([[HARDWARE_ENGINEER_SKILL|HW]] §3.4), the follow
 - **Provides:** MCU/SoC (Microcontroller Unit / System-on-Chip) upgrade cost implications of on-device ML (Machine Learning) inference; model-accuracy vs. BOM (Bill of Materials) cost trade-off options; and development timeline and NRE (Non-Recurring Engineering) for edge-AI feature implementation.
 - **Requires:** Business case for AI/ML features (expected revenue premium, differentiation value, customer willingness-to-pay for intelligence features); target inference cost envelope (driven by hardware BOM constraints); and market requirements for AI capability (e.g., anomaly-detection latency, accuracy thresholds for the use case).
 - **Cadence:** At product concept stage; at feature-prioritization reviews; on-demand for AI investment decisions. #business-interface #HR-2
+
+### 6.10 [[FRONTEND_DASHBOARD_ENGINEER_SKILL|Frontend/Dashboard Engineer]]
+
+- **Provides:** Defined schema for confidence scores (value range, calibration metadata, per-class probabilities), drift signals (drift metric values, threshold-breached indicators, drift-severity classification), and inference metadata (model version, inference timestamp, input context window); guidance on appropriate visual thresholds for alerting (recommended confidence floors for actionable alerts, drift-severity-to-alert-urgency mapping); and documentation of model output semantics for frontend presentation (what each output field means in operator-facing terms, how to interpret uncertainty, and when to suppress or elevate an inference for operator attention).
+- **Requires:** Feedback on the interpretability of provided model outputs — are confidence scores, drift signals, and inference outputs presented in a way operators correctly understand and act upon; UI requirements for confidence/drift signal display formats (visualization type, color-coding, update frequency, accessibility constraints); and frontend alerting threshold feedback (whether current visual thresholds produce appropriate operator behavior — not too many false alarms, not too few genuine alerts).
+- **Cadence:** Planning-stage alignment on model output schema (Edge AI/ML provides schema and semantics; Frontend reviews for interpretability and visualization feasibility); review checkpoints when model output formats change (new confidence-score format, new drift metric, changed inference metadata — Edge AI/ML notifies Frontend ≥2 weeks before the change reaches production); post-release operator-feedback review on ML output interpretability. #interface-contract #HR-4
 
 ---
 

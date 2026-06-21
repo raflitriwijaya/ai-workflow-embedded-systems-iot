@@ -1,7 +1,7 @@
 ---
 title: "Organizational SKILL.md Review Report — Phase 2: Interfaces & Lifecycle"
 date: 2026-06-19
-status: draft
+status: superseded
 tags:
   - review
   - organizational-design
@@ -28,20 +28,20 @@ cssclass: review-report
 
 | # | Abbr | Role |
 |---|------|------|
-| 1 | RES | [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL]] |
-| 2 | ARCH | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL]] |
-| 3 | HW | [[HARDWARE_ENGINEER_SKILL]] |
-| 4 | FW | [[FIRMWARE_ENGINEER_SKILL]] |
-| 5 | ML | [[EDGE_AI_ML_ENGINEER_SKILL]] |
-| 6 | MLO | [[MLOPS_ENGINEER_SKILL]] |
-| 7 | DATA | [[DATA_ENGINEER_SKILL]] |
-| 8 | DEV | [[DEVOPS_PLATFORM_ENGINEER_SKILL]] |
-| 9 | BACK | [[BACKEND_CLOUD_ENGINEER_SKILL]] |
-| 10 | FRONT | [[FRONTEND_DASHBOARD_ENGINEER_SKILL]] |
-| 11 | QA | [[QA_TEST_AUTOMATION_ENGINEER_SKILL]] |
-| 12 | SEC | [[SECURITY_ENGINEER_SKILL]] |
-| 13 | PO | [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL]] |
-| 14 | BIZ | [[BUSINESS_CONSULTANT_SKILL]] |
+| 1 | RES | [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL\|Researcher]] |
+| 2 | ARCH | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL\|Architect]] |
+| 3 | HW | [[HARDWARE_ENGINEER_SKILL\|Hardware Engineer]] |
+| 4 | FW | [[FIRMWARE_ENGINEER_SKILL\|Firmware Engineer]] |
+| 5 | ML | [[EDGE_AI_ML_ENGINEER_SKILL\|Edge AI/ML Engineer]] |
+| 6 | MLO | [[MLOPS_ENGINEER_SKILL\|MLOps Engineer]] |
+| 7 | DATA | [[DATA_ENGINEER_SKILL\|Data Engineer]] |
+| 8 | DEV | [[DEVOPS_PLATFORM_ENGINEER_SKILL\|DevOps Engineer]] |
+| 9 | BACK | [[BACKEND_CLOUD_ENGINEER_SKILL\|Backend/Cloud Engineer]] |
+| 10 | FRONT | [[FRONTEND_DASHBOARD_ENGINEER_SKILL\|Frontend Engineer]] |
+| 11 | QA | [[QA_TEST_AUTOMATION_ENGINEER_SKILL\|QA Engineer]] |
+| 12 | SEC | [[SECURITY_ENGINEER_SKILL\|Security Engineer]] |
+| 13 | PO | [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL\|PO/TPM]] |
+| 14 | BIZ | [[BUSINESS_CONSULTANT_SKILL\|Business Consultant]] |
 
 **Provider (row) → Consumer (column):**
 
@@ -75,16 +75,16 @@ These are contracts where Role A explicitly defines what it provides to or requi
 
 #### 1.2.1 Researcher-Originated Asymmetries #interface-contract
 
-The [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL]] defines interface contracts with ARCH, PO, HW, FW, ML, and DATA (Sections 6.1–6.6). **None of these six roles reciprocate** with a Researcher-facing interface contract in their own `SKILL.md`. This is the single largest cluster of asymmetry in the entire organization.
+The [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL|Researcher]] defines interface contracts with ARCH, PO, HW, FW, ML, and DATA (Sections 6.1–6.6). **None of these six roles reciprocate** with a Researcher-facing interface contract in their own `SKILL.md`. This is the single largest cluster of asymmetry in the entire organization.
 
 | Researcher Contract | Recipient Role | Recipient's Status |
 |:---|---:|:---|
-| RES → ARCH (6.1): Technology Transfer Pack, Feasibility Reports, PoC demos, scientific consultation | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL]] | No §6 entry for RES |
-| RES → PO (6.2): Horizon briefings, feasibility assessments, literature surveys | [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL]] | No §6 entry for RES |
-| RES → HW (6.3): PoC HW designs, component characterization, novel packaging guidance | [[HARDWARE_ENGINEER_SKILL]] | No §6 entry for RES |
-| RES → FW (6.4): PoC firmware, algorithm specs, scientific rationale for design choices | [[FIRMWARE_ENGINEER_SKILL]] | No §6 entry for RES |
-| RES → ML (6.5): Novel ML approaches, characterized datasets, neuromorphic findings | [[EDGE_AI_ML_ENGINEER_SKILL]] | No §6 entry for RES |
-| RES → DATA (6.6): FAIR datasets, data schema docs, specialized storage requirements | [[DATA_ENGINEER_SKILL]] | No §6 entry for RES |
+| RES → ARCH (6.1): Technology Transfer Pack, Feasibility Reports, PoC demos, scientific consultation | [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL\|Architect]] | No §6 entry for RES |
+| RES → PO (6.2): Horizon briefings, feasibility assessments, literature surveys | [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL\|PO/TPM]] | No §6 entry for RES |
+| RES → HW (6.3): PoC HW designs, component characterization, novel packaging guidance | [[HARDWARE_ENGINEER_SKILL\|Hardware Engineer]] | No §6 entry for RES |
+| RES → FW (6.4): PoC firmware, algorithm specs, scientific rationale for design choices | [[FIRMWARE_ENGINEER_SKILL\|Firmware Engineer]] | No §6 entry for RES |
+| RES → ML (6.5): Novel ML approaches, characterized datasets, neuromorphic findings | [[EDGE_AI_ML_ENGINEER_SKILL\|Edge AI/ML Engineer]] | No §6 entry for RES |
+| RES → DATA (6.6): FAIR datasets, data schema docs, specialized storage requirements | [[DATA_ENGINEER_SKILL\|Data Engineer]] | No §6 entry for RES |
 
 **Risk:** The Researcher operates on research timelines (months to years) while engineering roles operate on sprint cadences. Without reciprocal contracts, the engineering team may not know when to expect technology transfer inputs, how to consume them, or what feedback the Researcher needs to calibrate research directions. #risk
 
@@ -92,7 +92,7 @@ The [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL]] defines interface contracts with A
 
 #### 1.2.2 Business Consultant Asymmetries #interface-contract
 
-The [[BUSINESS_CONSULTANT_SKILL]] defines interface contracts with 10 of the 13 other roles (Sections 6.1–6.11). **Only the Researcher has a reciprocal contract** (BIZ §6.11 ↔ RES, though RES does not list BIZ — see below). The other nine roles do not list BIZ in their interface contracts.
+The [[BUSINESS_CONSULTANT_SKILL|Business Consultant]] defines interface contracts with 10 of the 13 other roles (Sections 6.1–6.11). **Only the Researcher has a reciprocal contract** (BIZ §6.11 ↔ RES, though RES does not list BIZ — see below). The other nine roles do not list BIZ in their interface contracts.
 
 | BIZ Contract | Recipient Role | Status |
 |:---|---:|:---|
@@ -113,23 +113,23 @@ The [[BUSINESS_CONSULTANT_SKILL]] defines interface contracts with 10 of the 13 
 
 #### 1.2.3 Architect–Frontend Asymmetry #interface-contract
 
-The [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL]] §6.9 defines a contract with [[FRONTEND_DASHBOARD_ENGINEER_SKILL]] (provides data/event contracts, real-time stream topology, inference-output semantics). The Frontend Engineer's §6 does NOT list the Architect as an interface. This means the Frontend Engineer may consume data contracts defined by the Architect without formally acknowledging the dependency, and more critically, may not escalate contract gaps back to the Architect through a defined channel.
+The [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] §6.9 defines a contract with [[FRONTEND_DASHBOARD_ENGINEER_SKILL|Frontend Engineer]] (provides data/event contracts, real-time stream topology, inference-output semantics). The Frontend Engineer's §6 does NOT list the Architect as an interface. This means the Frontend Engineer may consume data contracts defined by the Architect without formally acknowledging the dependency, and more critically, may not escalate contract gaps back to the Architect through a defined channel.
 
 **Risk:** If the Frontend Engineer needs a data field or stream that the Architect's contracts do not provide, there is no defined path for the Frontend Engineer to request a contract amendment from the Architect. The Frontend Engineer's ADR participation is limited to being a "Consulted" party (§7 of FRONT); without a direct interface contract, this consultation may not occur. #risk
 
-**Recommendation:** [[FRONTEND_DASHBOARD_ENGINEER_SKILL]] MUST add an §6 entry for the Architect specifying: (a) what data/event contracts it requires from ARCH, (b) what feedback/ADR triggers it provides to ARCH, and (c) cadence aligned with ARCH §6.9. #recommendation
+**Recommendation:** [[FRONTEND_DASHBOARD_ENGINEER_SKILL|Frontend Engineer]] MUST add an §6 entry for the Architect specifying: (a) what data/event contracts it requires from ARCH, (b) what feedback/ADR triggers it provides to ARCH, and (c) cadence aligned with ARCH §6.9. #recommendation
 
 #### 1.2.4 Other Notable Asymmetries #interface-contract
 
 | Provider → Consumer | Detail |
 |:---|:---|
-| [[MLOPS_ENGINEER_SKILL]] → [[FIRMWARE_ENGINEER_SKILL]] | MLO §6.3 defines OTA-ready artifact delivery to FW; FW has no MLO entry. FW §6.4 only lists DEVOPS for OTA pipeline needs, conflating the OTA transport (DEVOPS) with the model artifact (MLO). |
-| [[SECURITY_ENGINEER_SKILL]] → [[EDGE_AI_ML_ENGINEER_SKILL]] | SEC §6.7 defines model-integrity and anti-tampering requirements for ML; ML has no SEC entry. ML may ship models without awareness of security signing/integrity requirements. |
-| [[SECURITY_ENGINEER_SKILL]] → [[QA_TEST_AUTOMATION_ENGINEER_SKILL]] | SEC §6.8 provides security test requirements and penetration-test scope to QA; QA has no SEC entry. QA may not know to validate security controls. |
-| [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL]] → [[FIRMWARE_ENGINEER_SKILL]] | PO §6.3 provides feature requirements and OTA schedule to FW; FW has no PO entry. FW's only management interface is through ARCH (§6.1). |
-| [[FRONTEND_DASHBOARD_ENGINEER_SKILL]] → [[EDGE_AI_ML_ENGINEER_SKILL]] | FRONT §6.4 requires confidence/drift schemas from ML; ML has no FRONT entry. ML may not know the Frontend consumes its outputs. |
-| [[FRONTEND_DASHBOARD_ENGINEER_SKILL]] → [[DEVOPS_PLATFORM_ENGINEER_SKILL]] | FRONT §6.6 requires CI/CD from DEV; DEV has no FRONT entry. DEV §6 lists FW, BACK, MLO, SEC, ARCH, QA, HW, PO — but not FRONT. |
-| [[FRONTEND_DASHBOARD_ENGINEER_SKILL]] → [[SECURITY_ENGINEER_SKILL]] | FRONT §6.7 requires security token/policy review from SEC; SEC has no FRONT entry. SEC does not know it must review frontend authentication flows. |
+| [[MLOPS_ENGINEER_SKILL\|MLOps Engineer]] → [[FIRMWARE_ENGINEER_SKILL\|Firmware Engineer]] | MLO §6.3 defines OTA-ready artifact delivery to FW; FW has no MLO entry. FW §6.4 only lists DEVOPS for OTA pipeline needs, conflating the OTA transport (DEVOPS) with the model artifact (MLO). |
+| [[SECURITY_ENGINEER_SKILL\|Security Engineer]] → [[EDGE_AI_ML_ENGINEER_SKILL\|Edge AI/ML Engineer]] | SEC §6.7 defines model-integrity and anti-tampering requirements for ML; ML has no SEC entry. ML may ship models without awareness of security signing/integrity requirements. |
+| [[SECURITY_ENGINEER_SKILL\|Security Engineer]] → [[QA_TEST_AUTOMATION_ENGINEER_SKILL\|QA Engineer]] | SEC §6.8 provides security test requirements and penetration-test scope to QA; QA has no SEC entry. QA may not know to validate security controls. |
+| [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL\|PO/TPM]] → [[FIRMWARE_ENGINEER_SKILL\|Firmware Engineer]] | PO §6.3 provides feature requirements and OTA schedule to FW; FW has no PO entry. FW's only management interface is through ARCH (§6.1). |
+| [[FRONTEND_DASHBOARD_ENGINEER_SKILL\|Frontend Engineer]] → [[EDGE_AI_ML_ENGINEER_SKILL\|Edge AI/ML Engineer]] | FRONT §6.4 requires confidence/drift schemas from ML; ML has no FRONT entry. ML may not know the Frontend consumes its outputs. |
+| [[FRONTEND_DASHBOARD_ENGINEER_SKILL\|Frontend Engineer]] → [[DEVOPS_PLATFORM_ENGINEER_SKILL\|DevOps Engineer]] | FRONT §6.6 requires CI/CD from DEV; DEV has no FRONT entry. DEV §6 lists FW, BACK, MLO, SEC, ARCH, QA, HW, PO — but not FRONT. |
+| [[FRONTEND_DASHBOARD_ENGINEER_SKILL\|Frontend Engineer]] → [[SECURITY_ENGINEER_SKILL\|Security Engineer]] | FRONT §6.7 requires security token/policy review from SEC; SEC has no FRONT entry. SEC does not know it must review frontend authentication flows. |
 
 ### 1.3 Missing Contracts #interface-contract #gap
 
@@ -139,21 +139,21 @@ These are role pairs where a meaningful interface should exist — the roles' do
 
 | # | Provider ↔ Consumer | Rationale | #risk |
 |:--|:---|:---|:---|
-| M1 | [[SECURITY_ENGINEER_SKILL]] ↔ [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL]] | Research produces novel sensing principles, PoC hardware, and datasets. Some research outputs may have dual-use implications, security-sensitive IP, or introduce new attack surfaces. Security must review research outputs before technology transfer. Neither role defines this interface. | #risk |
-| M2 | [[SECURITY_ENGINEER_SKILL]] ↔ [[DATA_ENGINEER_SKILL]] | DATA handles fleet telemetry, PII, and training datasets. Data governance, encryption at rest, access control, and privacy compliance all require security requirements. Neither role defines this interface. | #risk |
-| M3 | [[SECURITY_ENGINEER_SKILL]] ↔ [[FRONTEND_DASHBOARD_ENGINEER_SKILL]] | Frontend handles JWT/OAuth tokens, session state, and displays sensitive operational data. Security must define Content Security Policy, token handling, and XSS prevention requirements for Frontend. Neither role defines this interface. | #risk |
-| M4 | [[BUSINESS_CONSULTANT_SKILL]] ↔ [[FRONTEND_DASHBOARD_ENGINEER_SKILL]] | BIZ defines market KPIs (NPS, adoption rate, churn) that dashboard analytics should surface. FRONT receives business requirements only indirectly through PO. A direct contract would ensure dashboard analytics align with business metrics. Neither role defines this interface. | #risk |
-| M5 | [[BUSINESS_CONSULTANT_SKILL]] ↔ [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL]] | BIZ §6.2 defines what it provides to/requires from ARCH, but ARCH has no §6 entry for BIZ. The Architect makes platform/cost decisions with no formal channel to receive business constraints (target BOM ceiling, certification cost budget, market window). Neither role fully defines this from both sides. | #risk |
+| M1 | [[SECURITY_ENGINEER_SKILL\|Security Engineer]] ↔ [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL\|Researcher]] | Research produces novel sensing principles, PoC hardware, and datasets. Some research outputs may have dual-use implications, security-sensitive IP, or introduce new attack surfaces. Security must review research outputs before technology transfer. Neither role defines this interface. | #risk |
+| M2 | [[SECURITY_ENGINEER_SKILL\|Security Engineer]] ↔ [[DATA_ENGINEER_SKILL\|Data Engineer]] | DATA handles fleet telemetry, PII, and training datasets. Data governance, encryption at rest, access control, and privacy compliance all require security requirements. Neither role defines this interface. | #risk |
+| M3 | [[SECURITY_ENGINEER_SKILL\|Security Engineer]] ↔ [[FRONTEND_DASHBOARD_ENGINEER_SKILL\|Frontend Engineer]] | Frontend handles JWT/OAuth tokens, session state, and displays sensitive operational data. Security must define Content Security Policy, token handling, and XSS prevention requirements for Frontend. Neither role defines this interface. | #risk |
+| M4 | [[BUSINESS_CONSULTANT_SKILL\|Business Consultant]] ↔ [[FRONTEND_DASHBOARD_ENGINEER_SKILL\|Frontend Engineer]] | BIZ defines market KPIs (NPS, adoption rate, churn) that dashboard analytics should surface. FRONT receives business requirements only indirectly through PO. A direct contract would ensure dashboard analytics align with business metrics. Neither role defines this interface. | #risk |
+| M5 | [[BUSINESS_CONSULTANT_SKILL\|Business Consultant]] ↔ [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL\|Architect]] | BIZ §6.2 defines what it provides to/requires from ARCH, but ARCH has no §6 entry for BIZ. The Architect makes platform/cost decisions with no formal channel to receive business constraints (target BOM ceiling, certification cost budget, market window). Neither role fully defines this from both sides. | #risk |
 
 #### 1.3.2 Secondary Missing Contracts
 
 | # | Provider ↔ Consumer | Rationale | #recommendation |
 |:--|:---|:---|:---|
-| M6 | [[MLOPS_ENGINEER_SKILL]] ↔ [[BACKEND_CLOUD_ENGINEER_SKILL]] | MLO provides OTA model artifacts; BACK operates the OTA desired-state plane. The model artifact must flow through BACK's control plane. Neither defines a direct contract. Currently mediated through DEVOPS and FW, creating a multi-hop dependency chain without explicit ownership at each hop. | #recommendation |
-| M7 | [[MLOPS_ENGINEER_SKILL]] ↔ [[FRONTEND_DASHBOARD_ENGINEER_SKILL]] | MLO produces drift-monitoring dashboards and model-health metrics. FRONT is the dashboard owner. Who owns the Grafana dashboard for model drift — MLO or FRONT? Neither contract clarifies this ownership boundary, risking duplicated effort or orphaned monitoring. | #recommendation |
-| M8 | [[EDGE_AI_ML_ENGINEER_SKILL]] ↔ [[DEVOPS_PLATFORM_ENGINEER_SKILL]] | ML requires GPU/CPU resources for training, containerized environments for reproducibility, and CI integration. DEV provides all of these but has no ML-facing contract. ML currently routes infrastructure needs through MLO (§6.4) and ARCH (§6.1), but direct coordination on resource sizing would be more efficient. | #recommendation |
-| M9 | [[EDGE_AI_ML_ENGINEER_SKILL]] ↔ [[BACKEND_CLOUD_ENGINEER_SKILL]] | ML designs cloud-side inference models; BACK hosts the model-serving endpoints. The edge-vs-cloud inference split is owned by ARCH, but the direct ML↔BACK handoff for cloud model deployment has no contract. Currently mediated through MLO and ARCH. | #recommendation |
-| M10 | [[HARDWARE_ENGINEER_SKILL]] ↔ [[MLOPS_ENGINEER_SKILL]] | Hardware revisions (new MCU, different sensor) affect model compatibility manifests. MLO manages compatibility manifests (§4.3) but has no contract with HW to learn about hardware changes that would invalidate model compatibility. | #recommendation |
+| M6 | [[MLOPS_ENGINEER_SKILL\|MLOps Engineer]] ↔ [[BACKEND_CLOUD_ENGINEER_SKILL\|Backend/Cloud Engineer]] | MLO provides OTA model artifacts; BACK operates the OTA desired-state plane. The model artifact must flow through BACK's control plane. Neither defines a direct contract. Currently mediated through DEVOPS and FW, creating a multi-hop dependency chain without explicit ownership at each hop. | #recommendation |
+| M7 | [[MLOPS_ENGINEER_SKILL\|MLOps Engineer]] ↔ [[FRONTEND_DASHBOARD_ENGINEER_SKILL\|Frontend Engineer]] | MLO produces drift-monitoring dashboards and model-health metrics. FRONT is the dashboard owner. Who owns the Grafana dashboard for model drift — MLO or FRONT? Neither contract clarifies this ownership boundary, risking duplicated effort or orphaned monitoring. | #recommendation |
+| M8 | [[EDGE_AI_ML_ENGINEER_SKILL\|Edge AI/ML Engineer]] ↔ [[DEVOPS_PLATFORM_ENGINEER_SKILL\|DevOps Engineer]] | ML requires GPU/CPU resources for training, containerized environments for reproducibility, and CI integration. DEV provides all of these but has no ML-facing contract. ML currently routes infrastructure needs through MLO (§6.4) and ARCH (§6.1), but direct coordination on resource sizing would be more efficient. | #recommendation |
+| M9 | [[EDGE_AI_ML_ENGINEER_SKILL\|Edge AI/ML Engineer]] ↔ [[BACKEND_CLOUD_ENGINEER_SKILL\|Backend/Cloud Engineer]] | ML designs cloud-side inference models; BACK hosts the model-serving endpoints. The edge-vs-cloud inference split is owned by ARCH, but the direct ML↔BACK handoff for cloud model deployment has no contract. Currently mediated through MLO and ARCH. | #recommendation |
+| M10 | [[HARDWARE_ENGINEER_SKILL\|Hardware Engineer]] ↔ [[MLOPS_ENGINEER_SKILL\|MLOps Engineer]] | Hardware revisions (new MCU, different sensor) affect model compatibility manifests. MLO manages compatibility manifests (§4.3) but has no contract with HW to learn about hardware changes that would invalidate model compatibility. | #recommendation |
 
 ### 1.4 Ambiguous Cadence Contracts #interface-contract #risk
 
@@ -161,15 +161,15 @@ The following contracts specify cadence using vague temporal language ("on-deman
 
 | Provider → Consumer | Stated Cadence | Ambiguity | #risk |
 |:---|:---|:---|:---|
-| [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL]] → [[HARDWARE_ENGINEER_SKILL]] | "On-demand, triggered by prototype development needs or technology transfer handoffs" | No trigger definition. Who decides when a need exists? What is the expected response latency? | #risk |
-| [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL]] → [[FIRMWARE_ENGINEER_SKILL]] | "On-demand, at technology transfer stage; occasional during PoC firmware development" | "Occasional" is undefined. Technology transfer stage has no fixed calendar. | #risk |
-| [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL]] → [[EDGE_AI_ML_ENGINEER_SKILL]] | "On-demand per research project; quarterly cross-pollination meeting" | Quarterly meeting is well-defined, but "on-demand" lacks SLA. | #risk |
-| [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL]] → [[DATA_ENGINEER_SKILL]] | "On-demand when research projects generate large or complex datasets requiring infrastructure support" | "Large or complex" is subjective. No threshold defined. | #risk |
-| [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL]] → [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL]] | "Requirement-intake sessions; sprint planning; release-gate reviews; ad hoc trade-off escalations" | "Ad hoc" lacks definition. When is escalation required vs. optional? | #risk |
-| [[BUSINESS_CONSULTANT_SKILL]] → [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL]] | "At architecture review gates; on-demand for major technical decision points; quarterly strategy alignment" | "Major technical decision points" is undefined. Quarterly strategy alignment is well-defined. | #risk |
-| [[BUSINESS_CONSULTANT_SKILL]] → [[HARDWARE_ENGINEER_SKILL]] | "At product feasibility stage; at design freeze; at manufacturing ramp-up decision" | Tied to milestones that have no fixed calendar. Good triggers but no time-bound cadence. | #risk |
-| [[BUSINESS_CONSULTANT_SKILL]] → [[FIRMWARE_ENGINEER_SKILL]] | "At product feasibility and GTM planning stages; on-demand for roadmap prioritization" | Same issue: stage-gated but no time-bound commitment. | #risk |
-| [[BUSINESS_CONSULTANT_SKILL]] → multiple engineering roles | "On-demand" for various purposes | "On-demand" appears 11 times across BIZ contracts. Creates an expectation of real-time availability from a business role that operates on market-research timelines. | #risk |
+| [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL\|Researcher]] → [[HARDWARE_ENGINEER_SKILL\|Hardware Engineer]] | "On-demand, triggered by prototype development needs or technology transfer handoffs" | No trigger definition. Who decides when a need exists? What is the expected response latency? | #risk |
+| [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL\|Researcher]] → [[FIRMWARE_ENGINEER_SKILL\|Firmware Engineer]] | "On-demand, at technology transfer stage; occasional during PoC firmware development" | "Occasional" is undefined. Technology transfer stage has no fixed calendar. | #risk |
+| [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL\|Researcher]] → [[EDGE_AI_ML_ENGINEER_SKILL\|Edge AI/ML Engineer]] | "On-demand per research project; quarterly cross-pollination meeting" | Quarterly meeting is well-defined, but "on-demand" lacks SLA. | #risk |
+| [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL\|Researcher]] → [[DATA_ENGINEER_SKILL\|Data Engineer]] | "On-demand when research projects generate large or complex datasets requiring infrastructure support" | "Large or complex" is subjective. No threshold defined. | #risk |
+| [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL\|Architect]] → [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL\|PO/TPM]] | "Requirement-intake sessions; sprint planning; release-gate reviews; ad hoc trade-off escalations" | "Ad hoc" lacks definition. When is escalation required vs. optional? | #risk |
+| [[BUSINESS_CONSULTANT_SKILL\|Business Consultant]] → [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL\|Architect]] | "At architecture review gates; on-demand for major technical decision points; quarterly strategy alignment" | "Major technical decision points" is undefined. Quarterly strategy alignment is well-defined. | #risk |
+| [[BUSINESS_CONSULTANT_SKILL\|Business Consultant]] → [[HARDWARE_ENGINEER_SKILL\|Hardware Engineer]] | "At product feasibility stage; at design freeze; at manufacturing ramp-up decision" | Tied to milestones that have no fixed calendar. Good triggers but no time-bound cadence. | #risk |
+| [[BUSINESS_CONSULTANT_SKILL\|Business Consultant]] → [[FIRMWARE_ENGINEER_SKILL\|Firmware Engineer]] | "At product feasibility and GTM planning stages; on-demand for roadmap prioritization" | Same issue: stage-gated but no time-bound commitment. | #risk |
+| [[BUSINESS_CONSULTANT_SKILL\|Business Consultant]] → multiple engineering roles | "On-demand" for various purposes | "On-demand" appears 11 times across BIZ contracts. Creates an expectation of real-time availability from a business role that operates on market-research timelines. | #risk |
 
 **Recommendation:** All contracts using "on-demand" or "as needed" MUST be updated with one of: (a) a recurring calendar interval (e.g., "bi-weekly 30-min sync"), (b) a quantified trigger condition (e.g., "when dataset exceeds 10 GB or 1M rows"), or (c) a response-time SLA (e.g., "response within 3 business days of request"). #recommendation
 
@@ -309,7 +309,7 @@ graph TD
 
 #### #1: Unidirectional Researcher Contracts — The "Island of Research" Risk #risk #recommendation
 
-**Role pair:** [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL]] → Six engineering roles (ARCH, PO, HW, FW, ML, DATA)
+**Role pair:** [[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL|Researcher]] → Six engineering roles (ARCH, PO, HW, FW, ML, DATA)
 
 **Finding:** The Researcher defines contracts with six downstream engineering roles. Zero of those six roles reciprocate. The Researcher operates outside the ADR governance process, outside sprint cadences, and outside the interface-versioning discipline that every other role adheres to.
 
@@ -319,7 +319,7 @@ graph TD
 
 #### #2: The Business Consultant Firewall — "Engineering Builds What Business Doesn't Know About" #risk #recommendation
 
-**Role pair:** [[BUSINESS_CONSULTANT_SKILL]] → Nine engineering roles (all except QA, RES, FRONT)
+**Role pair:** [[BUSINESS_CONSULTANT_SKILL|Business Consultant]] → Nine engineering roles (all except QA, RES, FRONT)
 
 **Finding:** BIZ defines detailed, MECE-structured interface contracts with 10 other roles. Nine of those 10 have no reciprocal contract. The BIZ operates as a "write-only" interface — it sends business constraints, BOM ceilings, market windows, and pricing models downstream, but no engineering role formally acknowledges receiving or acting on them. This is structurally the same as the Researcher asymmetry but with commercial rather than scientific outputs.
 
@@ -329,7 +329,7 @@ graph TD
 
 #### #3: The Security–Data Governance Gap #risk #recommendation
 
-**Role pair:** [[SECURITY_ENGINEER_SKILL]] ↔ [[DATA_ENGINEER_SKILL]]
+**Role pair:** [[SECURITY_ENGINEER_SKILL|Security Engineer]] ↔ [[DATA_ENGINEER_SKILL|Data Engineer]]
 
 **Finding:** Neither role defines a contract with the other. DATA handles fleet telemetry, PII-containing sensor data, training datasets, and cloud storage. SEC defines encryption, access control, and key management requirements. Yet there is no interface for SEC to communicate data-governance requirements to DATA, and no interface for DATA to surface data-exfiltration or privacy risks to SEC.
 
@@ -339,7 +339,7 @@ graph TD
 
 #### #4: The OTA Artifact Routing Ambiguity — "Four Roles, No Single Owner" #risk #recommendation
 
-**Role pairs:** [[MLOPS_ENGINEER_SKILL]] → [[FIRMWARE_ENGINEER_SKILL]], [[MLOPS_ENGINEER_SKILL]] → [[BACKEND_CLOUD_ENGINEER_SKILL]], [[DEVOPS_PLATFORM_ENGINEER_SKILL]] → [[FIRMWARE_ENGINEER_SKILL]]
+**Role pairs:** [[MLOPS_ENGINEER_SKILL|MLOps Engineer]] → [[FIRMWARE_ENGINEER_SKILL|Firmware Engineer]], [[MLOPS_ENGINEER_SKILL|MLOps Engineer]] → [[BACKEND_CLOUD_ENGINEER_SKILL|Backend/Cloud Engineer]], [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps Engineer]] → [[FIRMWARE_ENGINEER_SKILL|Firmware Engineer]]
 
 **Finding:** The OTA path for a model artifact involves four roles — MLO (packages the model), DEV (distributes the artifact), BACK (controls the desired state), and FW (applies the update). But the interface contracts are incomplete:
 
@@ -353,7 +353,7 @@ graph TD
 
 #### #5: Frontend Isolation — "The Dashboard That Nobody Feeds" #risk #recommendation
 
-**Role pairs:** [[FRONTEND_DASHBOARD_ENGINEER_SKILL]] ↔ [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL]], [[FRONTEND_DASHBOARD_ENGINEER_SKILL]] ↔ [[MLOPS_ENGINEER_SKILL]], [[FRONTEND_DASHBOARD_ENGINEER_SKILL]] ↔ [[BUSINESS_CONSULTANT_SKILL]]
+**Role pairs:** [[FRONTEND_DASHBOARD_ENGINEER_SKILL|Frontend Engineer]] ↔ [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]], [[FRONTEND_DASHBOARD_ENGINEER_SKILL|Frontend Engineer]] ↔ [[MLOPS_ENGINEER_SKILL|MLOps Engineer]], [[FRONTEND_DASHBOARD_ENGINEER_SKILL|Frontend Engineer]] ↔ [[BUSINESS_CONSULTANT_SKILL|Business Consultant]]
 
 **Finding:** The Frontend Engineer has the fewest symmetric contracts of any engineering role (5 of 13 possible). Three critical missing interfaces create a frontend that is structurally isolated from the data it needs to display:
 
@@ -424,16 +424,16 @@ graph TD
 
 **Severity: CRITICAL**
 
-The Post-Launch/Market stage has only one role that explicitly claims ownership: [[BUSINESS_CONSULTANT_SKILL]]. Nine roles have **None** for this stage. This is the most severe lifecycle coverage gap in the organization.
+The Post-Launch/Market stage has only one role that explicitly claims ownership: [[BUSINESS_CONSULTANT_SKILL|Business Consultant]]. Nine roles have **None** for this stage. This is the most severe lifecycle coverage gap in the organization.
 
 Roles with **None** at S6:
-- [[HARDWARE_ENGINEER_SKILL]] — No field-failure analysis, no hardware revision planning based on field data.
-- [[FIRMWARE_ENGINEER_SKILL]] — No post-deployment bug triage, no field-driven firmware patch planning.
-- [[DATA_ENGINEER_SKILL]] — No ongoing data-quality monitoring, no storage cost optimization based on actual fleet growth.
-- [[DEVOPS_PLATFORM_ENGINEER_SKILL]] — No post-launch infrastructure scaling, no incident response ownership (despite §4.5 listing incident detection).
-- [[BACKEND_CLOUD_ENGINEER_SKILL]] — No post-launch API deprecation management, no fleet-scaling response.
-- [[FRONTEND_DASHBOARD_ENGINEER_SKILL]] — No post-launch UX iteration based on operator feedback.
-- [[QA_TEST_AUTOMATION_ENGINEER_SKILL]] — No field-defect triage, no post-release regression monitoring.
+- [[HARDWARE_ENGINEER_SKILL|Hardware Engineer]] — No field-failure analysis, no hardware revision planning based on field data.
+- [[FIRMWARE_ENGINEER_SKILL|Firmware Engineer]] — No post-deployment bug triage, no field-driven firmware patch planning.
+- [[DATA_ENGINEER_SKILL|Data Engineer]] — No ongoing data-quality monitoring, no storage cost optimization based on actual fleet growth.
+- [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps Engineer]] — No post-launch infrastructure scaling, no incident response ownership (despite §4.5 listing incident detection).
+- [[BACKEND_CLOUD_ENGINEER_SKILL|Backend/Cloud Engineer]] — No post-launch API deprecation management, no fleet-scaling response.
+- [[FRONTEND_DASHBOARD_ENGINEER_SKILL|Frontend Engineer]] — No post-launch UX iteration based on operator feedback.
+- [[QA_TEST_AUTOMATION_ENGINEER_SKILL|QA Engineer]] — No field-defect triage, no post-release regression monitoring.
 
 **Impact:** After the release gate closes (S5), 9 of 14 roles consider their job done. But embedded/IoT systems live in the field for years. Battery degradation, sensor drift, security vulnerabilities discovered post-ship, OTA failures at scale, and operator-reported UX issues all occur in S6. With no defined ownership for these responsibilities, they will be handled ad hoc, if at all.
 
@@ -443,7 +443,7 @@ Roles with **None** at S6:
 
 **Severity: HIGH**
 
-Both [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL]] and [[BUSINESS_CONSULTANT_SKILL]] claim to influence the Research stage, but neither claims ownership of the decision to transition from Research to Planning. The Researcher owns Research execution (§3 of RES), BIZ owns market discovery (§3.1 of BIZ), and ARCH contributes feasibility trade studies (§3.1 of ARCH). But who decides "this research direction is validated — we proceed to Planning"?
+Both [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] and [[BUSINESS_CONSULTANT_SKILL|Business Consultant]] claim to influence the Research stage, but neither claims ownership of the decision to transition from Research to Planning. The Researcher owns Research execution (§3 of RES), BIZ owns market discovery (§3.1 of BIZ), and ARCH contributes feasibility trade studies (§3.1 of ARCH). But who decides "this research direction is validated — we proceed to Planning"?
 
 **Impact:** Research projects may continue indefinitely (scientific curiosity) or be terminated prematurely (market pressure) without a defined gate between S1 and S2. The Researcher's KPIs incentivize publication and patents, not productization. BIZ's KPIs incentivize market capture, not scientific rigor. ARCH is best positioned to judge technical feasibility but has no formal authority over the Research→Planning transition.
 
@@ -484,7 +484,7 @@ ARCH lists its Development stage engagement as "Support teams building against t
 
 **Severity: MEDIUM**
 
-Both [[SECURITY_ENGINEER_SKILL]] and [[QA_TEST_AUTOMATION_ENGINEER_SKILL]] claim release-gate sign-off authority at S5:
+Both [[SECURITY_ENGINEER_SKILL|Security Engineer]] and [[QA_TEST_AUTOMATION_ENGINEER_SKILL|QA Engineer]] claim release-gate sign-off authority at S5:
 
 - SEC §7: "The security release sign-off — the authority to block a release on security grounds."
 - QA §7: "The release-readiness assessment and recommendation (the go/no-go decision is shared with the TPM/Architect)."

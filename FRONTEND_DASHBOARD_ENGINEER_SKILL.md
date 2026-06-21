@@ -1,3 +1,14 @@
+---
+title: "Frontend/Dashboard Engineer — Skill Card"
+date: 2026-06-20
+status: final
+tags:
+  - skill-card
+  - embedded-iot
+  - frontend
+cssclass: skill-card
+---
+
 # FRONTEND_DASHBOARD_ENGINEER_SKILL.md
 
 ## 1. Role Identity
@@ -273,6 +284,12 @@
 - **Provides to them:** Visualization feasibility assessment — whether a novel data type, real-time streaming requirement, or sensor modality from research can be effectively visualized with current dashboard tooling (Grafana, Plotly, D3.js, Recharts) or requires custom visualization development; UX (User Experience) impact analysis for research-driven features (what new dashboard views, controls, or alerting surfaces field operators would need); real-time streaming compatibility (whether a research data type's volume and velocity can render in a browser-based dashboard without performance degradation); and accessibility implications against WCAG 2.1 AA (Web Content Accessibility Guidelines 2.1, Level AA) standards.
 - **Requires from them:** Novel data-type visualization requirements (what the data represents, how it should be represented, update frequency, domain-specific conventions); real-time streaming requirements (expected data rate, latency tolerance, domain-specific rendering constraints); ML output presentation requirements (how confidence scores, uncertainty, or novel output formats should be presented to operators); and frontend-relevant Technology Transfer Packs with implications for dashboard visualization, real-time data rendering, or operator interaction patterns.
 - **Cadence:** Visualization feasibility assessment — Frontend responds within 15 business days of receiving novel data-type visualization requirements. Real-time streaming compatibility — assessed within 10 business days. Technology Transfer — frontend-relevant findings transferred at the quarterly Technology Transfer Review. Ad hoc consultation — Frontend available for research-stage UX/visualization questions with 5 business days' notice. #research-interface #visualization-feasibility #HR-1
+
+### 6.9 [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Embedded Systems Architect]]
+
+- **Provides:** UX-driven data needs for dashboard surfaces (payload shape, update frequency, aggregation requirements); visualization requirements for monitoring and alerting (chart types, drill-down paths, real-time update expectations); and feedback on contract gaps — missing fields, unsupported update frequencies, or schema mismatches — raised via the ADR (Architecture Decision Record) process with evidence.
+- **Requires:** Data/event contracts for visualization (telemetry and event payload schemas, field definitions, and units); real-time stream topology (MQTT-over-WebSockets topic structures, message schemas, and QoS — Quality of Service — expectations); and the semantics of inference outputs to be displayed (confidence scores, drift signals, model version metadata) with their expected visual interpretation.
+- **Cadence:** Contract definition at planning (Architect provides visualization contracts; Frontend reviews and provides UX-driven requirements); integration checkpoints during development (Frontend validates contracts against real data); alert-semantics review before production (joint confirmation that dashboard alerting surfaces correctly reflect the Architect's system-event taxonomy). #interface-contract #HR-4
 
 ---
 

@@ -1,3 +1,14 @@
+---
+title: "Embedded/IoT AI Workflow Engineering Team"
+date: 2026-06-20
+status: final
+tags:
+  - workflow-doc
+  - embedded-iot
+  - team-overview
+cssclass: workflow-doc
+---
+
 # Embedded/IoT AI Workflow Engineering Team: Roles, Skills, and Job Descriptions
 
 ## 1. Team Overview
@@ -513,39 +524,111 @@ This team researches, designs, develops, validates, deploys, and maintains a pro
 
 ## 14. Inter-Role Workflow Diagram (Mermaid)
 
+> **Caveat:** This diagram is a simplified organizational topology showing the primary symmetric interface contracts between roles. It does not capture every nuance of the Provides/Requires/Cadence triples. Individual SKILL.md §6 Interface Contracts sections are the authoritative reference for role-to-role interfaces. This diagram serves as a visual orientation, not an execution map. Last updated: 2026-06-20.
+
 ```mermaid
-flowchart TD
-    PO["Product Owner / TPM"] -->|"Requirements & Roadmap"| ARCH["Embedded Systems Architect"]
+graph TD
+  classDef node fill:#1565c0,color:#ffffff,stroke:#0d47a1,stroke-width:2px
 
-    ARCH -->|"System Architecture Doc"| HW["Hardware Engineer"]
-    ARCH -->|"System Architecture Doc"| FW["Firmware Engineer"]
-    ARCH -->|"Interface Contracts"| BE["Backend / Cloud Engineer"]
+  RES["🔬 Researcher<br/>RES"]
+  ARCH["🏗️ Architect<br/>ARCH"]
+  HW["⚡ Hardware Eng<br/>HW"]
+  FW["💾 Firmware Eng<br/>FW"]
+  ML["🧠 Edge AI/ML<br/>ML"]
+  MLO["🔄 MLOps<br/>MLO"]
+  DATA["📊 Data Eng<br/>DATA"]
+  DEV["🖥️ DevOps/Platform<br/>DEV"]
+  BACK["☁️ Backend/Cloud<br/>BACK"]
+  FRONT["🖼️ Frontend<br/>FRONT"]
+  QA["✅ QA/Test Auto<br/>QA"]
+  SEC["🔒 Security Eng<br/>SEC"]
+  PO["📋 Product Owner<br/>PO"]
+  BIZ["💼 Business Consultant<br/>BIZ"]
 
-    HW -->|"Schematics, PCB & BOM"| FW
-    HW -->|"Sensor Specs"| EDGE["Edge AI / ML Engineer"]
+  ARCH --- HW
+  ARCH --- FW
+  ARCH --- ML
+  ARCH --- MLO
+  ARCH --- DATA
+  ARCH --- DEV
+  ARCH --- BACK
+  ARCH --- FRONT
+  ARCH --- QA
+  ARCH --- SEC
+  ARCH --- PO
+  ARCH --- RES
+  ARCH --- BIZ
+  HW --- FW
+  HW --- ML
+  HW --- SEC
+  HW --- QA
+  HW --- PO
+  HW --- RES
+  HW --- BIZ
+  FW --- ML
+  FW --- DEV
+  FW --- QA
+  FW --- SEC
+  FW --- BACK
+  FW --- DATA
+  FW --- PO
+  FW --- RES
+  FW --- BIZ
+  FW --- MLO
+  ML --- DATA
+  ML --- MLO
+  ML --- QA
+  ML --- PO
+  ML --- RES
+  ML --- SEC
+  ML --- FRONT
+  ML --- BIZ
+  MLO --- DATA
+  MLO --- QA
+  MLO --- SEC
+  MLO --- PO
+  MLO --- DEV
+  MLO --- BACK
+  MLO --- RES
+  MLO --- BIZ
+  DATA --- BACK
+  DATA --- FRONT
+  DATA --- DEV
+  DATA --- QA
+  DATA --- PO
+  DATA --- RES
+  DATA --- SEC
+  DATA --- BIZ
+  DEV --- BACK
+  DEV --- SEC
+  DEV --- QA
+  DEV --- PO
+  DEV --- BIZ
+  DEV --- RES
+  DEV --- FRONT
+  BACK --- FRONT
+  BACK --- SEC
+  BACK --- QA
+  BACK --- PO
+  BACK --- RES
+  BACK --- BIZ
+  FRONT --- QA
+  FRONT --- PO
+  FRONT --- SEC
+  FRONT --- RES
+  FRONT --- BIZ
+  QA --- PO
+  QA --- SEC
+  QA --- RES
+  QA --- BIZ
+  SEC --- PO
+  SEC --- RES
+  SEC --- BIZ
+  PO --- RES
+  PO --- BIZ
+  RES --- BIZ
 
-    FW -->|"Firmware & HAL"| EDGE
-    FW -->|"Telemetry Schema"| DATA["Data Engineer"]
-    FW -->|"Test Builds"| QA["QA & Test Automation"]
-
-    EDGE -->|"Quantized TFLite Model"| FW
-    EDGE -->|"Training Requirements"| MLOPS["MLOps Engineer"]
-
-    DATA -->|"Curated Datasets"| EDGE
-    DATA -->|"Feature Pipelines"| MLOPS
-
-    MLOPS -->|"Model Registry & Artifacts"| DEVOPS["DevOps / Platform Engineer"]
-
-    BE -->|"Device APIs & MQTT Broker"| FE["Frontend / Dashboard Engineer"]
-    BE -->|"Telemetry Ingest"| DATA
-    BE -->|"Test Builds"| QA
-
-    DEVOPS -->|"CI/CD & OTA Pipeline"| FW
-    DEVOPS -->|"Container Infra"| BE
-
-    SEC["Security Engineer"] -->|"Secure Boot & mTLS Spec"| FW
-    SEC -->|"Threat Model & PKI"| BE
-
-    FE -->|"Dashboards & Alerts"| PO
-    QA -->|"HIL & Test Reports"| ARCH
+  class RES,HW,FW,ML,MLO,DATA,DEV,BACK,FRONT,QA,SEC,PO,BIZ,ARCH node
 ```
+
+#workflow-diagram #MR-8

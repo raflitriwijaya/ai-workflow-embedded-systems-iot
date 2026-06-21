@@ -1,3 +1,14 @@
+---
+title: "Product Owner / Technical Project Manager — Skill Card"
+date: 2026-06-20
+status: final
+tags:
+  - skill-card
+  - embedded-iot
+  - product-management
+cssclass: skill-card
+---
+
 # PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL.md
 
 ## 1. Role Identity
@@ -16,6 +27,8 @@
 |**Mid PO/TPM**|Owns a product feature or module; independently runs sprints, manages a subset of the backlog, and coordinates dependencies within a single workstream.|
 |**Senior PO/TPM**|Owns the end-to-end product for a product line; drives roadmap, cross-functional coordination, and stakeholder management; mentors junior/mid PO/TPMs.|
 |**Staff PO/TPM**|Owns the product portfolio strategy; sets organization-wide product management standards; manages multi-product roadmaps and executive stakeholders.|
+
+- **Deputy Product Owner/TPM (fractional, 10–15% capacity):** A designated alternate for the PO/TPM, drawn from any Senior or Staff engineering tier who has completed the Product Management fundamentals curriculum and passed a qualification review by the PO/TPM. The Deputy PO retains their primary engineering role; this is an additional duty. Deputy PO authority (exercisable when delegated or when PO is unavailable): (a) facilitate sprint planning, daily standups, and retrospectives, (b) track cross-role dependencies and maintain the dependency map, (c) receive and aggregate weekly status reports from engineering leads, (d) manage the OTA release calendar operationally, (e) flag dependency slips, risks, and blocked items to the PO/TPM within 24 hours of identification. Deputy PO authority limits (NOT authorized): cannot change the product vision or roadmap, cannot reprioritize the strategic backlog, cannot negotiate with external stakeholders, cannot make go/no-go release decisions. The Deputy PO is appointed annually with PO/TPM and CTO concurrence. #deputy-po #MR-6
 
 **Summary:** The Product Owner/TPM is the central accountable authority for translating field and business needs into a prioritized, technically realistic delivery plan for an embedded/IoT AI system. This role owns the product vision and backlog, arbitrates trade-offs across hardware, firmware, ML, data, cloud, and frontend disciplines with fundamentally different lead times and risk profiles, and ensures that scope, timeline, and quality commitments remain transparent and honest to all stakeholders. The PO/TPM's unique value is sitting at the intersection of business value and technical feasibility — ruthlessly prioritizing against field/business impact while never silently descoping or over-promising when feasibility constraints emerge.
 
@@ -103,7 +116,7 @@
 
 **Activities:**
 - **Sustaining Engineering backlog ownership:** Maintain a Sustaining Engineering backlog as a track separate from the new-feature backlog. Prioritize field issues (defects, reliability concerns, security patches) against new feature development using a defined triage matrix: Safety/Security > Fleet Reliability > Operator Workflow Blockers > Feature Requests. Review backlog prioritization weekly with input from [[QA_TEST_AUTOMATION_ENGINEER_SKILL|QA]], [[SECURITY_ENGINEER_SKILL|Security]], and the [[BUSINESS_CONSULTANT_SKILL|Business Consultant]]. #post-launch #sustaining-engineering
-- **OTA release calendar management:** Maintain a rolling OTA (Over-the-Air) release calendar covering planned feature releases, scheduled maintenance releases, and emergency hotfix windows. Coordinate OTA campaign scheduling with [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps]] (pipeline capacity) and [[BUSINESS_CONSULTANT_SKILL|Business Consultant]] (market window constraints). Communicate the OTA calendar to all stakeholders monthly. #OTA-monitoring
+- **OTA release calendar management:** Maintain a rolling OTA (Over-the-Air) release calendar covering planned feature releases, scheduled maintenance releases, and emergency hotfix windows. Coordinate OTA campaign scheduling with [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps]] (pipeline capacity) and [[BUSINESS_CONSULTANT_SKILL|Business Consultant]] (market window constraints). Communicate the OTA calendar to all stakeholders monthly. #ota-monitoring
 - **Field operator feedback loop:** Collect and triage field operator feedback through established channels (support tickets, operator surveys, field visits). Surface recurring issues to the Sustaining Engineering backlog. Close the feedback loop with field operators: communicate what was fixed, what was deferred, and why. #field-defects
 - **Product performance monitoring:** Monitor product-level KPIs (device activation rate, feature adoption rate, user engagement, churn indicators) monthly. If a KPI trends negatively for two consecutive months, initiate a product performance investigation with the relevant engineering leads within 10 business days. #field-reliability
 - **End-of-life and sunset planning:** Monitor product lifecycle stage against the long-range roadmap. Initiate end-of-life planning (last OTA update, data export/migration support, customer communication) at least 6 months before planned product sunset. #lifecycle-gap #CR-5
@@ -517,3 +530,4 @@ Required output:
 - **Escalation resolution time:** Average time to resolve feasibility-vs-priority conflicts once escalated.
 - **Backlog health:** Percentage of backlog items with complete acceptance criteria and no missing dependency flags, measured at each grooming session.
 - **Release go/no-go accuracy:** Percentage of releases that proceeded as "go" without subsequent rollback due to a missed readiness criterion.
+- **Deputy PO readiness:** Deputy PO qualified and able to independently facilitate at least one full sprint (planning through retrospective) per quarter. Target: ≥1 solo-facilitated sprint per quarter. Measured by sprint records. #deputy-po #MR-6

@@ -1,3 +1,14 @@
+---
+title: "IoT & Embedded Systems Researcher — Skill Card"
+date: 2026-06-20
+status: final
+tags:
+  - skill-card
+  - embedded-iot
+  - research
+cssclass: skill-card
+---
+
 # IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL.md
 
 ---
@@ -168,6 +179,52 @@
 
 ---
 
+### 3.8 Research-to-Planning Gate
+
+**Purpose:** A formal, mandatory checkpoint that determines whether a research finding proceeds from the Research stage (S1) to the product Planning stage (S2). The gate ensures that every research finding entering the product pipeline has been vetted for technical feasibility, strategic alignment, and market viability — and that the decision is documented, not implicit.
+
+**Trigger:** The gate is triggered when the Researcher determines that a research finding has reached sufficient maturity for product consideration. The Researcher submits a Gate Entry Package to the three signatories at least 2 weeks before the scheduled gate review.
+
+**Gate Entry Package (prepared by Researcher):**
+- Research summary: what was discovered, how it was validated, and confidence level
+- Technology Transfer Pack (draft or final): scientific rationale, experimental validation, known limitations
+- Preliminary architecture impact assessment: expected system-level implications (resource budgets, new interfaces, new protocols)
+- Research-stage resource estimate: what engineering resources would be needed to productize the finding
+- Recommended disposition: Proceed to Planning / Return to Research for further development / Archive
+
+**Signatories and Assessment Criteria:**
+
+| Signatory | Role | Assessment Criteria | Max Response Time |
+|---|---|---|---|
+| [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL\|Architect]] | Technical Feasibility | Can this finding be integrated into the current or planned system architecture within acceptable resource budgets (Flash, SRAM, power, latency)? Are the required interface contracts compatible with existing contracts? What architecture changes would be needed? | 10 business days from Gate Entry Package receipt |
+| [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL\|PO/TPM]] | Strategic Alignment | Does this finding align with the current product roadmap and customer priorities? Does it solve a known customer problem or enable a new product capability? What is the opportunity cost of NOT pursuing this finding? | 10 business days from Gate Entry Package receipt |
+| [[BUSINESS_CONSULTANT_SKILL\|Business Consultant]] | Market Viability | Is there a defined market for the capability this finding enables? What is the estimated market size, willingness-to-pay, and competitive differentiation? What is the estimated time-to-market and does it align with market windows? | 10 business days from Gate Entry Package receipt |
+
+**Concurrence Rule:** All three signatories must concur for the finding to proceed to Planning. Each signatory produces a written assessment with one of three outcomes:
+- **APPROVED:** The finding meets the criteria. Proceed to Planning
+- **CONDITIONAL:** The finding could meet the criteria if specific conditions are met (e.g., additional research validation, architecture adaptation, market validation). The signatory documents the conditions precisely. The finding may proceed to Planning ONLY if all CONDITIONAL assessments are resolved to APPROVED, OR if the unresolved CONDITIONAL assessments are escalated and resolved by the CTO
+- **REJECTED:** The finding does not meet the criteria and cannot proceed to Planning in its current form. The signatory documents the rationale. The finding returns to Research for further development, is archived for potential future revisit, or is formally closed
+
+**Gate Outcomes:**
+
+| Concurrence Pattern | Gate Outcome |
+|---|---|
+| All three APPROVED | **Proceed to Planning.** The Gate Entry Package, all three assessments, and the gate decision are included in the final Technology Transfer Pack |
+| Mix of APPROVED and CONDITIONAL (no REJECTED) | **Proceed with Conditions.** The conditions are documented, assigned an owner, and tracked. The finding enters Planning with the conditions as mandatory action items |
+| One or more REJECTED | **Do Not Proceed.** The finding returns to Research. The Researcher may address the rejection rationale and resubmit at a future gate (no sooner than the next quarterly gate cycle) |
+| Deadlock (signatories cannot agree on APPROVED/CONDITIONAL/REJECTED classification) | **Escalate to CTO.** The CTO reviews all assessments and the Gate Entry Package and issues a binding decision within 10 business days |
+
+**Cadence:**
+- Scheduled gate reviews: quarterly, first Tuesday of February, May, August, November (aligned with the quarterly Technology Transfer Review). The Researcher submits Gate Entry Packages ≥2 weeks before the review date. Signatories return assessments ≥2 business days before the review meeting
+- Out-of-cycle gate: for time-sensitive findings (market window <3 months or patent filing deadline), the Researcher may request an out-of-cycle gate with 2 weeks' notice. Signatories respond within 5 business days
+- Maximum gate cycles per finding: 3. If a finding is REJECTED three times, it is archived unless the CTO grants an exception
+
+**Documentation:** All gate decisions, assessments, and the concurrence record are archived alongside the Technology Transfer Pack. The gate outcome is published to the [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]], [[PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL|PO/TPM]], and [[BUSINESS_CONSULTANT_SKILL|Business Consultant]]. The gate decision is referenced when the finding enters Planning.
+
+#research-to-planning-gate #MR-4 #gate-governance
+
+---
+
 ## 4. Technical Competencies
 
 ### 4.1 Core Experimental Science & Methodology
@@ -321,7 +378,7 @@
 - System-level constraints (power budget, form factor, communication bandwidth, cost target) to inform research relevance assessment
 
 **Cadence:**
-- Scheduled Technology Transfer Review: quarterly, first Tuesday of February, May, August, November #cadence #Technology-Transfer #interface-contract #HR-7. Researcher submits Technology Transfer Pack ≥3 weeks before the review date. Architect provides written feasibility assessment ≥1 week before the review meeting. Review meeting (60 min) covers: feasibility findings, architecture implication assessment, and resource budget impact analysis
+- Scheduled Technology Transfer Review: quarterly, first Tuesday of February, May, August, November #cadence #technology-transfer #interface-contract #HR-7. Researcher submits Technology Transfer Pack ≥3 weeks before the review date. Architect provides written feasibility assessment ≥1 week before the review meeting. Review meeting (60 min) covers: feasibility findings, architecture implication assessment, and resource budget impact analysis
 - Interim Technology Transfer: for time-sensitive research findings (market window < 3 months or patent filing deadline), Researcher may request an out-of-cycle Technology Transfer Review. Architect acknowledges request within 3 business days and schedules review within 10 business days. Limited to 2 interim reviews per quarter
 - Long-term Architecture Roadmap Briefing: Architect presents updated roadmap to Researcher annually (first Tuesday of March). Researcher provides research-direction feedback within 2 weeks
 - System-level constraint update: Architect notifies Researcher of significant architecture changes (new platform, protocol, or budget) within 5 business days of ADR (Architecture Decision Record) acceptance #synchronization. Researcher acknowledges within 5 business days and provides impact assessment on active research within 15 business days
@@ -367,7 +424,7 @@
 - PCB fabrication and assembly assistance for complex research prototype boards (if beyond researcher's PCB design capability)
 
 **Cadence:**
-- PoC Hardware Design Handoff: Researcher delivers PoC hardware design package (schematics, component characterization data, assembly notes) ≥4 weeks before scheduled Hardware Engineer evaluation #cadence #Technology-Transfer #interface-contract #HR-7. Handoff occurs at the Technology Transfer Review or as a standalone Hardware Evaluation Gate
+- PoC Hardware Design Handoff: Researcher delivers PoC hardware design package (schematics, component characterization data, assembly notes) ≥4 weeks before scheduled Hardware Engineer evaluation #cadence #technology-transfer #interface-contract #HR-7. Handoff occurs at the Technology Transfer Review or as a standalone Hardware Evaluation Gate
 - Hardware Feasibility Assessment: Hardware Engineer provides written feasibility assessment (manufacturability, BOM — Bill of Materials — cost estimate, component availability, regulatory path) within 15 business days of PoC design handoff #synchronization. Assessment includes: estimated BOM cost range, identified single-source components, recommended fabrication process, and any showstopper issues
 - Novel Component Evaluation: when Researcher identifies a novel sensor, material, or component requiring hardware evaluation, Researcher submits component datasheet and characterization data. Hardware Engineer provides evaluation (electrical compatibility, availability, cost, second-source options) within 10 business days
 - Joint Prototype Review: during active hardware prototyping of research-derived designs, bi-weekly 30-minute sync between Researcher and Hardware Engineer for the duration of the prototyping phase (typically 4–12 weeks) #cadence
@@ -391,7 +448,7 @@
 - Clarification on MCU resource constraints (flash, RAM, compute) that define the feasibility boundary for research algorithm designs
 
 **Cadence:**
-- Algorithm Specification Handoff: Researcher delivers algorithm specification package (mathematical description, pseudocode, Python reference implementation, test vectors, expected resource requirements) ≥4 weeks before scheduled Firmware Engineer implementation start #cadence #Technology-Transfer #interface-contract #HR-7. Handoff occurs at the Technology Transfer Review or as a standalone Algorithm Review Gate
+- Algorithm Specification Handoff: Researcher delivers algorithm specification package (mathematical description, pseudocode, Python reference implementation, test vectors, expected resource requirements) ≥4 weeks before scheduled Firmware Engineer implementation start #cadence #technology-transfer #interface-contract #HR-7. Handoff occurs at the Technology Transfer Review or as a standalone Algorithm Review Gate
 - Firmware Feasibility Assessment: Firmware Engineer provides written assessment (RTOS — Real-Time Operating System — compatibility, estimated Flash/SRAM — Static Random-Access Memory — footprint, real-time deadline feasibility, peripheral requirements) within 15 business days of algorithm specification handoff #synchronization. Assessment includes: estimated CPU cycles, memory budget impact, peripheral conflicts, and any showstopper issues
 - Research-Grade Firmware Transfer: when Researcher has developed research-grade firmware (proof-of-concept, not production-quality), Researcher delivers code repository, build instructions, and known limitations. Firmware Engineer provides reusability assessment within 10 business days: what can be adapted for production, what must be rewritten, and estimated effort
 - Joint Algorithm-Firmware Review: during active firmware implementation of research-derived algorithms, bi-weekly 30-minute sync between Researcher and Firmware Engineer for the duration of the implementation phase #cadence. Researcher provides scientific context; Firmware Engineer provides implementation feedback

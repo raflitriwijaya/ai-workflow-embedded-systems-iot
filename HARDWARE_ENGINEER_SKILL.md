@@ -1,3 +1,14 @@
+---
+title: "Hardware Engineer — Skill Card"
+date: 2026-06-20
+status: final
+tags:
+  - skill-card
+  - embedded-iot
+  - hardware
+cssclass: skill-card
+---
+
 # HARDWARE_ENGINEER_SKILL.md
 
 ## 1. Role Identity
@@ -61,6 +72,7 @@
 
 - **Activities:** Produce the hardware block diagram and schematic architecture; design the power tree; define the PCB stack-up (layer count) and impedance targets; agree pin-mux/peripheral mapping with Firmware; draft the DFM/DFT plan; draft the compliance plan (EMC, IP, temperature); plan bring-up and production test fixtures.
 - **Deliverables:** Hardware block diagram, power tree, draft schematic, stack-up specification, DFM/DFT plan, and compliance/test plan.
+- **Security Design Review Report:** Received from [[SECURITY_ENGINEER_SKILL|Security Engineer]] before the Planning→Development transition. Outcome must be APPROVED or CONDITIONAL. CONDITIONAL requirements are added to the Security Implementation Readiness checklist (§3.3). BLOCKED means Development must not start until re-reviewed and cleared by the Security Engineer. #shift-left #security-design-review #MR-10
 
 ### 3.3 Development
 
@@ -251,7 +263,7 @@ The following joint DoD (Definition of Done) applies to every board bring-up. Bo
 5. Sensors: all sensors enumerated, sensor IDs or WHO_AM_I registers read correctly, sample data flows from sensor through driver to firmware buffer
 6. Debug/Programming: JTAG (Joint Test Action Group) / SWD (Serial Wire Debug) connection functional, firmware flash and verify successful
 7. Power budget: measured active and sleep current within the [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]]'s power budget
-Bring-up status (Pass/Fail per item, with measured values) is recorded in a joint Bring-Up Report signed by both [[HARDWARE_ENGINEER_SKILL|HW]] and [[FIRMWARE_ENGINEER_SKILL|FW]]. Items not passing block Development exit. #bring-up #joint-dod
+Bring-up status (Pass/Fail per item, with measured values) is recorded in a joint Bring-Up Report signed by both **HW** and [[FIRMWARE_ENGINEER_SKILL|FW]]. Items not passing block Development exit. #bring-up #joint-dod
 
 ### 6.3 Edge AI/ML Engineer
 
@@ -260,7 +272,7 @@ Bring-up status (Pass/Fail per item, with measured values) is recorded in a join
 - **Cadence:** Data-spec handoff at planning; sensor characterization in execution; data-fidelity review before production.
 
 **Sensor Data Fidelity Feedback Loop:**
-After sensor characterization ([[HARDWARE_ENGINEER_SKILL|HW]] §3.4), the following feedback loop ensures characterized sensor performance meets the ML data specification:
+After sensor characterization (**HW** §3.4), the following feedback loop ensures characterized sensor performance meets the ML data specification:
 1. **Characterization Data Delivery:** HW delivers sensor characterization report (measured SNR — Signal-to-Noise Ratio, resolution, dynamic range, drift, sampling jitter) to ML within 5 business days of characterization completion
 2. **ML Data Spec Conformance Check:** ML reviews the characterization report against the sensor data requirements specification within 10 business days. ML produces a conformance assessment: CONFIRMED (all specs met), CONDITIONAL (specs met with noted limitations), or REJECTED (specs not met — requires hardware redesign or ML spec adjustment)
 3. **CONDITIONAL Acceptance:** If CONDITIONAL, ML documents the limitations and their expected impact on model accuracy. HW and ML jointly present to the [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] for a trade-off decision within 5 business days
