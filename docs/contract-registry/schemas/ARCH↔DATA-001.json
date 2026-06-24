@@ -1,0 +1,75 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ARCH↔DATA-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCH↔DATA-001: Telemetry Schema + Data-Flow Topology",
+  "description": "Architect supplies the telemetry schema, data-flow topology, sampling/payload budgets, and edge-buffering behavior; Data returns ingestion feasibility, schema-evolution constraints, and storage/throughput limits that may feed back into payload design. Grounded in EMBEDDED_SYSTEMS_ARCHITECT_SKILL §6.6. The per-field telemetry schema is owned by DATA's Git-based schema registry (resolved by schema_version), not duplicated here.",
+  "type": "object",
+  "properties": {
+    "telemetry_schema": {
+      "type": "object",
+      "description": "ARCH→DATA: schema + flow topology + budgets.",
+      "properties": {
+        "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "SemVer of the device telemetry schema (registered in DATA's Git registry)." },
+        "data_flow_topology": { "type": "string", "enum": ["DEVICE_GATEWAY_CLOUD", "DEVICE_CLOUD_DIRECT", "DEVICE_GATEWAY_EDGE_CLOUD"], "description": "End-to-end data-flow topology." },
+        "payload_budget_bytes": { "type": "integer", "minimum": 0, "description": "Per-message payload budget in bytes (LoRaWAN-constrained uplink)." },
+        "sampling_rate_hz": { "type": "number", "minimum": 0, "description": "Telemetry sampling rate in Hz." },
+        "edge_buffering_behavior": { "type": "string", "description": "Edge-buffering/backfill behavior on connectivity loss." }
+      },
+      "required": ["schema_version", "data_flow_topology", "payload_budget_bytes"],
+      "additionalProperties": false
+    },
+    "ingestion_feedback": {
+      "type": "object",
+      "description": "DATA→ARCH: feasibility + limits feeding back into payload design.",
+      "properties": {
+        "ingestion_feasible": { "type": "boolean" },
+        "schema_evolution_constraints": { "type": "array", "items": { "type": "string" }, "description": "Backward-compatibility / migration constraints on schema evolution." },
+        "storage_throughput_limit_writes_per_s": { "type": "number", "minimum": 0, "description": "Time-series write-throughput ceiling in writes/s (target SCALE-5: 50,000 writes/s)." },
+        "payload_design_feedback": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["ingestion_feasible"],
+      "additionalProperties": false
+    },
+    "schema_change": {
+      "type": "object",
+      "description": "Schema-change coordination (breaking changes require an ADR with the Architect as approver).",
+      "properties": {
+        "backward_compatible": { "type": "boolean" },
+        "adr_ref": { "type": ["string", "null"], "pattern": "^ADR-\\d{4}$", "description": "Required when backward_compatible = false." }
+      },
+      "required": ["backward_compatible"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["telemetry_schema"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "schema_change": { "properties": { "backward_compatible": { "const": false } }, "required": ["backward_compatible"] } }, "required": ["schema_change"] },
+      "then": { "properties": { "schema_change": { "required": ["adr_ref"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "ARCH↔DATA-001",
+    "producer_role": "ARCH",
+    "consumer_role": "DATA",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine schema/topology alignment is agent-autonomous. A backward-incompatible schema change escalates to an ADR (Architect approver) — Tier-1/2 — per the FW↔DATA schema-change process.",
+    "cadence": "TRIGGER (schema definition at planning; pipeline-integration checkpoints; schema-change ADR reviews)",
+    "confirm_conditions": [
+      "telemetry_schema carries a SemVer schema_version, a data_flow_topology, and a payload_budget_bytes",
+      "ingestion_feedback.ingestion_feasible = true (or constraints enumerated)",
+      "storage_throughput_limit_writes_per_s within the SCALE-5 ceiling",
+      "any schema_change with backward_compatible = false carries an adr_ref"
+    ],
+    "reject_conditions": [
+      "backward-incompatible schema change without an ADR (Architect approver)",
+      "payload_budget_bytes omitted or unitless",
+      "ingestion declared feasible while a throughput limit is exceeded"
+    ],
+    "counter_conditions": [
+      "payload budget conflicts with the required sampling rate over a LoRaWAN uplink — request a sampling/aggregation trade study",
+      "schema-evolution constraint ambiguous — request the migration path before sign-off"
+    ]
+  }
+}

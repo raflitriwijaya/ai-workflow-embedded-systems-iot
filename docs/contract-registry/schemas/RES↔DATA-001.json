@@ -1,0 +1,76 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/RES↔DATA-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RES↔DATA-001: FAIR Dataset Archival + Research-to-Training Pipeline",
+  "description": "Researcher delivers FAIR-compliant experimental datasets (+ datasheet, schema docs, research-to-training flag); Data archives with DVC versioning and lineage, returns a Data Ingestion Report, and makes flagged datasets available to ML within 10 business days. Grounded in DATA_ENGINEER_SKILL §6.10 and IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL §6.6.",
+  "type": "object",
+  "properties": {
+    "dataset_name": { "type": "string" },
+    "delivery_point": { "type": "string", "enum": ["EXPERIMENT_COMPLETION", "MANUSCRIPT_SUBMISSION", "TECHNOLOGY_TRANSFER"], "description": "One of the three contracted delivery points." },
+    "fair_compliance": {
+      "type": "object",
+      "description": "FAIR (Findable, Accessible, Interoperable, Reusable) attributes.",
+      "properties": {
+        "findable_id": { "type": ["string", "null"], "description": "Assigned DOI or persistent identifier where applicable." },
+        "raw_data_included": { "type": "boolean" },
+        "processed_data_included": { "type": "boolean" },
+        "labels_included": { "type": "boolean" },
+        "metadata_included": { "type": "boolean", "description": "Instrument calibration, environmental conditions, collection protocol." }
+      },
+      "required": ["raw_data_included", "processed_data_included", "labels_included", "metadata_included"],
+      "additionalProperties": false
+    },
+    "datasheet": {
+      "type": "object",
+      "description": "Per-dataset datasheet following the organizational standard.",
+      "properties": {
+        "intended_use": { "type": "string", "minLength": 20 },
+        "collection_methodology": { "type": "string", "minLength": 20 },
+        "known_biases": { "type": "string" },
+        "limitations": { "type": "string" }
+      },
+      "required": ["intended_use", "collection_methodology", "limitations"],
+      "additionalProperties": false
+    },
+    "schema_documentation_path": { "type": "string", "description": "Data schema documentation for all experimental data structures." },
+    "research_to_training_flag": { "type": "boolean", "description": "True identifies the dataset as an ML training candidate (triggers the research-to-training pipeline)." },
+    "data_ingestion_report": {
+      "type": "object",
+      "description": "DATA→RES: validation outcome within 15 business days of receipt.",
+      "properties": {
+        "validation_result": { "type": "string", "enum": ["PASS", "FAIL"] },
+        "quality_metrics": { "type": "object", "additionalProperties": true },
+        "data_gaps_or_anomalies": { "type": "array", "items": { "type": "string" } },
+        "dvc_version": { "type": ["string", "null"], "description": "DVC snapshot version assigned on successful ingest." }
+      },
+      "required": ["validation_result"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["dataset_name", "delivery_point", "fair_compliance", "datasheet", "schema_documentation_path", "research_to_training_flag"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "RES↔DATA-001",
+    "producer_role": "RES",
+    "consumer_role": "DATA",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine dataset archival/ingestion (agent-autonomous). PII-bearing research data escalates to SEC (ESC-SEC); training-candidate promotion feeds ML↔DATA-001.",
+    "cadence": "TRIGGER (delivery at experiment completion / manuscript submission / Technology Transfer); SLA_FROM_EVENT (DATA acks within 2 business days, validates within 10, Ingestion Report within 15; flagged training data available within 10 business days)",
+    "confirm_conditions": [
+      "FAIR attributes complete (raw + processed + labels + metadata) and datasheet present with intended_use, methodology, limitations",
+      "schema_documentation_path resolves",
+      "data_ingestion_report.validation_result = PASS with a dvc_version assigned",
+      "research_to_training_flag handled (lineage established) when true"
+    ],
+    "reject_conditions": [
+      "missing datasheet or incomplete FAIR metadata",
+      "validation_result = FAIL with unresolved data gaps",
+      "training-flagged dataset without established lineage",
+      "PII present without a SEC privacy-impact escalation"
+    ],
+    "counter_conditions": [
+      "metadata insufficient for reproducibility — request additional collection-protocol detail",
+      "domain-specific features unclear for training promotion — request scientific context (RES responds within 5 business days)"
+    ]
+  }
+}

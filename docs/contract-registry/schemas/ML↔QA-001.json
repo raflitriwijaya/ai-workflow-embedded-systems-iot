@@ -1,0 +1,62 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ML↔QA-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ML↔QA-001: On-Device Model Validation + Parity Results",
+  "description": "Edge AI/ML provides the model, parity test vectors, acceptance criteria, evaluation methodology, and preprocessing golden vectors; QA provides on-device validation results, parity/accuracy outcomes, and edge-case/robustness findings. Grounded in EDGE_AI_ML_ENGINEER_SKILL §6.6 and QA_TEST_AUTOMATION_ENGINEER_SKILL §6.2.",
+  "type": "object",
+  "properties": {
+    "model_id": { "type": "string" },
+    "model_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "acceptance_criteria": {
+      "type": "object",
+      "description": "ML→QA: acceptance thresholds and evaluation methodology.",
+      "properties": {
+        "accuracy_metric_name": { "type": "string", "description": "e.g. 'F1-Score', 'AUC-ROC'." },
+        "accuracy_threshold": { "type": "number", "minimum": 0, "maximum": 1, "description": "Minimum acceptable accuracy (ratio 0–1)." },
+        "max_inference_latency_ms": { "type": "number", "minimum": 0, "description": "Latency ceiling in ms." },
+        "parity_tolerance": { "type": "number", "minimum": 0, "description": "Allowed deviation between on-device and golden-reference output." }
+      },
+      "required": ["accuracy_metric_name", "accuracy_threshold", "max_inference_latency_ms", "parity_tolerance"],
+      "additionalProperties": false
+    },
+    "parity_test_vectors_path": { "type": "string", "description": "Path to input→expected-output parity vectors and preprocessing golden vectors." },
+    "validation_results": {
+      "type": "object",
+      "description": "QA→ML: on-device validation outcomes.",
+      "properties": {
+        "measured_accuracy": { "type": "number", "minimum": 0, "maximum": 1 },
+        "measured_latency_ms_p95": { "type": "number", "minimum": 0 },
+        "parity_passed": { "type": "boolean", "description": "On-device output matches golden reference within parity_tolerance." },
+        "edge_case_findings": { "type": "array", "items": { "type": "string" }, "description": "Robustness / edge-case observations." },
+        "verdict": { "type": "string", "enum": ["PASS", "FAIL"], "description": "Overall on-device validation verdict." }
+      },
+      "required": ["measured_accuracy", "measured_latency_ms_p95", "parity_passed", "verdict"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["model_id", "model_version", "acceptance_criteria", "parity_test_vectors_path"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "ML↔QA-001",
+    "producer_role": "ML",
+    "consumer_role": "QA",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Release-gate model validation; a FAIL feeds the QA go/no-go (Tier-1). Accuracy-threshold or parity-tolerance changes are model-deployment decisions requiring ADR consultation.",
+    "cadence": "TRIGGER (acceptance-criteria handoff at planning; on-device validation during execution; release-gate sign-off)",
+    "confirm_conditions": [
+      "acceptance_criteria fully specified (accuracy metric+threshold, latency ceiling, parity tolerance)",
+      "validation_results.measured_accuracy ≥ accuracy_threshold and measured_latency_ms_p95 ≤ max_inference_latency_ms",
+      "parity_passed = true within parity_tolerance",
+      "verdict = PASS only when all above hold"
+    ],
+    "reject_conditions": [
+      "verdict = PASS while measured_accuracy < threshold or latency over ceiling",
+      "parity failed but verdict = PASS",
+      "acceptance criteria missing a quantified threshold or unit"
+    ],
+    "counter_conditions": [
+      "edge_case_findings reveal a robustness gap not covered by criteria — request criteria extension (map to relevant FMEA FC-ID)",
+      "parity marginal within noise — request a larger vector set before sign-off"
+    ]
+  }
+}

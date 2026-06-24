@@ -1,0 +1,84 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/FW↔DEVOPS-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FW↔DEVOPS-001: OTA Firmware/Model Distribution + Signing",
+  "description": "DevOps delivers OTA distribution bundles (firmware and model artifacts) with signing; Firmware verifies the signature chain, compatibility manifest, flash budget, and SHA-256, then reports verification status. Grounded in FIRMWARE_ENGINEER_SKILL §6.4 (Model Artifact OTA Coordination) and §6.6 (signed images).",
+  "type": "object",
+  "properties": {
+    "bundle_id": { "type": "string", "description": "OTA bundle identifier." },
+    "bundle_type": { "type": "string", "enum": ["FIRMWARE", "MODEL_ARTIFACT"], "description": "Whether the bundle carries a firmware image or a model artifact." },
+    "target_hardware_id": { "type": "string", "description": "Hardware ID the bundle targets; firmware verifies it matches the device." },
+    "target_firmware_version_range": {
+      "type": "object",
+      "properties": {
+        "minimum_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "maximum_version": { "type": ["string", "null"], "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "excluded_versions": { "type": "array", "items": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }, "description": "Versions blocked at dispatch." }
+      },
+      "required": ["minimum_version"],
+      "additionalProperties": false
+    },
+    "image_format": { "type": "string", "enum": ["MCUBOOT"], "description": "MCUboot-compatible binary layout (per FW↔MLOPS artifact-format contract)." },
+    "sha256_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$", "description": "SHA-256 of the bundle payload; must match the manifest." },
+    "signatures": {
+      "type": "object",
+      "description": "Signature chain. Firmware verifies DevOps co-signature and (for model artifacts) the MLOps signature.",
+      "properties": {
+        "devops_cosignature": { "type": "string", "description": "DevOps co-signature over the bundle." },
+        "mlops_signature": { "type": "string", "description": "MLOps signature (required for MODEL_ARTIFACT bundles)." },
+        "signature_algorithm": { "type": "string", "enum": ["ED25519", "ECDSA-P256"], "description": "Signing algorithm." }
+      },
+      "required": ["devops_cosignature", "signature_algorithm"],
+      "additionalProperties": false
+    },
+    "flash_budget_check_passed": { "type": "boolean", "description": "DevOps-asserted flash-budget fit; firmware re-verifies on-device." },
+    "verification_report": {
+      "type": "object",
+      "description": "Returned by Firmware within 1 minute of download completion.",
+      "properties": {
+        "result": { "type": "string", "enum": ["VERIFIED", "VERIFICATION_FAILED"], "description": "On-device verification outcome." },
+        "failure_code": {
+          "type": "string",
+          "enum": ["NONE", "DEVOPS_SIG_INVALID", "MLOPS_SIG_INVALID", "MANIFEST_MISMATCH", "FLASH_BUDGET_EXCEEDED", "HASH_MISMATCH"],
+          "description": "Failure code when result = VERIFICATION_FAILED."
+        }
+      },
+      "required": ["result"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["bundle_id", "bundle_type", "target_hardware_id", "target_firmware_version_range", "image_format", "sha256_hash", "signatures", "flash_budget_check_passed"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "bundle_type": { "const": "MODEL_ARTIFACT" } } },
+      "then": { "properties": { "signatures": { "required": ["devops_cosignature", "mlops_signature", "signature_algorithm"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "FW↔DEVOPS-001",
+    "producer_role": "DEVOPS",
+    "consumer_role": "FW",
+    "decision_tier": "Tier-1",
+    "tier_rationale": "OTA distribution + image signing — security-baseline + OTA-strategy surface (permanent HITL gate; SEC veto applies via HG-01).",
+    "cadence": "TRIGGER (CI integration at development start); SLA_FROM_EVENT (firmware reports VERIFIED/VERIFICATION_FAILED within 1 minute of download)",
+    "confirm_conditions": [
+      "devops_cosignature valid; for MODEL_ARTIFACT, mlops_signature also valid",
+      "sha256_hash matches the manifest",
+      "target_hardware_id matches the device and firmware version is in-range (not excluded)",
+      "on-device flash-budget check passes",
+      "image_format = MCUBOOT and A/B partition + rollback path available"
+    ],
+    "reject_conditions": [
+      "any signature in the chain invalid (ESC-SEC)",
+      "hash mismatch",
+      "device firmware version is in excluded_versions",
+      "flash budget exceeded on-device",
+      "MODEL_ARTIFACT bundle missing mlops_signature"
+    ],
+    "counter_conditions": [
+      "maximum_version null but device firmware is far newer than tested range — request compatibility confirmation",
+      "signature_algorithm differs from device-provisioned key policy — request key/algo reconciliation (do not weaken baseline)"
+    ]
+  }
+}

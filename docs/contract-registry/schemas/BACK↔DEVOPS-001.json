@@ -1,0 +1,81 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/BACK↔DEVOPS-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BACK↔DEVOPS-001: Service Deployment + Container Infrastructure",
+  "description": "DevOps provides service deployment, container infrastructure, CI/CD, IaC, and observability for backend services; Backend supplies deployment requirements, container specifications, scaling/resource needs, and runtime configuration. Grounded in DEVOPS_PLATFORM_ENGINEER_SKILL §6.2 (Backend/Cloud Engineer).",
+  "type": "object",
+  "properties": {
+    "service_name": { "type": "string", "description": "Backend service to deploy, e.g. 'device-shadow-api'." },
+    "container_spec": {
+      "type": "object",
+      "properties": {
+        "image": { "type": "string", "description": "Container image reference (registry/name)." },
+        "image_tag": { "type": "string", "description": "Immutable image tag or digest." },
+        "ports": { "type": "array", "items": { "type": "integer", "minimum": 1, "maximum": 65535 }, "minItems": 1 }
+      },
+      "required": ["image", "image_tag", "ports"],
+      "additionalProperties": false
+    },
+    "resource_needs": {
+      "type": "object",
+      "properties": {
+        "cpu_cores": { "type": "number", "minimum": 0 },
+        "memory_gb": { "type": "number", "minimum": 0 },
+        "min_replicas": { "type": "integer", "minimum": 1 },
+        "max_replicas": { "type": "integer", "minimum": 1, "description": "Autoscaling ceiling; must be ≥ min_replicas." }
+      },
+      "required": ["cpu_cores", "memory_gb", "min_replicas", "max_replicas"],
+      "additionalProperties": false
+    },
+    "scaling_policy": {
+      "type": "object",
+      "properties": {
+        "metric": { "type": "string", "enum": ["CPU", "MEMORY", "REQUESTS_PER_SECOND", "QUEUE_DEPTH"] },
+        "target_value": { "type": "number", "minimum": 0 },
+        "burst_target_rps": { "type": "number", "minimum": 0, "description": "Burst capability; reference SCALE-4 = 2,000 req/s burst." }
+      },
+      "required": ["metric", "target_value"],
+      "additionalProperties": false
+    },
+    "runtime_config": {
+      "type": "object",
+      "description": "Non-secret runtime configuration (secrets are handled via DEVOPS↔SEC-001, never inline here).",
+      "additionalProperties": true
+    },
+    "health_check": {
+      "type": "object",
+      "properties": {
+        "liveness_path": { "type": "string" },
+        "readiness_path": { "type": "string" }
+      },
+      "required": ["liveness_path", "readiness_path"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["service_name", "container_spec", "resource_needs", "health_check"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "BACK↔DEVOPS-001",
+    "producer_role": "DEVOPS",
+    "consumer_role": "BACK",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine service deployment (agent-autonomous). Orchestration-platform or topology changes are platform decisions → Tier-1 ADR.",
+    "cadence": "TRIGGER (deployment alignment at planning; service-deployment integration during development); scaling and incident reviews",
+    "confirm_conditions": [
+      "container_spec uses an immutable image_tag/digest (no floating 'latest')",
+      "resource_needs quantified with max_replicas ≥ min_replicas",
+      "health_check liveness and readiness paths defined",
+      "no secrets present in runtime_config (handled via DEVOPS↔SEC-001)"
+    ],
+    "reject_conditions": [
+      "mutable/floating image tag ('latest')",
+      "max_replicas < min_replicas",
+      "secret material inlined in runtime_config (ESC-SEC)",
+      "missing health checks for a production service"
+    ],
+    "counter_conditions": [
+      "burst_target_rps exceeds the SCALE-4 ceiling — request capacity/load-test validation",
+      "scaling metric ambiguous for the workload — request policy clarification"
+    ]
+  }
+}

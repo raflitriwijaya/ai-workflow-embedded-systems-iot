@@ -1,0 +1,70 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/FW↔DATA-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FW↔DATA-001: Telemetry Schema Implementation + Schema-Change Coordination",
+  "description": "Firmware emits telemetry conforming to the schema (correct units, sampling rates, timestamps, edge-buffering/backfill); Data supplies schema details and ingestion-driven constraints. Carries the joint Schema-Change Coordination Process (proposal → joint review ≤5 business days → ADR if breaking, Architect approver → implementation sequencing + transition window → edge-buffering semantics → Git/SemVer schema version registry). Grounded in FIRMWARE_ENGINEER_SKILL §6.8. (DATA §6 has no Firmware subsection; this edge is grounded from the FW side.)",
+  "type": "object",
+  "properties": {
+    "telemetry_implementation": {
+      "type": "object",
+      "description": "FW→DATA: schema-conformant telemetry emission.",
+      "properties": {
+        "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "SemVer of the device telemetry schema (carried in the device header, validated by DATA at ingest)." },
+        "units_conformant": { "type": "boolean", "description": "All fields emitted with the schema-specified units." },
+        "sampling_rate_hz": { "type": "number", "minimum": 0, "description": "Telemetry sampling rate in Hz." },
+        "timestamp_format": { "type": "string", "description": "Timestamp encoding (e.g., epoch ms, ISO-8601)." },
+        "edge_buffering_behavior": { "type": "string", "description": "Edge buffering behavior on connectivity loss." },
+        "backfill_behavior": { "type": "string", "description": "Backfill behavior on reconnect." }
+      },
+      "required": ["schema_version", "units_conformant"],
+      "additionalProperties": false
+    },
+    "schema_change": {
+      "type": "object",
+      "description": "Joint Schema-Change Coordination Process.",
+      "properties": {
+        "proposing_role": { "type": "string", "enum": ["FW", "DATA"] },
+        "changed_fields": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "rationale": { "type": "string", "minLength": 10 },
+        "backward_compatible": { "type": "boolean", "description": "False ⇒ must escalate to an ADR with the Architect as approver." },
+        "joint_review_due_date": { "type": "string", "format": "date", "description": "Both roles review within 5 business days." },
+        "adr_ref": { "type": ["string", "null"], "pattern": "^ADR-\\d{4}$", "description": "Required when backward_compatible = false." },
+        "transition_window": { "type": ["string", "null"], "description": "Window during which both old and new schemas are accepted." },
+        "buffer_requirements_updated": { "type": "boolean", "description": "True if the change affects device-side buffer capacity (shared edge-buffering responsibility)." }
+      },
+      "required": ["proposing_role", "changed_fields", "backward_compatible"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["telemetry_implementation"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "schema_change": { "properties": { "backward_compatible": { "const": false } }, "required": ["backward_compatible"] } }, "required": ["schema_change"] },
+      "then": { "properties": { "schema_change": { "required": ["adr_ref", "transition_window"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "FW↔DATA-001",
+    "producer_role": "FW",
+    "consumer_role": "DATA",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Schema-conformant emission and backward-compatible changes are agent-autonomous. A backward-incompatible schema change escalates to an ADR with the Architect as approver (Tier-1/2).",
+    "cadence": "TRIGGER (schema alignment at planning; pipeline-integration checkpoints; schema-change joint review within 5 business days; schema-change ADR participation)",
+    "confirm_conditions": [
+      "telemetry_implementation carries a SemVer schema_version and units_conformant = true",
+      "schema_version is registered in the organizational Git schema registry",
+      "a backward_compatible = true change carries changed_fields + a joint_review_due_date",
+      "a backward_compatible = false change carries an adr_ref and a transition_window"
+    ],
+    "reject_conditions": [
+      "backward-incompatible schema change without an ADR (Architect approver) — silent deviation forbidden",
+      "telemetry emitted with non-conformant units or no schema_version header",
+      "buffer-affecting change deployed without confirming DATA can ingest within the transition window"
+    ],
+    "counter_conditions": [
+      "new field increases payload beyond buffer capacity — request joint edge-buffering re-sizing before implementation",
+      "implementation order (FW emit vs. DATA ingest) unagreed — request a sequencing decision and transition window"
+    ]
+  }
+}

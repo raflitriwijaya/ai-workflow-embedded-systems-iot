@@ -1,0 +1,74 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/HW↔SEC-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HW↔SEC-001: Secure-Element Placement + Debug-Port Lockdown",
+  "description": "Security provides secure-element selection requirements, the debug-port lockdown policy, physical-hardening/tamper requirements, and the root-of-trust specification; Hardware returns physical placement of the secure element/root-of-trust device, debug-port lockdown implementation, and board tamper-resistance measures with conformance evidence. Grounded in SECURITY_ENGINEER_SKILL §6.3. Two of the six mandatory security-baseline controls live here (hardware root of trust; debug-port lockdown).",
+  "type": "object",
+  "properties": {
+    "security_hardware_requirements": {
+      "type": "object",
+      "description": "SEC→HW: hardware security baseline requirements.",
+      "properties": {
+        "secure_element_spec": {
+          "type": "object",
+          "properties": {
+            "part_class": { "type": "string", "description": "Secure-element / SE class (e.g., SE05x, ATECC608)." },
+            "selection_requirements": { "type": "string", "minLength": 10 }
+          },
+          "required": ["selection_requirements"],
+          "additionalProperties": false
+        },
+        "debug_port_lockdown_policy": { "type": "string", "minLength": 10, "description": "Debug-port (JTAG/SWD) lockdown policy." },
+        "tamper_requirements": { "type": "array", "items": { "type": "string" } },
+        "root_of_trust_spec": { "type": "string", "minLength": 10 }
+      },
+      "required": ["debug_port_lockdown_policy", "root_of_trust_spec"],
+      "additionalProperties": false
+    },
+    "hardware_security_implementation": {
+      "type": "object",
+      "description": "HW→SEC: placement + lockdown implementation + conformance evidence.",
+      "properties": {
+        "secure_element_placement": { "type": "string", "description": "Physical placement of the secure element / root-of-trust device on the board." },
+        "debug_port_locked": { "type": "boolean", "description": "Debug port disabled/locked for production (must be true to pass)." },
+        "tamper_resistance_measures": { "type": "array", "items": { "type": "string" } },
+        "root_of_trust_device": { "type": "string" },
+        "conformance_evidence": { "type": "string", "description": "Evidence (test report, photo, scan) of implementation to spec." }
+      },
+      "required": ["debug_port_locked"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["security_hardware_requirements"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "hardware_security_implementation": { "type": "object" } }, "required": ["hardware_security_implementation"] },
+      "then": { "properties": { "hardware_security_implementation": { "properties": { "debug_port_locked": { "const": true } }, "required": ["secure_element_placement", "root_of_trust_device", "conformance_evidence"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "HW↔SEC-001",
+    "producer_role": "SEC",
+    "consumer_role": "HW",
+    "decision_tier": "Tier-1",
+    "tier_rationale": "Hardware root of trust and debug-port lockdown are part of the mandatory security baseline; any weakening is a Tier-1 security-baseline change behind HG-01 (SEC release veto). ESC-SEC: agents may only propose; SEC owns binding decisions.",
+    "escalation_triggers": ["ESC-SEC", "ESC-TIER1"],
+    "cadence": "TRIGGER (security-requirement handoff at planning; secure-element and debug-lockdown review; pre-production hardening sign-off)",
+    "confirm_conditions": [
+      "security_hardware_requirements carries a debug_port_lockdown_policy and a root_of_trust_spec",
+      "hardware_security_implementation.debug_port_locked = true (production)",
+      "secure_element_placement and root_of_trust_device documented with conformance_evidence",
+      "tamper-resistance measures implemented to the SEC requirement"
+    ],
+    "reject_conditions": [
+      "debug_port_locked = false on a production build (security-baseline violation → ESC-SEC, HG-01)",
+      "secure element / root-of-trust placement absent or unverified",
+      "any baseline weakening proposed without an ADR + SEC sign-off (never silently deviate)"
+    ],
+    "counter_conditions": [
+      "secure-element part availability constrained — request a SEC-approved equivalent before board freeze",
+      "tamper measure conflicts with enclosure/cost — request a SEC risk-acceptance decision (SIRC), not a unilateral trade"
+    ]
+  }
+}

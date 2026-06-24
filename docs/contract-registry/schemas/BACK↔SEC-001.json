@@ -1,0 +1,81 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/BACK↔SEC-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BACK↔SEC-001: mTLS/PKI Implementation + Device-Identity Conformance",
+  "description": "Security provides the PKI/identity design, mTLS and authn/authz requirements, API-security requirements, and threat findings affecting the backend; Backend implements authn/authz (mTLS, OAuth/JWT, X.509 device-certificate handling) to the baseline and returns device-identity conformance evidence. Grounded in SECURITY_ENGINEER_SKILL §6.4. mTLS with X.509 device certificates is part of the mandatory security baseline.",
+  "type": "object",
+  "properties": {
+    "security_requirements": {
+      "type": "object",
+      "description": "SEC→BACK: PKI/identity + transport-security baseline.",
+      "properties": {
+        "pki_design": { "type": "string", "minLength": 10, "description": "PKI / device-identity design." },
+        "mtls_required": { "type": "boolean", "const": true, "description": "mTLS is mandatory in the security baseline (always true)." },
+        "authn_authz_requirements": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "x509_handling_requirements": { "type": "string", "description": "X.509 device-certificate handling/rotation requirements." },
+        "api_security_requirements": { "type": "array", "items": { "type": "string" } },
+        "threat_findings": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["pki_design", "mtls_required", "authn_authz_requirements"],
+      "additionalProperties": false
+    },
+    "conformance_evidence": {
+      "type": "object",
+      "description": "BACK→SEC: implementation conformance evidence.",
+      "properties": {
+        "mtls_implemented": { "type": "boolean", "description": "Must be true to conform to the baseline." },
+        "x509_device_cert_validation": { "type": "boolean", "description": "Device X.509 certificate validation implemented." },
+        "oauth_jwt_implemented": { "type": "boolean" },
+        "device_identity_conformance": { "type": "string", "enum": ["CONFORMANT", "PARTIAL", "NON_CONFORMANT"] },
+        "evidence_artifacts": { "type": "array", "items": { "type": "string" }, "description": "Test reports / scan results demonstrating conformance." },
+        "open_findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "finding_id": { "type": "string" },
+              "severity": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+              "remediation_due_date": { "type": ["string", "null"], "format": "date", "description": "Required for CRITICAL/HIGH (CVSS-based SLA: Critical 7 days, High 30 days)." }
+            },
+            "required": ["finding_id", "severity"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["mtls_implemented", "device_identity_conformance"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["security_requirements"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "conformance_evidence": { "type": "object" } }, "required": ["conformance_evidence"] },
+      "then": { "properties": { "conformance_evidence": { "properties": { "mtls_implemented": { "const": true }, "device_identity_conformance": { "const": "CONFORMANT" } } } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "BACK↔SEC-001",
+    "producer_role": "SEC",
+    "consumer_role": "BACK",
+    "decision_tier": "Tier-1",
+    "tier_rationale": "mTLS, X.509 device identity, and the PKI design are part of the mandatory security baseline; any weakening is a Tier-1 security-baseline change behind HG-01 (SEC release veto). ESC-SEC: agents may only propose; SEC owns binding decisions.",
+    "escalation_triggers": ["ESC-SEC", "ESC-TIER1"],
+    "cadence": "TRIGGER (baseline and PKI handoff at planning; authn/authz implementation reviews; pre-production security sign-off)",
+    "confirm_conditions": [
+      "security_requirements carries a pki_design, mtls_required = true, and ≥1 authn_authz requirement",
+      "conformance_evidence.mtls_implemented = true and device_identity_conformance = CONFORMANT",
+      "x509_device_cert_validation implemented per the PKI design",
+      "every CRITICAL/HIGH open_finding carries a remediation_due_date (Critical 7 days / High 30 days)"
+    ],
+    "reject_conditions": [
+      "mtls_implemented = false or device_identity_conformance ≠ CONFORMANT on a release path (baseline violation → ESC-SEC, HG-01)",
+      "a CRITICAL/HIGH finding without a remediation_due_date",
+      "any authn/authz weakening proposed without an ADR + SEC sign-off (never silently deviate)"
+    ],
+    "counter_conditions": [
+      "PARTIAL conformance with a credible remediation plan — request SEC risk-acceptance (SIRC) before sign-off, do not self-approve",
+      "X.509 rotation/lifecycle ambiguous — request the PKI lifecycle detail before implementation review"
+    ]
+  }
+}

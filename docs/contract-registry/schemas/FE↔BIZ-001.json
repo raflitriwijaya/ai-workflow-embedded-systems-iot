@@ -1,0 +1,85 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/FE↔BIZ-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FE↔BIZ-001: Market KPIs to Surface + Dashboard UX Requirements (DERIVED — provisional)",
+  "description": "Business Consultant identifies market/business KPIs to surface to operators, executives, customers, and investors; Frontend returns dashboard UX feasibility, supported aggregation granularities, and the dashboard query-performance SLO. SOURCE GAP: there is NO direct §6 contract on either the Frontend or Business Consultant side (FE §6 lists no BIZ; BIZ §6 lists no FE). This schema is DERIVED from BUSINESS_CONSULTANT_SKILL §6.1 (business-value/market-KPI deliverables), FRONTEND_DASHBOARD_ENGINEER_SKILL §6.3 (UX prototypes + feasibility + acceptance criteria), and DATA_ENGINEER_SKILL §6.12 (dashboard-facing query SLO: p95 ≤ 2 s, p99 ≤ 5 s; granularities 1m/5m/15m/1h). It is PROVISIONAL pending ratification of a formal §6 FE↔BIZ contract (recommend a CCR). No KPI numeric thresholds are invented here.",
+  "type": "object",
+  "properties": {
+    "market_kpis": {
+      "type": "array",
+      "description": "BIZ→FE: market/business KPIs to surface. KPI numeric targets are intentionally optional strings — not invented.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "kpi_id": { "type": "string" },
+          "kpi_name": { "type": "string" },
+          "business_rationale": { "type": "string", "minLength": 10 },
+          "target_audience": { "type": "string", "enum": ["OPERATOR", "EXECUTIVE", "CUSTOMER", "INVESTOR"] },
+          "kpi_target": { "type": ["string", "null"], "description": "Optional target/threshold as supplied by BIZ (not fabricated; null when unspecified)." }
+        },
+        "required": ["kpi_id", "kpi_name", "business_rationale", "target_audience"],
+        "additionalProperties": false
+      }
+    },
+    "dashboard_ux": {
+      "type": "object",
+      "description": "FE→BIZ: dashboard UX feasibility + performance envelope.",
+      "properties": {
+        "ux_feasibility": { "type": "string", "enum": ["FEASIBLE", "FEASIBLE_WITH_TRADEOFFS", "INFEASIBLE"] },
+        "tradeoffs": { "type": "array", "items": { "type": "string" }, "description": "Required when ux_feasibility = FEASIBLE_WITH_TRADEOFFS." },
+        "supported_granularities": {
+          "type": "array",
+          "description": "Aggregation granularities available for dashboard views (per DATA §6.12).",
+          "items": { "type": "string", "enum": ["1m", "5m", "15m", "1h"] }
+        },
+        "query_performance_slo": {
+          "type": "object",
+          "description": "Dashboard-facing query SLO inherited from DATA §6.12.",
+          "properties": {
+            "p95_seconds": { "type": "number", "const": 2, "description": "p95 dashboard queries return within 2 seconds." },
+            "p99_seconds": { "type": "number", "const": 5, "description": "p99 dashboard queries return within 5 seconds." }
+          },
+          "required": ["p95_seconds", "p99_seconds"],
+          "additionalProperties": false
+        },
+        "view_criticality": { "type": "string", "enum": ["CRITICAL", "NICE_TO_HAVE"], "description": "Whether operator workflow depends on the view." }
+      },
+      "required": ["ux_feasibility"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["market_kpis"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "dashboard_ux": { "properties": { "ux_feasibility": { "const": "FEASIBLE_WITH_TRADEOFFS" } }, "required": ["ux_feasibility"] } }, "required": ["dashboard_ux"] },
+      "then": { "properties": { "dashboard_ux": { "properties": { "tradeoffs": { "minItems": 1 } }, "required": ["tradeoffs"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "FE↔BIZ-001",
+    "producer_role": "BIZ",
+    "consumer_role": "FE",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine dashboard requirement intake / UX feasibility is agent-autonomous. Elevated by the source gap: see source_status.",
+    "source_status": "DERIVED / PROVISIONAL — no direct §6 contract exists on either side. Composed from BIZ §6.1 + FE §6.3 + DATA §6.12. RECOMMENDED ACTION: ratify a formal FE↔BIZ §6 interface contract via a CCR before this schema is treated as authoritative. Until then, agents must COUNTER (request §6 ratification) rather than CONFIRM a binding change.",
+    "cadence": "TRIGGER (dashboard data requirements ≥2 weeks before development of a new view; monthly query-performance review) — inherited from FE §6.3 / DATA §6.12 pending a ratified FE↔BIZ cadence",
+    "confirm_conditions": [
+      "each market_kpi carries kpi_id, kpi_name, business_rationale, and target_audience",
+      "dashboard_ux reports a ux_feasibility verdict",
+      "FEASIBLE_WITH_TRADEOFFS enumerates tradeoffs",
+      "query_performance_slo holds the inherited p95 ≤ 2 s / p99 ≤ 5 s envelope"
+    ],
+    "reject_conditions": [
+      "a KPI numeric threshold asserted that BIZ did not supply (no invented metrics — measure-first)",
+      "query SLO weakened below the DATA §6.12 p95/p99 envelope without a DATA-side change",
+      "this provisional schema cited as a ratified contract without the recommended CCR"
+    ],
+    "counter_conditions": [
+      "ALWAYS until ratified: request a formal §6 FE↔BIZ contract + CCR before treating CONFIRM as binding",
+      "KPI lacks a measurable definition — request the metric definition and data source from BIZ/DATA",
+      "Critical view cannot meet the inherited query SLO — request a DATA pre-aggregation/materialized view"
+    ]
+  }
+}

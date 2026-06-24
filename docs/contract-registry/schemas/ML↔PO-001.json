@@ -1,0 +1,77 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ML↔PO-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ML↔PO-001: Market-Driven ML Features + Model Performance Feedback",
+  "description": "Product Owner/TPM provides field use-case context and target performance/accuracy requirements expressed as acceptance criteria (not technical specs); Edge AI/ML returns model-readiness status against defined gates and the edge deployment constraints (latency, memory, power) that affect feature scope. Grounded in PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL §6.4.",
+  "type": "object",
+  "properties": {
+    "ml_feature_request": {
+      "type": "array",
+      "description": "PO→ML: market-driven ML features as acceptance criteria.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "feature_id": { "type": "string" },
+          "use_case_context": { "type": "string", "minLength": 20, "description": "Field use-case context." },
+          "target_accuracy_pct": { "type": "number", "minimum": 0, "maximum": 100, "description": "Target accuracy in % (acceptance criterion)." },
+          "performance_acceptance_criteria": { "type": "string", "description": "Performance requirement framed as acceptance criteria, not a technical spec." }
+        },
+        "required": ["feature_id", "use_case_context"],
+        "additionalProperties": false
+      }
+    },
+    "model_feedback": {
+      "type": "object",
+      "description": "ML→PO: readiness gate + deployment constraints affecting feature scope.",
+      "properties": {
+        "readiness_gate_status": { "type": "string", "enum": ["NOT_STARTED", "IN_TRAINING", "MEETS_GATE", "BLOCKED"] },
+        "measured_accuracy_pct": { "type": "number", "minimum": 0, "maximum": 100, "description": "Measured model accuracy in %." },
+        "deployment_constraints": {
+          "type": "object",
+          "description": "Edge deployment constraints affecting feature scope.",
+          "properties": {
+            "latency_ms": { "type": "number", "minimum": 0, "description": "On-device inference latency in ms." },
+            "memory_kb": { "type": "number", "minimum": 0, "description": "Model + arena footprint in KB." },
+            "power_mw": { "type": "number", "minimum": 0, "description": "Inference power in mW." }
+          },
+          "additionalProperties": false
+        },
+        "feature_scope_impact": { "type": "string", "description": "How the constraints reshape achievable feature scope." }
+      },
+      "required": ["readiness_gate_status"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["ml_feature_request"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "model_feedback": { "properties": { "readiness_gate_status": { "const": "MEETS_GATE" } }, "required": ["readiness_gate_status"] } }, "required": ["model_feedback"] },
+      "then": { "properties": { "model_feedback": { "required": ["measured_accuracy_pct"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "ML↔PO-001",
+    "producer_role": "PO",
+    "consumer_role": "ML",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "The model-readiness gate gates integration scheduling and feeds the QA go/no-go; a dedicated checkpoint precedes each integration. Routine field-context intake is Tier-3.",
+    "cadence": "TRIGGER (sprint-level sync; dedicated checkpoint at each model-readiness gate before integration is scheduled)",
+    "confirm_conditions": [
+      "each ml_feature_request carries use_case_context and a target framed as acceptance criteria",
+      "model_feedback reports a readiness_gate_status",
+      "MEETS_GATE carries measured_accuracy_pct against the target",
+      "deployment_constraints (latency_ms, memory_kb, power_mw) reported with units when scope is affected"
+    ],
+    "reject_conditions": [
+      "PO request expressed as a technical model spec rather than acceptance criteria (§6.4 governance note)",
+      "readiness_gate_status = MEETS_GATE asserted without measured_accuracy_pct",
+      "measured accuracy below target presented as gate-passing (Honesty Over Polish, §10.3)"
+    ],
+    "counter_conditions": [
+      "target accuracy infeasible within the edge deployment constraints — request scope/timeline re-negotiation",
+      "acceptance criteria not measurable on-device — request an evaluable metric before the gate"
+    ]
+  }
+}

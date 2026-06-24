@@ -1,0 +1,78 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/MLOPS↔BACK-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MLOPS↔BACK-001: Fleet Model Status → Registry/Rollout Reconciliation",
+  "description": "Backend reports fleet-wide model version distribution and rollback events to MLOps; MLOps supplies rollout-strategy parameters and authorizes stage promotion. Grounded in MLOPS_ENGINEER_SKILL §6.9 (Backend/Cloud Engineer).",
+  "type": "object",
+  "properties": {
+    "model_id": { "type": "string", "description": "Model identifier under rollout." },
+    "desired_model_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "Version MLOps wants set per cohort." },
+    "rollout_parameters": {
+      "type": "object",
+      "description": "MLOps→Backend: parameters for Backend to set desired model version per cohort.",
+      "properties": {
+        "target_cohorts": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "canary_percentage": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "stage_sizes": { "type": "array", "items": { "type": "integer", "minimum": 1 } },
+        "promotion_criteria_thresholds": { "type": "object", "additionalProperties": true },
+        "rollback_target_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }
+      },
+      "required": ["target_cohorts", "canary_percentage", "promotion_criteria_thresholds", "rollback_target_version"],
+      "additionalProperties": false
+    },
+    "fleet_distribution_status": {
+      "type": "object",
+      "description": "Backend→MLOps: fleet-wide model version distribution snapshot.",
+      "properties": {
+        "version_counts": {
+          "type": "object",
+          "description": "Map of model_version → device count.",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        },
+        "percent_at_desired_version": { "type": "number", "minimum": 0, "maximum": 100 },
+        "devices_stuck_non_active_over_1h": { "type": "integer", "minimum": 0, "description": "Count of devices in a non-ACTIVE state for more than 1 hour." },
+        "rollback_count": { "type": "integer", "minimum": 0 },
+        "rollback_reason_codes": { "type": "array", "items": { "type": "string" } },
+        "snapshot_timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["version_counts", "percent_at_desired_version", "devices_stuck_non_active_over_1h", "rollback_count", "snapshot_timestamp"],
+      "additionalProperties": false
+    },
+    "stage_promotion_notification": {
+      "type": "object",
+      "description": "Backend→MLOps when observation-period health metrics meet promotion criteria; MLOps authorizes within 1 business hour.",
+      "properties": {
+        "current_stage": { "type": "integer", "minimum": 0 },
+        "health_metrics_met": { "type": "boolean" },
+        "promotion_authorized": { "type": ["boolean", "null"], "description": "MLOps response; null until decided." }
+      },
+      "required": ["current_stage", "health_metrics_met"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["model_id", "desired_model_version", "rollout_parameters"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "MLOPS↔BACK-001",
+    "producer_role": "MLOPS",
+    "consumer_role": "BACK",
+    "decision_tier": "Tier-1",
+    "tier_rationale": "OTA-strategy control plane: desired-version reconciliation and rollback gating (permanent HITL gate). Routine snapshot exchange is Tier-3; promotion/rollback decisions are Tier-1.",
+    "cadence": "SLA_FROM_EVENT (distribution snapshot every 4h active / 24h observation; stage promotion response within 1 business hour; rollback notification within 5 minutes of event; registry stage update within 30 minutes)",
+    "confirm_conditions": [
+      "rollout_parameters present with valid canary_percentage and rollback_target_version",
+      "fleet_distribution_status counts are internally consistent (version_counts sum vs. fleet size)",
+      "rollback notifications delivered within the 5-minute SLA",
+      "stage promotion authorized only when health_metrics_met = true"
+    ],
+    "reject_conditions": [
+      "promotion requested while health_metrics_met = false",
+      "rollback_target_version not a previously-ACTIVE registered version",
+      "snapshot_timestamp stale beyond the cadence SLA (ESC-SLA)"
+    ],
+    "counter_conditions": [
+      "devices_stuck_non_active_over_1h is non-zero and rising — request hold on next-stage promotion pending investigation",
+      "rollback_reason_codes include an unrecognized code — request code reconciliation"
+    ]
+  }
+}

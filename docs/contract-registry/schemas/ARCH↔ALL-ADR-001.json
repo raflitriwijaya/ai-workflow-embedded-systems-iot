@@ -1,0 +1,124 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ARCH↔ALL-ADR-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCH↔ALL-ADR-001: Architecture Decision Record Submission + Approval",
+  "description": "Any role submits an ADR; STRATEGIC ADRs require Architect approval (ARB ratification). JSON Schema translation of the authoritative ADR_SCHEMA (v1.0.0); validation rules V-ADR-01..12 apply. The ADR process is the binding mechanism for any contract/budget/security-baseline/OTA change (Never-Silently-Deviate).",
+  "type": "object",
+  "properties": {
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "id": { "type": "string", "pattern": "^ADR-\\d{4}$", "description": "ADR identifier (V-ADR-01)." },
+    "title": { "type": "string", "maxLength": 120, "description": "Imperative-mood decision title." },
+    "date_created": { "type": "string", "format": "date" },
+    "date_decided": { "type": ["string", "null"], "format": "date", "description": "Non-null when status = DECIDED (V-ADR-07)." },
+    "status": { "type": "string", "enum": ["PROPOSED", "DECIDED", "DEPRECATED", "SUPERSEDED", "REJECTED"] },
+    "decision_class": { "type": "string", "enum": ["STRATEGIC", "TACTICAL", "LOCAL"] },
+    "tier": { "type": "string", "enum": ["HARDWARE", "FIRMWARE", "EMBEDDED-SOFTWARE", "EDGE-AI", "CONNECTIVITY", "CLOUD-BACKEND", "DATA-PIPELINE", "SECURITY", "DEVOPS", "CROSS-CUTTING"] },
+    "initiator": {
+      "type": "object",
+      "properties": {
+        "role": { "type": "string", "description": "Obsidian wikilink to initiator role SKILL file." },
+        "name": { "type": "string" }
+      },
+      "required": ["role"],
+      "additionalProperties": false
+    },
+    "approvers": {
+      "type": "array",
+      "description": "≥ 1 entry with approved = true required for status = DECIDED (V-ADR-07).",
+      "items": {
+        "type": "object",
+        "properties": {
+          "role": { "type": "string" },
+          "name": { "type": "string" },
+          "approved": { "type": "boolean" },
+          "date": { "type": ["string", "null"], "format": "date" }
+        },
+        "required": ["role", "approved"],
+        "additionalProperties": false
+      }
+    },
+    "superseded_by": { "type": ["string", "null"], "pattern": "^ADR-\\d{4}$", "description": "Required when status = SUPERSEDED (V-ADR-08)." },
+    "context": { "type": "string", "minLength": 50 },
+    "problem_statement": { "type": "string", "minLength": 30 },
+    "options_considered": {
+      "type": "array",
+      "minItems": 2,
+      "description": "At least 2 options (V-ADR-05); each ≥ 1 pro and ≥ 1 con (V-ADR-06).",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string", "minLength": 20 },
+          "pros": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "cons": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "security_implications": { "type": "string" },
+          "estimated_effort_days": { "type": "integer", "minimum": 0 }
+        },
+        "required": ["id", "description", "pros", "cons"],
+        "additionalProperties": false
+      }
+    },
+    "decision": { "type": "string", "minLength": 50 },
+    "rationale": { "type": "string", "minLength": 50 },
+    "consequences": { "type": "string", "minLength": 30 },
+    "affected_contracts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "contract_id": { "type": "string", "description": "Must resolve against the contract registry (V-ADR-09 ref / V-CR cross-check)." },
+          "impact_description": { "type": "string" }
+        },
+        "required": ["contract_id"],
+        "additionalProperties": false
+      }
+    },
+    "business_impact_assessment": {
+      "type": "object",
+      "description": "Populated by Business Consultant; required for cost-material ADRs (V-ADR-12).",
+      "properties": {
+        "recommendation": { "type": "string", "enum": ["PROCEED", "PROCEED_WITH_MITIGATION", "REJECT"] }
+      },
+      "additionalProperties": true
+    }
+  },
+  "required": ["schema_version", "id", "title", "date_created", "status", "decision_class", "tier", "initiator", "approvers", "context", "problem_statement", "options_considered", "decision", "rationale", "consequences"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "DECIDED" } } },
+      "then": { "required": ["date_decided"] }
+    },
+    {
+      "if": { "properties": { "status": { "const": "SUPERSEDED" } } },
+      "then": { "required": ["superseded_by"] }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "ARCH↔ALL-ADR-001",
+    "producer_role": "ANY",
+    "consumer_role": "ARCH",
+    "decision_tier": "Tier-1",
+    "tier_rationale": "STRATEGIC ADRs touch platform/protocol/security-baseline/OTA — permanent HITL gate; ARB ratification and Architect approval required. TACTICAL/LOCAL ADRs may resolve at lower tiers but the schema gate is uniform.",
+    "cadence": "TRIGGER (on any Never-Silently-Deviate condition); SLA per decision tier (Tier-1 4 business hours)",
+    "confirm_conditions": [
+      "id matches ^ADR-\\d{4}$; status, decision_class, tier are valid enums",
+      "options_considered has ≥ 2 entries, each with ≥ 1 pro and ≥ 1 con",
+      "context/problem_statement/decision/rationale/consequences meet minimum lengths",
+      "status = DECIDED implies date_decided non-null and ≥ 1 approver approved = true",
+      "decision_class = STRATEGIC implies an Architect approver is present (V-ADR-09)",
+      "affected_contracts IDs resolve in the registry"
+    ],
+    "reject_conditions": [
+      "fewer than 2 options or an option missing pros/cons",
+      "STRATEGIC ADR DECIDED without Architect approval",
+      "cost-material decision missing a BIA recommendation (V-ADR-12)",
+      "BIA recommendation = REJECT on a STRATEGIC ADR marked DECIDED without ARB override",
+      "affected_contracts reference an unknown contract_id"
+    ],
+    "counter_conditions": [
+      "decision_class asserted LOCAL but affected_contracts cross ≥ 2 roles — request reclassification upward",
+      "an affected interface contract change lacks a paired CCR + version bump — request the CCR first"
+    ]
+  }
+}

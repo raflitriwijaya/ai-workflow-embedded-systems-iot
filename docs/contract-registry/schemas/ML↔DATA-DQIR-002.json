@@ -1,0 +1,113 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ML↔DATA-DQIR-002.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ML↔DATA-DQIR-002: Data Quality Issue Report",
+  "description": "ML files a DQIR when it detects data-quality issues during training; DATA acknowledges, assigns severity, root-causes, corrects, and re-releases. CRITICAL/HIGH block the MLOps training pipeline. JSON Schema translation of the authoritative DQIR_SCHEMA (v1.0.0); validation rules V-DQIR-01..13 apply. Companion to ML↔DATA-001.",
+  "type": "object",
+  "properties": {
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "id": { "type": "string", "pattern": "^DQIR-\\d{4}$", "description": "DQIR identifier (V-DQIR-01)." },
+    "date_raised": { "type": "string", "format": "date" },
+    "date_resolved": { "type": ["string", "null"], "format": "date" },
+    "dataset": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "source_pipeline": { "type": "string" },
+        "collection_window": {
+          "type": "object",
+          "properties": {
+            "start": { "type": "string", "format": "date-time" },
+            "end": { "type": "string", "format": "date-time" }
+          },
+          "required": ["start", "end"],
+          "additionalProperties": false
+        },
+        "storage_location": { "type": "string" }
+      },
+      "required": ["name", "version", "source_pipeline", "collection_window", "storage_location"],
+      "additionalProperties": false
+    },
+    "affected_features": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "feature_name": { "type": "string" },
+          "feature_type": { "type": "string", "enum": ["NUMERIC", "CATEGORICAL", "TIMESTAMP", "BINARY", "TEXT"] },
+          "affected_row_count": { "type": "integer", "minimum": 0 },
+          "affected_row_percentage": { "type": "number", "minimum": 0, "maximum": 100 },
+          "sample_bad_values": { "type": "array", "items": { "type": "string" }, "maxItems": 5 }
+        },
+        "required": ["feature_name", "feature_type", "affected_row_count", "affected_row_percentage"],
+        "additionalProperties": false
+      }
+    },
+    "issue_type": { "type": "string", "enum": ["MISSING_VALUES", "OUT_OF_RANGE", "DISTRIBUTION_DRIFT", "LABEL_INCONSISTENCY", "TIMESTAMP_ANOMALY", "SCHEMA_MISMATCH", "SENSOR_FAULT", "PII_LEAKAGE"] },
+    "severity": { "type": "string", "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"] },
+    "quality_dimension": { "type": "string", "enum": ["COMPLETENESS", "ACCURACY", "CONSISTENCY", "TIMELINESS", "VALIDITY", "UNIQUENESS"] },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "total_rows_inspected": { "type": "integer", "minimum": 0 },
+        "affected_rows": { "type": "integer", "minimum": 0 },
+        "affected_row_percentage": { "type": "number", "minimum": 0, "maximum": 100 }
+      },
+      "required": ["total_rows_inspected", "affected_rows", "affected_row_percentage"],
+      "additionalProperties": true
+    },
+    "baseline_comparison": {
+      "type": "object",
+      "description": "Required when issue_type = DISTRIBUTION_DRIFT (V-DQIR-11).",
+      "properties": {
+        "baseline_dataset_version": { "type": "string" },
+        "ks_test_p_value": { "type": "number" },
+        "psi_score": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "root_cause": {
+      "type": "object",
+      "properties": {
+        "hypothesis": { "type": "string", "minLength": 30 },
+        "confirmed": { "type": "boolean" },
+        "confirmed_cause": { "type": ["string", "null"], "minLength": 30 },
+        "pipeline_stage": { "type": "string" }
+      },
+      "required": ["hypothesis", "confirmed"],
+      "additionalProperties": false
+    },
+    "correction_status": { "type": "string", "enum": ["PENDING", "IN_PROGRESS", "CORRECTED", "ACCEPTED", "WONTFIX"] },
+    "corrected_dataset_version": { "type": ["string", "null"], "description": "Required when correction_status = CORRECTED (V-DQIR-10)." },
+    "training_pipeline_blocked": { "type": "boolean", "description": "Must be true when severity ∈ {CRITICAL, HIGH} (V-DQIR-08)." }
+  },
+  "required": ["schema_version", "id", "date_raised", "dataset", "affected_features", "issue_type", "severity", "quality_dimension", "metrics", "root_cause", "correction_status", "training_pipeline_blocked"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "ML↔DATA-DQIR-002",
+    "producer_role": "ML",
+    "consumer_role": "DATA",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "DQIR severity assignment within rubric is agent-autonomous (Tier-3). PII_LEAKAGE escalates to SEC (ESC-SEC) regardless of severity.",
+    "cadence": "SLA_FROM_EVENT (file within 1 business day of detection; DATA ack within 1 day; RCA 5 days CRITICAL/HIGH, 10 days MEDIUM/LOW; correction CRITICAL 2 days / HIGH 5 days)",
+    "confirm_conditions": [
+      "id matches ^DQIR-\\d{4}$; issue_type, severity, quality_dimension, correction_status are valid enums",
+      "affected_row_percentage = affected_rows / total_rows_inspected × 100 (±0.1%)",
+      "severity ∈ {CRITICAL, HIGH} implies training_pipeline_blocked = true",
+      "issue_type = DISTRIBUTION_DRIFT implies baseline_comparison present with ks_test_p_value and psi_score",
+      "correction_status = CORRECTED implies corrected_dataset_version non-null"
+    ],
+    "reject_conditions": [
+      "severity CRITICAL/HIGH but training_pipeline_blocked = false",
+      "correction_status = ACCEPTED with severity CRITICAL or HIGH (only MEDIUM/LOW may be accepted)",
+      "arithmetic inconsistency in affected_row_percentage beyond tolerance",
+      "DISTRIBUTION_DRIFT without a baseline_comparison block"
+    ],
+    "counter_conditions": [
+      "severity proposed by ML differs from DATA's downstream-impact assessment — negotiate severity within the rubric",
+      "issue_type = PII_LEAKAGE — do NOT auto-resolve; trigger breach workflow and escalate to SEC (ESC-SEC)"
+    ]
+  }
+}

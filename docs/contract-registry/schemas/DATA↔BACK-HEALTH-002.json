@@ -1,0 +1,82 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/DATA↔BACK-HEALTH-002.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DATA↔BACK-HEALTH-002: Pipeline Health + Query Performance Feedback",
+  "description": "Data reports ingest→storage pipeline health and query performance back to Backend; covers Segment B (DATA-owned) and the joint End-to-End telemetry-integrity SLO. Grounded in DATA_ENGINEER_SKILL §6.1 (Joint Telemetry-Integrity SLO). Companion to DATA↔BACK-INGEST-001.",
+  "type": "object",
+  "properties": {
+    "segment_b_slo": {
+      "type": "object",
+      "description": "DATA-owned SLO: ingest routing point → time-series DB / data lake.",
+      "properties": {
+        "commit_target_pct": { "type": "number", "const": 99.9, "description": "≥ 99.9% of routing-point messages committed to storage." },
+        "commit_window_seconds": { "type": "number", "const": 10, "description": "Commit within 10 seconds." },
+        "measured_pct": { "type": "number", "minimum": 0, "maximum": 100 }
+      },
+      "required": ["commit_target_pct", "commit_window_seconds", "measured_pct"],
+      "additionalProperties": false
+    },
+    "end_to_end_slo": {
+      "type": "object",
+      "description": "Joint SLO: device telemetry → storage, reconciled via device-side sequence numbers vs. storage record counts.",
+      "properties": {
+        "target_pct": { "type": "number", "const": 99.8, "description": "≥ 99.8% of device-emitted messages committed to storage." },
+        "window_seconds": { "type": "number", "const": 15, "description": "Within 15 seconds." },
+        "measured_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "sequence_reconciliation_gap": { "type": "integer", "minimum": 0, "description": "Count of device sequence numbers with no matching storage record." }
+      },
+      "required": ["target_pct", "window_seconds", "measured_pct"],
+      "additionalProperties": false
+    },
+    "query_performance": {
+      "type": "object",
+      "description": "Query-serving performance feedback to Backend.",
+      "properties": {
+        "query_p95_latency_ms": { "type": "number", "minimum": 0, "description": "P95 query latency in milliseconds." },
+        "write_throughput_per_s": { "type": "number", "minimum": 0, "description": "Sustained time-series write throughput (target SCALE-5: 50,000 writes/s)." }
+      },
+      "additionalProperties": false
+    },
+    "slo_breach": {
+      "type": "object",
+      "description": "Breach record; any breach triggers a joint RCA within 2 business days.",
+      "properties": {
+        "breached": { "type": "boolean" },
+        "rca_due_date": { "type": ["string", "null"], "format": "date", "description": "Required when breached = true." }
+      },
+      "required": ["breached"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["segment_b_slo", "end_to_end_slo"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "slo_breach": { "properties": { "breached": { "const": true } }, "required": ["breached"] } }, "required": ["slo_breach"] },
+      "then": { "properties": { "slo_breach": { "required": ["rca_due_date"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "DATA↔BACK-HEALTH-002",
+    "producer_role": "DATA",
+    "consumer_role": "BACK",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine health/performance reporting. A sustained SLO breach is an erosion-shaped signal (see §8.5) and may escalate to Tier-2 if architectural (e.g., DB scaling) remediation is needed.",
+    "cadence": "CONTINUOUS (SLO computed continuously, reviewed at monthly Backend-Data sync); SLA_FROM_EVENT (joint RCA within 2 business days of breach)",
+    "confirm_conditions": [
+      "segment_b_slo.measured_pct ≥ 99.9 within 10 s and end_to_end_slo.measured_pct ≥ 99.8 within 15 s",
+      "sequence_reconciliation_gap = 0 (no silent message loss)",
+      "write_throughput_per_s within the SCALE-5 ceiling",
+      "if slo_breach.breached = true, rca_due_date is set"
+    ],
+    "reject_conditions": [
+      "breach reported with breached = true but no rca_due_date",
+      "sequence_reconciliation_gap > 0 declared healthy (silent loss — never accept)",
+      "end-to-end measured_pct below 99.8 presented as meeting target"
+    ],
+    "counter_conditions": [
+      "query_p95_latency_ms trending toward a downstream API breach — request capacity review",
+      "measured_pct marginal and within noise — request a longer measurement window before sign-off"
+    ]
+  }
+}

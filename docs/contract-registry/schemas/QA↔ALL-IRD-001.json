@@ -1,0 +1,124 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/QA↔ALL-IRD-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QA↔ALL-IRD-001: Integration Readiness Declaration",
+  "description": "Bilateral signed assertion that two roles completed agreed test scenarios for a shared contract and are ready for formal integration testing. QA and Architect use it as a gate condition. JSON Schema translation of the authoritative INTEGRATION_READINESS_DECLARATION_SCHEMA (v1.0.0) — that Markdown schema remains authoritative; validation rules V-IRD-01..13 apply.",
+  "type": "object",
+  "properties": {
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "id": { "type": "string", "pattern": "^IRD-\\d{4}$", "description": "IRD identifier (V-IRD-01)." },
+    "date_declared": { "type": "string", "format": "date" },
+    "sprint_or_milestone": { "type": "string", "description": "e.g. 'Sprint-14' or 'Milestone-M3'." },
+    "contract": {
+      "type": "object",
+      "properties": {
+        "contract_id": { "type": "string", "description": "Contract under test; must resolve in the registry (V-IRD-02)." },
+        "contract_title": { "type": "string" },
+        "contract_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "open_ccrs": { "type": "array", "items": { "type": "string", "pattern": "^CCR-\\d{4}$" }, "description": "Must be empty for gate PASS (V-IRD-03)." }
+      },
+      "required": ["contract_id", "contract_title", "contract_version", "open_ccrs"],
+      "additionalProperties": false
+    },
+    "producer_role": { "type": "string", "description": "Obsidian wikilink to producer SKILL file." },
+    "consumer_role": { "type": "string", "description": "Obsidian wikilink to consumer SKILL file." },
+    "gate_result": { "type": "string", "enum": ["PASS", "PASS_WITH_WAIVER", "FAIL", "INCOMPLETE"], "description": "Computed gate outcome (V-IRD-04)." },
+    "test_scenarios": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string", "minLength": 20 },
+          "scenario_type": { "type": "string", "enum": ["HAPPY_PATH", "BOUNDARY", "ERROR", "SECURITY", "PERFORMANCE"] },
+          "mandatory": { "type": "boolean" },
+          "executed": { "type": "boolean" },
+          "result": { "type": "string", "enum": ["PASS", "FAIL", "SKIP"] },
+          "failure_details": { "type": ["string", "null"], "minLength": 20 },
+          "linked_test_case": { "type": "string" },
+          "evidence_artifact": { "type": ["string", "null"] }
+        },
+        "required": ["id", "description", "scenario_type", "mandatory", "executed"],
+        "additionalProperties": false
+      }
+    },
+    "waivers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "scenario_id": { "type": "string" },
+          "waiver_reason": { "type": "string", "minLength": 30 },
+          "risk_accepted_by": { "type": "string", "description": "Must be Architect or ARB." },
+          "waiver_expiry": { "type": "string", "format": "date" },
+          "linked_issue": { "type": "string" }
+        },
+        "required": ["scenario_id", "waiver_reason", "risk_accepted_by", "waiver_expiry"],
+        "additionalProperties": false
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "total_scenarios": { "type": "integer", "minimum": 0 },
+        "executed_scenarios": { "type": "integer", "minimum": 0 },
+        "passed_scenarios": { "type": "integer", "minimum": 0 },
+        "failed_scenarios": { "type": "integer", "minimum": 0 },
+        "skipped_scenarios": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["total_scenarios", "executed_scenarios", "passed_scenarios", "failed_scenarios", "skipped_scenarios"],
+      "additionalProperties": false
+    },
+    "signatories": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "properties": {
+          "role": { "type": "string" },
+          "signed": { "type": "boolean" },
+          "date": { "type": ["string", "null"], "format": "date" },
+          "attestation": { "type": "string", "enum": ["READY", "NOT_READY", "READY_WITH_CONDITIONS"] }
+        },
+        "required": ["role", "signed", "attestation"],
+        "additionalProperties": false
+      }
+    },
+    "architect_review": {
+      "type": "object",
+      "properties": {
+        "reviewed": { "type": "boolean" },
+        "decision": { "type": ["string", "null"], "enum": ["APPROVED", "REJECTED", "DEFERRED", null] }
+      },
+      "additionalProperties": true
+    }
+  },
+  "required": ["schema_version", "id", "date_declared", "sprint_or_milestone", "contract", "producer_role", "consumer_role", "gate_result", "test_scenarios", "metrics", "signatories"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "QA↔ALL-IRD-001",
+    "producer_role": "ANY_PAIR",
+    "consumer_role": "QA",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Gate artifact; PASS_WITH_WAIVER/FAIL require Architect review (HG-04). QA owns the §3.3→§3.4 and §3.5→§3.6 go/no-go (permanent HITL gate).",
+    "cadence": "TRIGGER (per contract before formal integration testing)",
+    "confirm_conditions": [
+      "id matches ^IRD-\\d{4}$ and contract_id resolves in the registry",
+      "gate_result = PASS implies failed_scenarios = 0, all mandatory scenarios PASS, and contract.open_ccrs is empty",
+      "both producer_role and consumer_role appear in signatories with signed = true",
+      "metrics arithmetic consistent (passed + failed + skipped = executed)",
+      "at least one scenario_type = SECURITY (V-IRD-13)"
+    ],
+    "reject_conditions": [
+      "gate_result = PASS but a mandatory scenario FAILED or open_ccrs non-empty",
+      "missing a required signatory signature",
+      "gate_result ∈ {FAIL, PASS_WITH_WAIVER} without architect_review.reviewed = true",
+      "no SECURITY scenario present"
+    ],
+    "counter_conditions": [
+      "PASS_WITH_WAIVER but waivers list empty or risk_accepted_by is not Architect/ARB — request a valid waiver",
+      "an evidence_artifact path does not resolve — request evidence before sign-off"
+    ]
+  }
+}

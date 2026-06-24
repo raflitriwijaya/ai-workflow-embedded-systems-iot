@@ -1,0 +1,82 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ARCH↔QA-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCH↔QA-001: NFR Targets + Contract-Violation Reports",
+  "description": "Architect supplies NFR targets (latency, power, OTA reliability), interface contracts as the basis for conformance tests, and the requirements-traceability map; QA returns measured verification results, contract-violation reports, and integration-defect analysis. Grounded in EMBEDDED_SYSTEMS_ARCHITECT_SKILL §6.10. NFR matrix must carry no [TBD] values (HG-04 Architect Production Gate).",
+  "type": "object",
+  "properties": {
+    "nfr_targets": {
+      "type": "array",
+      "description": "ARCH→QA: NFR Verification Matrix entries. Every target carries a value and a unit (no TBD).",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "nfr_id": { "type": "string", "description": "NFR identifier (e.g., R1, PERF-3, SCALE-4)." },
+          "category": { "type": "string", "enum": ["RELIABILITY", "ROBUSTNESS", "SCALABILITY", "PERFORMANCE"] },
+          "metric": { "type": "string", "description": "What is measured (e.g., API P99 latency)." },
+          "target_value": { "type": "number", "description": "Numeric target (no TBD/placeholder)." },
+          "unit": { "type": "string", "minLength": 1, "description": "Explicit unit (ms, %, writes/s, mW, …)." },
+          "verification_method": { "type": "string", "description": "How it is verified (HIL soak, load test, on-target benchmark, FC-ID traceability)." }
+        },
+        "required": ["nfr_id", "category", "metric", "target_value", "unit", "verification_method"],
+        "additionalProperties": false
+      }
+    },
+    "traceability_map_path": { "type": "string", "description": "Requirements-traceability map (NFR/contract → test)." },
+    "verification_results": {
+      "type": "array",
+      "description": "QA→ARCH: measured verification outcomes.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "nfr_id": { "type": "string" },
+          "measured_value": { "type": "number" },
+          "unit": { "type": "string", "minLength": 1 },
+          "verdict": { "type": "string", "enum": ["PASS", "FAIL"] }
+        },
+        "required": ["nfr_id", "measured_value", "unit", "verdict"],
+        "additionalProperties": false
+      }
+    },
+    "contract_violation_reports": {
+      "type": "array",
+      "description": "QA→ARCH: contract-violation and integration-defect reports.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "contract_id": { "type": "string", "pattern": "^[A-Z]+↔[A-Z]+(-[A-Z0-9]+)?-\\d{3}$", "description": "Violated contract ID (canonical registry format)." },
+          "violation_description": { "type": "string", "minLength": 10 },
+          "severity": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] }
+        },
+        "required": ["contract_id", "violation_description", "severity"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["nfr_targets"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "ARCH↔QA-001",
+    "producer_role": "ARCH",
+    "consumer_role": "QA",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "NFR verification feeds the HG-04 Architect Production Gate and the QA go/no-go gate (both permanent HITL). A failing NFR or open contract violation blocks release sign-off.",
+    "cadence": "TRIGGER (NFR matrix handoff at planning; HIL and end-to-end validation during execution; release-gate sign-off)",
+    "confirm_conditions": [
+      "every nfr_target carries nfr_id, category, metric, target_value, unit, and verification_method (no [TBD])",
+      "verification_results report measured_value + unit + verdict per NFR",
+      "contract_violation_reports reference a valid canonical contract_id",
+      "all release-gating NFRs report verdict = PASS"
+    ],
+    "reject_conditions": [
+      "any NFR target with a [TBD]/placeholder value or missing unit (blocks HG-04)",
+      "a release-gate sign-off requested while a release-gating NFR verdict = FAIL",
+      "detection-coverage or robustness NFR reported as met when measured below target (Honesty Over Polish, §10.3)"
+    ],
+    "counter_conditions": [
+      "measured value within measurement noise of target — request a longer/again-run verification before verdict",
+      "contract-violation severity disputed — request the failing scenario trace before classification"
+    ]
+  }
+}

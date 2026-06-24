@@ -1,0 +1,114 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ARCH↔HW-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCH↔HW-001: Platform Constraints + Board Feasibility Feedback",
+  "description": "Architect supplies platform-selection rationale, per-node resource/power budgets, sensor-bus topology, and debug/security-element requirements; Hardware returns board feasibility confirmation, electrical constraints, sensor specifications, and bring-up findings/errata. Grounded in EMBEDDED_SYSTEMS_ARCHITECT_SKILL §6.2.",
+  "type": "object",
+  "properties": {
+    "platform_constraints": {
+      "type": "object",
+      "description": "ARCH→HW: platform selection + per-node budgets.",
+      "properties": {
+        "mcu_family": { "type": "string", "description": "Selected MCU/SoC family (e.g., STM32H7)." },
+        "selection_rationale": { "type": "string", "minLength": 20, "description": "Why this platform was selected." },
+        "per_node_budgets": {
+          "type": "object",
+          "description": "Per-node resource and power budgets. Every quantity carries an explicit unit (no TBD).",
+          "properties": {
+            "flash_budget_kb": { "type": "number", "minimum": 0, "description": "Flash budget in KB." },
+            "sram_budget_kb": { "type": "number", "minimum": 0, "description": "SRAM budget in KB." },
+            "active_power_budget_mw": { "type": "number", "minimum": 0, "description": "Active-mode power budget in mW." },
+            "sleep_current_budget_ua": { "type": "number", "minimum": 0, "description": "Sleep-mode current budget in µA." },
+            "energy_budget_mwh_per_day": { "type": "number", "minimum": 0, "description": "Daily energy budget in mWh (solar-constrained node)." }
+          },
+          "required": ["flash_budget_kb", "sram_budget_kb", "active_power_budget_mw"],
+          "additionalProperties": false
+        },
+        "sensor_bus_topology": {
+          "type": "array",
+          "description": "Sensor-bus topology.",
+          "items": { "type": "string", "enum": ["I2C", "SPI", "ADC", "1-Wire", "UART"] }
+        },
+        "security_element_required": { "type": "boolean", "description": "Whether a secure element / root-of-trust device is required (see HW↔SEC-001)." },
+        "debug_port_lockdown_required": { "type": "boolean", "description": "Whether debug-port lockdown is mandated (security baseline)." }
+      },
+      "required": ["mcu_family", "per_node_budgets"],
+      "additionalProperties": false
+    },
+    "board_feasibility": {
+      "type": "object",
+      "description": "HW→ARCH: feasibility confirmation + bring-up evidence.",
+      "properties": {
+        "feasibility_verdict": { "type": "string", "enum": ["FEASIBLE", "FEASIBLE_WITH_CONSTRAINTS", "INFEASIBLE"] },
+        "electrical_constraints": { "type": "array", "items": { "type": "string" }, "description": "Electrical constraints feeding back into the budget." },
+        "sensor_specs": {
+          "type": "array",
+          "description": "Measured/datasheet sensor specifications.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sensor_id": { "type": "string" },
+              "sampling_rate_hz": { "type": "number", "minimum": 0, "description": "Sampling rate in Hz." },
+              "resolution_bits": { "type": "integer", "minimum": 1, "description": "ADC/sensor resolution in bits." }
+            },
+            "required": ["sensor_id", "sampling_rate_hz", "resolution_bits"],
+            "additionalProperties": false
+          }
+        },
+        "bring_up_findings": { "type": "array", "items": { "type": "string" } },
+        "errata": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "errata_id": { "type": "string" },
+              "description": { "type": "string" },
+              "severity": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+              "workaround": { "type": ["string", "null"] }
+            },
+            "required": ["errata_id", "description", "severity"],
+            "additionalProperties": false
+          }
+        },
+        "adr_ref": { "type": ["string", "null"], "pattern": "^ADR-\\d{4}$", "description": "Required when verdict = INFEASIBLE (platform change is a STRATEGIC ADR)." }
+      },
+      "required": ["feasibility_verdict"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["platform_constraints"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "board_feasibility": { "properties": { "feasibility_verdict": { "const": "FEASIBLE_WITH_CONSTRAINTS" } }, "required": ["feasibility_verdict"] } }, "required": ["board_feasibility"] },
+      "then": { "properties": { "board_feasibility": { "properties": { "electrical_constraints": { "minItems": 1 } }, "required": ["electrical_constraints"] } } }
+    },
+    {
+      "if": { "properties": { "board_feasibility": { "properties": { "feasibility_verdict": { "const": "INFEASIBLE" } }, "required": ["feasibility_verdict"] } }, "required": ["board_feasibility"] },
+      "then": { "properties": { "board_feasibility": { "required": ["adr_ref"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "ARCH↔HW-001",
+    "producer_role": "ARCH",
+    "consumer_role": "HW",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Platform-selection trade study crosses ≥2 role boundaries and is ARB-governed; a platform change is a STRATEGIC ADR (Tier-1). Routine schematic/errata triage is Tier-3.",
+    "cadence": "TRIGGER (platform-selection trade study; schematic review; board bring-up; errata triage)",
+    "confirm_conditions": [
+      "platform_constraints carries mcu_family and per_node_budgets with explicit units (flash KB, SRAM KB, power mW)",
+      "feasibility_verdict = FEASIBLE, or FEASIBLE_WITH_CONSTRAINTS with electrical_constraints enumerated",
+      "every sensor_spec carries sampling_rate_hz and resolution_bits",
+      "CRITICAL/HIGH errata carry a workaround or an ADR reference"
+    ],
+    "reject_conditions": [
+      "any per_node budget expressed without a unit or as TBD (violates §3.10)",
+      "feasibility_verdict = INFEASIBLE without an adr_ref (silent deviation forbidden)",
+      "platform changed outside the approved stack without a STRATEGIC ADR"
+    ],
+    "counter_conditions": [
+      "budget exceedance within unquantified tolerance — request the Architect file/confirm the budget-trade ADR (tolerance bands not yet ratified, CLAUDE.md §6.5)",
+      "errata severity unclear — request reproduction conditions before sign-off"
+    ]
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/FW↔PO-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FW↔PO-001: Feature Requirements + Firmware Effort Estimates",
+  "description": "Product Owner/TPM provides feature requirements + acceptance criteria for firmware-delivered capability and the OTA release-train schedule; Firmware returns milestone status, integration-readiness dates, effort estimates, and known firmware risks/blockers. Grounded in PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL §6.3.",
+  "type": "object",
+  "properties": {
+    "feature_requirements": {
+      "type": "array",
+      "description": "PO→FW: feature requirements with acceptance criteria.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "feature_id": { "type": "string" },
+          "acceptance_criteria": { "type": "string", "minLength": 20, "description": "Acceptance criteria (capability framing, not implementation spec)." },
+          "priority": { "type": "string", "enum": ["P0", "P1", "P2", "P3"] }
+        },
+        "required": ["feature_id", "acceptance_criteria", "priority"],
+        "additionalProperties": false
+      }
+    },
+    "ota_release_train": {
+      "type": "object",
+      "description": "PO→FW: OTA release-train schedule.",
+      "properties": {
+        "release_id": { "type": "string" },
+        "target_date": { "type": "string", "format": "date" }
+      },
+      "required": ["release_id", "target_date"],
+      "additionalProperties": false
+    },
+    "firmware_feedback": {
+      "type": "object",
+      "description": "FW→PO: milestone status, readiness, effort, and risks.",
+      "properties": {
+        "milestone_status": { "type": "string", "enum": ["ON_TRACK", "AT_RISK", "SLIPPED"] },
+        "integration_readiness_date": { "type": "string", "format": "date" },
+        "effort_estimate_person_days": { "type": "number", "minimum": 0, "description": "Estimated firmware effort in person-days." },
+        "critical_path_impact": { "type": "boolean", "description": "Whether a slip affects the critical path (immediate escalation required if true)." },
+        "risks_blockers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "risk": { "type": "string" },
+              "severity": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] }
+            },
+            "required": ["risk", "severity"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["milestone_status"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["feature_requirements"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "firmware_feedback": { "properties": { "milestone_status": { "const": "SLIPPED" } }, "required": ["milestone_status"] } }, "required": ["firmware_feedback"] },
+      "then": { "properties": { "firmware_feedback": { "required": ["integration_readiness_date", "critical_path_impact"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "FW↔PO-001",
+    "producer_role": "PO",
+    "consumer_role": "FW",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Sprint-level feature intake and status reporting are agent-autonomous. Milestone slippage on the critical path triggers immediate escalation (may classify Tier-2).",
+    "cadence": "TRIGGER (sprint-level sync — standups / sprint review); immediate escalation on milestone slippage affecting the critical path",
+    "confirm_conditions": [
+      "each feature_requirement carries a feature_id, ≥20-char acceptance_criteria, and a priority",
+      "firmware_feedback reports a milestone_status",
+      "SLIPPED status carries an updated integration_readiness_date and critical_path_impact flag",
+      "effort_estimate provided in person-days where requested"
+    ],
+    "reject_conditions": [
+      "acceptance_criteria expressed as a firmware implementation directive PO does not own (overreach)",
+      "milestone_status = SLIPPED on the critical path without escalation",
+      "feature accepted into a sprint without acceptance criteria"
+    ],
+    "counter_conditions": [
+      "acceptance criteria ambiguous or untestable — request clarification before commitment",
+      "OTA release-train date conflicts with the integration-readiness date — request re-sequencing"
+    ]
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/RES↔ARCH-TTP-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RES↔ARCH-TTP-001: Technology Transfer Pack",
+  "description": "Researcher submits a complete research-finding pack to the Architect ≥ 3 weeks before the quarterly Technology Transfer Review; Architect provides a written feasibility assessment ≥ 1 week before. JSON Schema translation of the authoritative TECHNOLOGY_TRANSFER_PACK_SCHEMA (v1.0.0). TRL ≥ 5 required for transfer; HIGH license risk → legal review. Grounded in EMBEDDED_SYSTEMS_ARCHITECT_SKILL §6.12.",
+  "type": "object",
+  "properties": {
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "id": { "type": "string", "pattern": "^TTP-\\d{4}$" },
+    "date_submitted": { "type": "string", "format": "date" },
+    "technology": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["ALGORITHM", "HARDWARE_COMPONENT", "COMMUNICATION_PROTOCOL", "ML_MODEL_ARCHITECTURE", "FIRMWARE_LIBRARY", "SECURITY_PRIMITIVE", "TOOLCHAIN"] },
+        "description": { "type": "string", "minLength": 50 },
+        "maturity_level": { "type": "string", "enum": ["TRL1", "TRL2", "TRL3", "TRL4", "TRL5", "TRL6", "TRL7"], "description": "Technology Readiness Level; TRL ≥ 5 required for transfer gate." },
+        "origin": { "type": "string", "enum": ["INTERNAL_RESEARCH", "ACADEMIC_PAPER", "OPEN_SOURCE", "VENDOR_SUPPLIED", "STANDARDS_BODY"] },
+        "source_reference": { "type": "string", "description": "DOI, URL, standard number, or vendor reference." },
+        "license": { "type": "string", "description": "SPDX identifier, 'PROPRIETARY', or 'UNKNOWN'." },
+        "license_risk": { "type": "string", "enum": ["NONE", "LOW", "MEDIUM", "HIGH"], "description": "HIGH = copyleft/no-license risk; legal review required." }
+      },
+      "required": ["name", "type", "description", "maturity_level", "origin", "source_reference", "license", "license_risk"],
+      "additionalProperties": false
+    },
+    "research_summary": {
+      "type": "object",
+      "properties": {
+        "objective": { "type": "string", "minLength": 30 },
+        "methodology": { "type": "string", "minLength": 50 },
+        "key_findings": { "type": "array", "items": { "type": "string" }, "minItems": 3 },
+        "limitations": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "open_questions": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["objective", "methodology", "key_findings", "limitations"],
+      "additionalProperties": false
+    },
+    "validation_evidence": {
+      "type": "object",
+      "properties": {
+        "validated_in_isolation": { "type": "boolean" },
+        "validated_on_target_hardware": { "type": "boolean" },
+        "target_hardware_id": { "type": ["string", "null"], "description": "Required when validated_on_target_hardware = true." },
+        "benchmark_results": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "metric_name": { "type": "string" },
+              "value": { "type": "number" },
+              "unit": { "type": "string" },
+              "threshold": { "type": "number" },
+              "threshold_direction": { "type": "string", "enum": ["LESS_THAN", "GREATER_THAN", "EQUAL_TO"] },
+              "passed": { "type": "boolean" }
+            },
+            "required": ["metric_name", "value", "unit", "threshold", "threshold_direction", "passed"],
+            "additionalProperties": false
+          }
+        },
+        "datasets_used": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "test_report_path": { "type": "string" }
+      },
+      "required": ["validated_in_isolation", "validated_on_target_hardware", "benchmark_results", "datasets_used", "test_report_path"],
+      "additionalProperties": false
+    },
+    "architecture_impact": {
+      "type": "object",
+      "properties": {
+        "system_layers_affected": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "new_dependencies": { "type": "array", "items": { "type": "string" } },
+        "migration_complexity": { "type": "string", "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+        "estimated_integration_effort_days": { "type": "integer", "minimum": 0 },
+        "adr_required": { "type": "boolean" },
+        "adr_draft_title": { "type": ["string", "null"], "description": "Required when adr_required = true." }
+      },
+      "required": ["system_layers_affected", "new_dependencies", "migration_complexity", "estimated_integration_effort_days", "adr_required"],
+      "additionalProperties": false
+    },
+    "security_review": {
+      "type": "object",
+      "properties": {
+        "status": { "type": "string", "enum": ["NOT_STARTED", "IN_PROGRESS", "COMPLETED", "WAIVED"] },
+        "known_cves": { "type": "array", "items": { "type": "string" } },
+        "security_verdict": { "type": ["string", "null"], "enum": ["APPROVED", "APPROVED_WITH_CONDITIONS", "REJECTED", null] }
+      },
+      "required": ["status", "known_cves"],
+      "additionalProperties": true
+    },
+    "transfer_gate": {
+      "type": "object",
+      "properties": {
+        "status": { "type": "string", "enum": ["PENDING", "APPROVED", "REJECTED", "DEFERRED"] }
+      },
+      "required": ["status"],
+      "additionalProperties": true
+    },
+    "produced_by": {
+      "type": "object",
+      "properties": { "role": { "type": "string", "const": "[[IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL]]" } },
+      "required": ["role"],
+      "additionalProperties": true
+    }
+  },
+  "required": ["schema_version", "id", "date_submitted", "technology", "research_summary", "validation_evidence", "architecture_impact", "security_review", "transfer_gate", "produced_by"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "architecture_impact": { "properties": { "adr_required": { "const": true } } } } },
+      "then": { "properties": { "architecture_impact": { "required": ["adr_draft_title"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "RES↔ARCH-TTP-001",
+    "producer_role": "RES",
+    "consumer_role": "ARCH",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Transfer-gate approval is an ARB-resolvable architecture decision (Architect ratifies). Novel paradigms may trigger ESC-NOV. HIGH license risk and CVEs raise it toward Tier-1 via SEC.",
+    "cadence": "CALENDAR (quarterly TTR — first Tuesday of Feb/May/Aug/Nov; TTP submitted ≥ 3 weeks before; Architect feasibility ≥ 1 week before); interim transfer for market-window/patent deadlines (ack within 3 business days)",
+    "confirm_conditions": [
+      "id matches ^TTP-\\d{4}$; technology.maturity_level ≥ TRL5 for transfer",
+      "research_summary has ≥ 3 key_findings and ≥ 1 limitation",
+      "benchmark_results present (≥ 1) with units and pass/fail vs. threshold",
+      "validated_on_target_hardware = true implies target_hardware_id present",
+      "adr_required = true implies adr_draft_title present"
+    ],
+    "reject_conditions": [
+      "maturity_level < TRL5 (not ready for transfer)",
+      "license_risk = HIGH without a completed legal/security review",
+      "validation_evidence missing benchmark results or units",
+      "security_review.security_verdict = REJECTED"
+    ],
+    "counter_conditions": [
+      "TRL5 claimed but no on-target validation — request target-hardware validation",
+      "novelty outside precedented architecture surface (ESC-NOV) — request ARB scheduling"
+    ]
+  }
+}

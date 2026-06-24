@@ -1,0 +1,83 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/MLOPS↔DEVOPS-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MLOPS↔DEVOPS-001: Model Artifact → OTA Distribution Pipeline",
+  "description": "MLOps hands an OTA-ready model artifact (+ rollout strategy + distribution metadata) to DevOps; DevOps returns per-cohort distribution status and rollout progress. Grounded in MLOPS_ENGINEER_SKILL §6.2 (Model Artifact OTA Coordination). The artifact's full manifest validates against OTA_COMPATIBILITY_MANIFEST_SCHEMA (OCM).",
+  "type": "object",
+  "properties": {
+    "model_id": { "type": "string", "description": "Model identifier transitioning to the 'Production' registry stage." },
+    "model_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "Model SemVer." },
+    "artifact_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$", "description": "SHA-256 of the model artifact; DevOps re-verifies at the distribution endpoint." },
+    "artifact_size_bytes": { "type": "integer", "minimum": 0, "description": "Artifact size in bytes." },
+    "minimum_firmware_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "Lowest compatible firmware version." },
+    "max_flash_budget_bytes": { "type": "integer", "minimum": 0, "description": "Maximum flash consumption permitted on target." },
+    "ocm_reference": { "type": "string", "description": "Reference to the full OTA Compatibility Manifest (model.id + model.version) validated against OTA_COMPATIBILITY_MANIFEST_SCHEMA." },
+    "mlops_signature": { "type": "string", "description": "MLOps signature over the artifact bundle." },
+    "deployment_intent": {
+      "type": "string",
+      "enum": ["CANARY", "STAGED", "URGENT"],
+      "description": "Rollout intent communicated within 1 business hour of registry stage transition to 'Production'."
+    },
+    "rollout_strategy": {
+      "type": "object",
+      "description": "Model rollout strategy parameters.",
+      "properties": {
+        "target_cohorts": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "Target fleet cohorts." },
+        "canary_percentage": { "type": "integer", "minimum": 1, "maximum": 100, "description": "Canary stage percentage of fleet." },
+        "stage_sizes": { "type": "array", "items": { "type": "integer", "minimum": 1 }, "description": "Successive stage sizes." },
+        "promotion_criteria": {
+          "type": "object",
+          "properties": {
+            "health_metric_thresholds": { "type": "object", "additionalProperties": true, "description": "Per-stage health-metric thresholds." },
+            "observation_period_hours": { "type": "number", "minimum": 0, "description": "Observation window per stage." }
+          },
+          "required": ["health_metric_thresholds", "observation_period_hours"],
+          "additionalProperties": false
+        },
+        "rollback_trigger_thresholds": { "type": "object", "additionalProperties": true, "description": "Thresholds that trigger automatic rollback." }
+      },
+      "required": ["target_cohorts", "canary_percentage", "promotion_criteria", "rollback_trigger_thresholds"],
+      "additionalProperties": false
+    },
+    "distribution_status": {
+      "type": "object",
+      "description": "Returned by DevOps (Requires side of §6.2): per-cohort distribution status.",
+      "properties": {
+        "cohort": { "type": "string" },
+        "state": { "type": "string", "enum": ["DISTRIBUTING", "DISTRIBUTED", "DISTRIBUTION_FAILED"], "description": "Per-cohort artifact distribution state." },
+        "percent_on_new_version": { "type": "number", "minimum": 0, "maximum": 100, "description": "Percentage of target devices running the new model version." },
+        "hash_verified_at_endpoint": { "type": "boolean", "description": "True when SHA-256 received at endpoint matches registered artifact." }
+      },
+      "required": ["cohort", "state", "hash_verified_at_endpoint"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["model_id", "model_version", "artifact_sha256", "artifact_size_bytes", "minimum_firmware_version", "max_flash_budget_bytes", "ocm_reference", "mlops_signature", "deployment_intent", "rollout_strategy"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "MLOPS↔DEVOPS-001",
+    "producer_role": "MLOPS",
+    "consumer_role": "DEVOPS",
+    "decision_tier": "Tier-1",
+    "tier_rationale": "Part of the OTA strategy chain (permanent HITL gate). Urgent hotfix dispatch and rollback triggers are security/OTA-relevant.",
+    "cadence": "TRIGGER (handoff within 1 business hour of Production stage; DevOps acks + begins packaging within 2 business hours); SLA_FROM_EVENT (status every 4h active / 24h observation); urgent hotfix 1-hour end-to-end timeout",
+    "confirm_conditions": [
+      "artifact_sha256 verifies at the distribution endpoint",
+      "ocm_reference resolves to a valid OCM with flash_budget_check.result = PASS",
+      "all dqir_clearance IDs in the OCM are resolved",
+      "mlops_signature is valid",
+      "rollout_strategy has a canary_percentage in 1–100 and defined rollback triggers"
+    ],
+    "reject_conditions": [
+      "hash mismatch at endpoint",
+      "OCM flash_budget_check.result = FAIL (blocks OTA dispatch)",
+      "an unresolved DQIR is listed in dqir_clearance",
+      "invalid or missing MLOps signature",
+      "rollback trigger thresholds absent"
+    ],
+    "counter_conditions": [
+      "deployment_intent = URGENT but observation_period_hours implies a slower schedule — request reconciliation",
+      "OCM flash_budget_check.result = WARN (80–95%) — request explicit risk acceptance before staged rollout"
+    ]
+  }
+}

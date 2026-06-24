@@ -1,0 +1,104 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/RES↔HW-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RES↔HW-001: PoC Hardware Designs + Component-Availability Feedback",
+  "description": "Researcher delivers PoC hardware designs (schematic, BOM, layout), component characterization data (voltage/current/noise/thermal), and novel assembly guidance; Hardware returns a Hardware Feasibility Assessment (manufacturability, BOM cost estimate, single-source components, component availability, regulatory path, showstoppers) within 15 business days. Grounded in IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL §6.3.",
+  "type": "object",
+  "properties": {
+    "poc_hardware_design": {
+      "type": "object",
+      "description": "RES→HW: PoC design package.",
+      "properties": {
+        "design_package_id": { "type": "string" },
+        "schematic_path": { "type": "string" },
+        "bom": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "component_id": { "type": "string" },
+              "part_number": { "type": "string" },
+              "quantity": { "type": "integer", "minimum": 1 }
+            },
+            "required": ["component_id", "part_number", "quantity"],
+            "additionalProperties": false
+          }
+        },
+        "layout_files_path": { "type": ["string", "null"] },
+        "characterization_data": {
+          "type": "array",
+          "description": "Component characterization (explicit units).",
+          "items": {
+            "type": "object",
+            "properties": {
+              "component_id": { "type": "string" },
+              "voltage_v": { "type": "number", "description": "Operating voltage in V." },
+              "current_ma": { "type": "number", "description": "Operating current in mA." },
+              "noise": { "type": "string", "description": "Noise characterization (with units)." },
+              "thermal_c": { "type": "number", "description": "Thermal performance in °C." }
+            },
+            "required": ["component_id"],
+            "additionalProperties": false
+          }
+        },
+        "assembly_notes": { "type": "string" }
+      },
+      "required": ["design_package_id", "bom"],
+      "additionalProperties": false
+    },
+    "hardware_feasibility_assessment": {
+      "type": "object",
+      "description": "HW→RES: feasibility within 15 business days.",
+      "properties": {
+        "manufacturability": { "type": "string", "enum": ["FEASIBLE", "FEASIBLE_WITH_CHANGES", "INFEASIBLE"] },
+        "bom_cost_estimate_usd_range": {
+          "type": "object",
+          "properties": {
+            "min": { "type": "number", "minimum": 0, "description": "Low BOM cost estimate (USD)." },
+            "max": { "type": "number", "minimum": 0, "description": "High BOM cost estimate (USD)." }
+          },
+          "required": ["min", "max"],
+          "additionalProperties": false
+        },
+        "single_source_components": { "type": "array", "items": { "type": "string" }, "description": "Components with no second source (supply risk)." },
+        "component_availability": { "type": "string", "enum": ["AVAILABLE", "LONG_LEAD", "EOL_RISK", "UNAVAILABLE"] },
+        "regulatory_path": { "type": "string" },
+        "fabrication_process": { "type": "string" },
+        "showstoppers": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["manufacturability"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["poc_hardware_design"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "hardware_feasibility_assessment": { "properties": { "manufacturability": { "const": "FEASIBLE_WITH_CHANGES" } }, "required": ["manufacturability"] } }, "required": ["hardware_feasibility_assessment"] },
+      "then": { "properties": { "hardware_feasibility_assessment": { "properties": { "showstoppers": { "minItems": 1 } }, "required": ["showstoppers"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "RES↔HW-001",
+    "producer_role": "RES",
+    "consumer_role": "HW",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "PoC evaluation and component sourcing are agent-autonomous research-transfer activities. Productization of a research-derived board runs through ARCH↔HW-001 / the platform trade study (Tier-2).",
+    "cadence": "TRIGGER (PoC Hardware Design Handoff ≥4 weeks before evaluation; Hardware Feasibility Assessment within 15 business days; Novel Component Evaluation within 10 business days; bi-weekly joint prototype review)",
+    "confirm_conditions": [
+      "poc_hardware_design carries a design_package_id and a BOM with part numbers",
+      "characterization_data carries explicit units (V, mA, °C) where provided",
+      "hardware_feasibility_assessment returns manufacturability + a BOM cost range",
+      "single-source components and component_availability flagged"
+    ],
+    "reject_conditions": [
+      "manufacturability = FEASIBLE_WITH_CHANGES without enumerated showstoppers/changes",
+      "characterization values supplied without units",
+      "feasibility asserted while a showstopper or UNAVAILABLE component is unresolved"
+    ],
+    "counter_conditions": [
+      "BOM cost range exceeds the product BOM ceiling — request a cost-reduction or alternative-component path (BIA may be needed)",
+      "characterization data gaps — Hardware flags gaps within 5 business days and requests re-measurement"
+    ]
+  }
+}

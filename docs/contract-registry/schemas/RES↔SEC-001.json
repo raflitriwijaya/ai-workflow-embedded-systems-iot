@@ -1,0 +1,81 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/RES↔SEC-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RES↔SEC-001: Pre-Transfer Security Review + Threat Assessment",
+  "description": "Researcher submits a Pre-Transfer Security Review briefing (flagged findings + attack-surface categories) ≥ 10 business days before a Technology Transfer; Security returns a STRIDE threat-model assessment within 10 business days. This gate must complete before the Technology Transfer Pack (RES↔ARCH-TTP-001) is finalized. Grounded in SECURITY_ENGINEER_SKILL §6.10 and IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL §6.9.",
+  "type": "object",
+  "properties": {
+    "briefing_id": { "type": "string", "description": "Pre-Transfer Security Review briefing identifier." },
+    "linked_ttp": { "type": ["string", "null"], "pattern": "^TTP-\\d{4}$", "description": "The Technology Transfer Pack this review gates (RES↔ARCH-TTP-001)." },
+    "date_submitted": { "type": "string", "format": "date" },
+    "findings": {
+      "type": "array",
+      "minItems": 1,
+      "description": "RES→SEC: security-relevant research findings.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "finding_id": { "type": "string" },
+          "description": { "type": "string", "minLength": 20 },
+          "attack_surface_category": {
+            "type": "string",
+            "enum": ["CONNECTIVITY", "DATA_HANDLING", "COMPUTE_ARCHITECTURE", "SENSOR_PHYSICS"],
+            "description": "Potential attack-surface category."
+          },
+          "security_assumptions": { "type": "string", "description": "Assumptions made during experimental design." }
+        },
+        "required": ["finding_id", "description", "attack_surface_category"],
+        "additionalProperties": false
+      }
+    },
+    "stride_assessment": {
+      "type": "object",
+      "description": "SEC→RES: STRIDE threat-model assessment (delivered within 10 business days of briefing).",
+      "properties": {
+        "spoofing": { "type": "boolean", "description": "Threat category applicable." },
+        "tampering": { "type": "boolean" },
+        "repudiation": { "type": "boolean" },
+        "information_disclosure": { "type": "boolean" },
+        "denial_of_service": { "type": "boolean" },
+        "elevation_of_privilege": { "type": "boolean" },
+        "baseline_compatible": { "type": "boolean", "description": "Whether the finding aligns with the organizational security baseline." },
+        "verdict": { "type": "string", "enum": ["CLEARED", "CLEARED_WITH_CONTROLS", "INCOMPATIBLE"], "description": "INCOMPATIBLE = fundamentally incompatible with the security baseline." },
+        "required_controls": { "type": "array", "items": { "type": "string" }, "description": "Additional production controls required when verdict = CLEARED_WITH_CONTROLS." }
+      },
+      "required": ["spoofing", "tampering", "repudiation", "information_disclosure", "denial_of_service", "elevation_of_privilege", "baseline_compatible", "verdict"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["briefing_id", "date_submitted", "findings"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "stride_assessment": { "properties": { "verdict": { "const": "CLEARED_WITH_CONTROLS" } }, "required": ["verdict"] } }, "required": ["stride_assessment"] },
+      "then": { "properties": { "stride_assessment": { "required": ["required_controls"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "RES↔SEC-001",
+    "producer_role": "RES",
+    "consumer_role": "SEC",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Pre-Transfer Security Review gate — ESC-SEC; SEC owns the binding threat assessment. Novel attack surfaces may trigger ESC-NOV. Gate must complete before TTP finalization.",
+    "cadence": "TRIGGER (briefing submitted ≥ 10 business days before Technology Transfer); SLA_FROM_EVENT (SEC returns assessment within 10 business days; high-complexity novel modalities within 20)",
+    "confirm_conditions": [
+      "each finding carries an attack_surface_category and ≥ 20-char description",
+      "stride_assessment evaluates all six STRIDE categories",
+      "verdict = CLEARED (or CLEARED_WITH_CONTROLS with required_controls listed)",
+      "review completed before the linked TTP is finalized"
+    ],
+    "reject_conditions": [
+      "verdict = INCOMPATIBLE (finding conflicts with the security baseline — blocks transfer)",
+      "TTP finalized without a completed Pre-Transfer Security Review",
+      "CLEARED_WITH_CONTROLS without enumerated required_controls",
+      "finding missing its attack_surface_category"
+    ],
+    "counter_conditions": [
+      "novel modality requiring high-complexity assessment — request the 20-business-day window (ESC-NOV)",
+      "security assumptions unclear — request elaboration before STRIDE scoring"
+    ]
+  }
+}

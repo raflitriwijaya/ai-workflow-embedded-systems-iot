@@ -1,0 +1,75 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/HW↔ML-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HW↔ML-001: Sensor Characterization Data + ML Data Spec",
+  "description": "ML provides the sensor data requirements specification (sampling rate, resolution, dynamic range, SNR target); HW provides measured sensor characterization data and the joint conformance loop. Grounded in HARDWARE_ENGINEER_SKILL §6.3 and EDGE_AI_ML_ENGINEER_SKILL §6.5 (Sensor Data Fidelity Feedback Loop).",
+  "type": "object",
+  "properties": {
+    "sensor_id": { "type": "string" },
+    "ml_data_spec": {
+      "type": "object",
+      "description": "ML→HW: required sensor data specification for model quality.",
+      "properties": {
+        "sampling_rate_hz": { "type": "number", "minimum": 0, "description": "Required sampling rate in Hz." },
+        "resolution_bits": { "type": "integer", "minimum": 1, "description": "Required resolution in bits." },
+        "dynamic_range_db": { "type": "number", "description": "Required dynamic range in dB." },
+        "snr_target_db": { "type": "number", "description": "Target signal-to-noise ratio in dB." }
+      },
+      "required": ["sampling_rate_hz", "resolution_bits", "dynamic_range_db", "snr_target_db"],
+      "additionalProperties": false
+    },
+    "characterization_data": {
+      "type": "object",
+      "description": "HW→ML: measured sensor characterization report (delivered within 5 business days of characterization completion).",
+      "properties": {
+        "measured_snr_db": { "type": "number", "description": "Measured SNR in dB." },
+        "measured_resolution_bits": { "type": "integer", "minimum": 1 },
+        "measured_dynamic_range_db": { "type": "number" },
+        "measured_drift": { "type": "number", "description": "Measured sensor drift (with unit stated in the report)." },
+        "sampling_jitter_us": { "type": "number", "minimum": 0, "description": "Sampling jitter in microseconds." }
+      },
+      "required": ["measured_snr_db", "measured_resolution_bits", "measured_dynamic_range_db", "measured_drift"],
+      "additionalProperties": false
+    },
+    "conformance_assessment": {
+      "type": "object",
+      "description": "ML→HW: conformance verdict within 10 business days.",
+      "properties": {
+        "verdict": { "type": "string", "enum": ["CONFIRMED", "CONDITIONAL", "REJECTED"], "description": "CONFIRMED = all specs met; CONDITIONAL = met with noted limitations; REJECTED = not met." },
+        "limitations": { "type": "array", "items": { "type": "string" }, "description": "Required (non-empty) when verdict = CONDITIONAL; documents expected impact on model accuracy." },
+        "remediation_plan": { "type": ["string", "null"], "description": "Required when verdict = REJECTED (sensor replacement, AFE redesign, or ML spec relaxation)." }
+      },
+      "required": ["verdict"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["sensor_id", "ml_data_spec"],
+  "additionalProperties": false,
+  "allOf": [
+    { "if": { "properties": { "conformance_assessment": { "properties": { "verdict": { "const": "CONDITIONAL" } }, "required": ["verdict"] } }, "required": ["conformance_assessment"] }, "then": { "properties": { "conformance_assessment": { "required": ["limitations"] } } } },
+    { "if": { "properties": { "conformance_assessment": { "properties": { "verdict": { "const": "REJECTED" } }, "required": ["verdict"] } }, "required": ["conformance_assessment"] }, "then": { "properties": { "conformance_assessment": { "required": ["remediation_plan"] } } } }
+  ],
+  "x-macp": {
+    "contract_id": "HW↔ML-001",
+    "producer_role": "ML",
+    "consumer_role": "HW",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "CONDITIONAL acceptance escalates to a joint Architect trade-off decision (Tier-2); REJECTED triggers a hardware/spec remediation plan. In-range sensor drift is the keystone FMEA chain FC-001.",
+    "cadence": "TRIGGER (data-spec handoff at planning; characterization review in execution; data-fidelity sign-off before production); SLA_FROM_EVENT (HW delivers report within 5 business days; ML assesses within 10)",
+    "confirm_conditions": [
+      "characterization_data meets every ml_data_spec threshold (SNR, resolution, dynamic range)",
+      "conformance_assessment.verdict = CONFIRMED",
+      "all quantities carry units (Hz, bits, dB, µs)"
+    ],
+    "reject_conditions": [
+      "verdict = REJECTED without a remediation_plan",
+      "verdict = CONDITIONAL without documented limitations",
+      "measured SNR/resolution below spec presented as CONFIRMED",
+      "drift characterization omitted (blocks FC-001 detection assessment)"
+    ],
+    "counter_conditions": [
+      "specs met with limitations (CONDITIONAL) — escalate to Architect trade-off within 5 business days, do not auto-confirm",
+      "hardware reworked since characterization — request re-characterization (loop step 1)"
+    ]
+  }
+}

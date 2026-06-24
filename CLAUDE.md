@@ -16,7 +16,7 @@ cssclass: claude-reference
 
 A **document-as-code governance system** for an embedded/IoT software + hardware + ML engineering organization — **not** an application codebase. It defines how the product is built, by whom, under what contracts, and subject to what gates.
 
-**Reference product — AgriSpectra:** agricultural IoT sensor node for pre-symptomatic crop disease detection; quantized CNN on an STM32H7 MCU, LoRaWAN uplink, solar power, 50,000-device target fleet, 7-year field lifetime. Stack: STM32/ESP32 nodes, Raspberry Pi gateways, C/C++ + embedded Rust RTOS firmware, TinyML (TFLite Micro), MQTT/CoAP telemetry, InfluxDB/TimescaleDB + Parquet lake, REST/gRPC APIs, React/TypeScript dashboards, MLOps pipelines, secure fleet OTA.
+**Reference product — AgriSpectra:** agricultural IoT sensor node for pre-symptomatic crop disease detection — quantized CNN on an STM32H7 MCU, LoRaWAN uplink, solar power, 50,000-device target fleet, 7-year field lifetime, across an embedded (STM32/ESP32 + Rust/C RTOS, TFLite Micro) → gateway (Raspberry Pi, MQTT/CoAP) → cloud (InfluxDB/TimescaleDB + Parquet, REST/gRPC, React/TS dashboards, MLOps, secure fleet OTA) stack.
 
 **Vault:** `[[wikilinks]]`, `#tags`;
 
@@ -34,13 +34,13 @@ A **document-as-code governance system** for an embedded/IoT software + hardware
 ## 2. Vault Architecture
 
 ### 2.1 Directory Structure (key paths)
-Root: `HOME.md` (index, read first) · `EMBEDDED_IOT_AI_WORKFLOW_ENGINEERING_TEAM.md` (team overview/topology/Mermaid §14) · `CLAUDE.md` · `*_SKILL.md` ×14 (authoritative)
+Root: `HOME.md` · `EMBEDDED_IOT_AI_WORKFLOW_ENGINEERING_TEAM.md` · `CLAUDE.md` · `*_SKILL.md` ×14
 `docs/`:
-- `ACRONYM_GLOSSARY.md`;
-- `agent-protocol/` — `MULTI_AGENT_COORDINATION_PROTOCOL.md` (MACP master, normative) + AGENT_IDENTITY / A2A_MESSAGE / CONTRACT_REGISTRY / COORDINATION_LEDGER / AGENT_GOVERNANCE_PARTICIPATION schemas
-- `automation/RECIPROCITY_AUDIT_SPEC.md` (91-contract symmetry checker); `evaluation/EVALUATION_HARNESS_SPEC.md` (70 scored items)
-- `fmea/SYSTEM_FMEA_V1.md` (36 chains, IEC 60812); `operations/INCIDENT_COMMANDER.md`; `metrics-pipeline/` (PIPELINE_README, deployment_guide)
-- `review_v1/ v2/ v3/` (audit history, historical); `schemas/` (SCHEMA_INDEX + 8 schemas: ADR, CCR, DQIR, IRD, OCM, SIRC, TTP, BIA); `security/DEVICE_ATTESTATION_SPEC.md` (RATS+EAT+DICE)
+- `ACRONYM_GLOSSARY.md`
+- `agent-protocol/` — `MULTI_AGENT_COORDINATION_PROTOCOL.md` + AGENT_IDENTITY / A2A_MESSAGE / CONTRACT_REGISTRY / COORDINATION_LEDGER / AGENT_GOVERNANCE_PARTICIPATION schemas
+- `automation/RECIPROCITY_AUDIT_SPEC.md`; `evaluation/EVALUATION_HARNESS_SPEC.md`
+- `fmea/SYSTEM_FMEA_V1.md`; `operations/INCIDENT_COMMANDER.md`; `metrics-pipeline/` (PIPELINE_README, deployment_guide)
+- `review_v1/ v2/ v3/`; `schemas/` (SCHEMA_INDEX + 8 schemas: ADR, CCR, DQIR, IRD, OCM, SIRC, TTP, BIA); `security/DEVICE_ATTESTATION_SPEC.md`
 
 ### 2.2 File Types & Authoritativeness
 
@@ -68,7 +68,6 @@ Evidence base for §3 and §4: 14 SKILL.md files. Conventions at ≥ 10/14 (> 70
 
 ### 3.1 File Naming
 **RULE (14/14):** Primary vault documents use `SCREAMING_SNAKE_CASE` with a type suffix — skill cards `ROLE_NAME_SKILL.md`; workflow doc `EMBEDDED_IOT_AI_WORKFLOW_ENGINEERING_TEAM.md`; schemas `ARTIFACT_NAME_SCHEMA.md`; MACP specs descriptive `SCREAMING_SNAKE_CASE`; review files `REVIEW_PHASE_N_TOPIC.md` / `REVIEW_VN_PHASE_N_TOPIC.md`. No spaces, hyphens, or lowercase in primary-doc filenames.
-**Exception:** `prompt_review*.md`, `prompt_solve*.md`, `prompt_sintesis*.md` (root) use lowercase-underscore — working files, not governance.
 
 ### 3.2 YAML Frontmatter
 **RULE (14/14):** Every vault document opens with a YAML block of exactly five fields, in order: `title`, `date`, `status`, `tags`, `cssclass`. All mandatory; omitting any is a violation.
@@ -156,8 +155,10 @@ Evidence base for §3 and §4: 14 SKILL.md files. Conventions at ≥ 10/14 (> 70
 | `PO` | Product Owner / Technical Project Manager | `PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL.md` |
 | `RES` | IoT & Embedded Systems Researcher | `IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL.md` |
 | `BIZ` | Business Consultant | `BUSINESS_CONSULTANT_SKILL.md` |
+| `ARCH-DEP` | Deputy Architect *(fractional; no SKILL.md, inherits parent scope)* | non-breaking ADR authority only — within `EMBEDDED_SYSTEMS_ARCHITECT_SKILL.md` |
+| `SEC-DEP` | Deputy Security Engineer *(fractional; no SKILL.md, inherits parent scope)* | Standard-tier sign-off only |
+| Process Architect | function of QA *(fractional; no SKILL.md, inherits parent scope)* | owns the Engineering Process Review loop + Process Health Dashboard — `QA_TEST_AUTOMATION_ENGINEER_SKILL.md` §3.7 |
 
-**Fractional functions** (no separate SKILL.md; inherit parent scope, constrained authority): `ARCH-DEP` Deputy Architect — non-breaking ADR authority only (within `EMBEDDED_SYSTEMS_ARCHITECT_SKILL.md`); `SEC-DEP` Deputy Security Engineer — Standard-tier sign-off only; **Process Architect** — function of QA; owns the Engineering Process Review loop + Process Health Dashboard (`QA_TEST_AUTOMATION_ENGINEER_SKILL.md` §3.7).
 **Operational coordinator:** `IC` — [[INCIDENT_COMMANDER|Incident Commander]]; coordination authority during declared cross-layer incidents; not a permanent role (weekly rotation, owner: QA/Process Architect).
 **Engineering vs. strategic/research split** (governs which format conventions apply): **10 engineering (strict):** ARCH, FW, HW, ML, MLOPS, DATA, DEVOPS, BACK, QA, SEC. **4 strategic/research (approved deviators):** PO, FE, RES, BIZ. Uncertain on a new role? Default to engineering format and escalate if genuinely ambiguous.
 
@@ -168,13 +169,7 @@ Section names: §3.3; format per section: §3–§4. Unique required contents �
 C(14,2) = 91 unique role-pair relationships; every pair has a contract from both sides. Authoritative visual: Mermaid diagram in `EMBEDDED_IOT_AI_WORKFLOW_ENGINEERING_TEAM.md` §14. Find a contract: target role's `*_SKILL.md` → §6 → the `### 6.N` subsection for the collaborator. Symmetry is enforced by `docs/automation/RECIPROCITY_AUDIT_SPEC.md` (what A provides to B = what B requires from A). Contract IDs (MACP): `ROLE-A↔ROLE-B-NNN` (e.g. `FW↔DATA-001`). Changing a ratified contract requires a CCR (`docs/schemas/CCR_SCHEMA.md`, `CCR-NNNN`); a `BLOCKING` CCR halts the associated IRD gate until resolved.
 
 ### 5.4 Role Activation Sequence (Wave Model)
-
-- **Wave 0 — Human-operated**
-- **Wave 1 — MACP Registries:**
-- **Wave 2 — A2A Messaging:**
-- **Wave 3 — Tier 3 Autonomy:**
-- **Wave 4 — Governance:**
-
+Five-wave activation: Wave 0 Human-operated → Wave 1 MACP Registries → Wave 2 A2A Messaging → Wave 3 Tier 3 Autonomy → Wave 4 Governance; see [[MULTI_AGENT_COORDINATION_PROTOCOL|MACP]].
 Per-role AI activation requires: (a) Evaluation Harness baseline (≥ 30 human samples per deliverable); (b) MACP at Wave 1+; (c) no open BLOCKING CCR on that role's contracts.
 
 ---
@@ -183,7 +178,7 @@ Per-role AI activation requires: (a) Evaluation Harness baseline (≥ 30 human s
 
 ### 6.1 ADR Process
 ADR (Architecture Decision Record): one significant technical decision + context, alternatives, consequences. Schema `docs/schemas/ADR_SCHEMA.md`; ID `ADR-NNNN`. Lifecycle: `Proposed` → `Under Review` → `Accepted` / `Rejected` / `Superseded`.
-**Mandatory when** (Never-Silently-Deviate, universal): platform/protocol/technology choice outside the approved stack; any contract/budget/standard/requirement unmeetable as written; any security-baseline change (even one that "only affects a test device"); any production/OTA governance change; any temporary deviation during an incident (retroactive ADR within 5 business days of closure); any breaking interface contract change (must precede the CCR and version bump).
+**Mandatory when** (Never-Silently-Deviate, universal): any platform/protocol/technology choice outside the approved stack, security-baseline change (even one that "only affects a test device"), or production/OTA governance change; any contract/budget/standard/requirement unmeetable as written, or any breaking interface contract change (must precede the CCR and version bump); any temporary deviation during an incident (retroactive ADR within 5 business days of closure).
 **Standing:** Proposing Author — any role. Veto / final approver for STRATEGIC ADRs — ARCH + SEC (security-baseline). Consulted — DATA, DEVOPS, FW (schema/contract), ML (model deployment). Informed — FE, BIZ (architectural ADRs affecting their interfaces).
 **Key `ADR_SCHEMA.md` validations:** ≥ 2 alternatives (V-ADR-03); valid status transitions only (V-ADR-07); `affected_contracts` resolve against the registry (V-ADR-09); BIA required for cost-material ADRs (V-ADR-12).
 
@@ -193,7 +188,7 @@ ADR (Architecture Decision Record): one significant technical decision + context
 ### 6.2 Architecture Review Board (ARB)
 Governs platform/protocol/interface/NFR decisions crossing ≥ 2 role boundaries. Charter: `EMBEDDED_SYSTEMS_ARCHITECT_SKILL.md` §7.Z. Architect chairs; STRATEGIC ADRs require ARB ratification. MACP L2 agents may submit data + cast non-binding advisory votes; humans retain all binding authority. Tier 2 (HIGH) decisions: agent Propose→Confirm + non-binding vote, then a human ARB member ratifies. Agents never short-circuit ARB authority.
 
-**ARB membership / quorum / cadence:** instantiated in [[ARB_CHARTER_INSTANTIATED|ARB Charter (Instantiated)]] — subordinate to `EMBEDDED_SYSTEMS_ARCHITECT_SKILL.md` §7.Z, which remains authoritative. Standing members (5): Architect (Chair), Deputy Architect (Vice Chair), Senior Firmware Engineer, Senior Backend/Cloud Engineer, Security Engineer; plus one rotating Senior Engineer per release cycle (role most affected by release scope). **Quorum:** 3 of 5 standing, including at least one of Architect or Deputy. **Cadence:** bi-weekly, 60 min (urgent meeting within 1 business day for Tier 1). **Decision records:** ARB Decision Record format (same as ADR), tagged `#ARB` / `#arb-decision`, stored `docs/arb/decisions/arb-NNNN.md`; cross-referenced from [[ADR_INDEX|ADR Index]] when an ADR would otherwise be required.
+**ARB membership / quorum / cadence:** instantiated in [[ARB_CHARTER_INSTANTIATED|ARB Charter (Instantiated)]] — subordinate to `EMBEDDED_SYSTEMS_ARCHITECT_SKILL.md` §7.Z, which remains authoritative. **Decision records:** ARB Decision Record format (same as ADR), tagged `#ARB` / `#arb-decision`, stored `docs/arb/decisions/arb-NNNN.md`; cross-referenced from [[ADR_INDEX|ADR Index]] when an ADR would otherwise be required.
 
 ### 6.3 Decision SLA Tiers (MACP §4)
 
@@ -238,9 +233,16 @@ Read in order: **§2** (owns / does NOT own + Governing principle) → **§5** (
 ### 7.3 Multi-Agent Coordination Protocol (MACP)
 Master: `docs/agent-protocol/MULTI_AGENT_COORDINATION_PROTOCOL.md` (status: `draft`, v1.0.0).
 
-**5 pillars** (spec files in `docs/agent-protocol/`): 1 Identity & Discovery (`AGENT_IDENTITY_SCHEMA.md`); 2 Contract Registry — 91 contracts queryable by role-pair + tier classification (`CONTRACT_REGISTRY_SCHEMA.md`); 3 A2A + Propose→Confirm — schema-validated messages, two-phase negotiation (`A2A_MESSAGE_SCHEMA.md`); 4 Coordination Ledger — append-only, SHA-256-chained (`COORDINATION_LEDGER_SCHEMA.md`); 5 Governance Participation — non-binding ARB/EPR votes + data submission (`AGENT_GOVERNANCE_PARTICIPATION.md`).
+**5 pillars** (spec files in `docs/agent-protocol/`):
 
-**5-phase lifecycle:** Discover (counterpart + governing contract) → Compose (A2A `PROPOSE`: payload, `correlation_id`, `confidence`, `rationale`) → Negotiate (recipient validates vs. schema + §6 obligations; `CONFIRM`/`REJECT`/`COUNTER`; max 3 rounds) → Record (append-only, hash-chained ledger) → Resolve or Escalate.
+| # | Pillar | Spec file | Key detail |
+|---|---|---|---|
+| 1 | Identity & Discovery | `AGENT_IDENTITY_SCHEMA.md` | — |
+| 2 | Contract Registry | `CONTRACT_REGISTRY_SCHEMA.md` | 91 contracts queryable by role-pair + tier classification |
+| 3 | A2A + Propose→Confirm | `A2A_MESSAGE_SCHEMA.md` | schema-validated messages, two-phase negotiation |
+| 4 | Coordination Ledger | `COORDINATION_LEDGER_SCHEMA.md` | append-only, SHA-256-chained |
+| 5 | Governance Participation | `AGENT_GOVERNANCE_PARTICIPATION.md` | non-binding ARB/EPR votes + data submission |
+
 **Conformance levels:** L0 Observer (read-only) · L1 Participant (full A2A + Tier 3–4 Auto-Confirm + ledger write) · L2 Governance Participant (L1 + ARB/EPR data + non-binding voting; requires `governance_eligible: true` in AID).
 **MACP invariant:** no A2A message can change a contract, schema, resource budget, security baseline, or OTA strategy by itself. MACP carries and records proposals; binding changes require the ADR/CCR process with the correct human approver.
 
@@ -323,7 +325,7 @@ Architect owns the NFR Verification Matrix (`EMBEDDED_SYSTEMS_ARCHITECT_SKILL.md
 | Performance | Inference latency (ms), sampling frequency (Hz), OTA deployment time | FW + ML + QA | On-target benchmarking, HIL profiling |
 
 Status: all targets instantiated, no `[TBD]` (post-V3). Detection coverage self-reports honestly at ≈ 53% vs. ≥ 95% — the primary remaining burn-down.
-**Engineering Process Health Dashboard** (Process Architect/QA) aggregates: SIRC `coverage_pct` trend per sprint; open FMEA chain burn-down (17 Critical → 0); contract reciprocity audit results (91 contracts); IRD gate pass/fail per pair; Tier-1 escalation frequency (→ 0); autonomous Tier 3–4 success rate (target ≥ 80%).
+**Engineering Process Health Dashboard** (Process Architect/QA): defined in `QA_TEST_AUTOMATION_ENGINEER_SKILL.md` §3.7; aggregates SIRC `coverage_pct` trend per sprint, open FMEA chain burn-down (17 Critical → 0), contract reciprocity audit results (91 contracts), IRD gate pass/fail per pair, Tier-1 escalation frequency (→ 0), autonomous Tier 3–4 success rate (target ≥ 80%).
 [NOT YET AVAILABLE — fill in manually: dashboard location (Grafana? Obsidian query? Prometheus?), metric definitions, and sprint cadence from `DEVOPS_PLATFORM_ENGINEER_SKILL.md` §8 or the metrics-pipeline docs.]
 
 ### 9.2 Referenced Standards
@@ -342,7 +344,7 @@ Schemas (ID format → producer → key gate rule):
 - **TTP** `TTP-NN`, RES — TRL ≥ 5 required for transfer; HIGH license risk → legal review.
 - **BIA** `BIA-NN`, BIZ — STRATEGIC ADR with BIA recommendation=REJECT cannot be DECIDED without ARB override.
 
-**Dependency chain:** TTP → ADR → BIA (ADR references CCR; open CCRs block ADR decision). IRD requires CCRs empty for PASS and validates against the Contract Registry. DQIR blocks OCM (`dqir_clearance` must list resolved DQIRs) and the training pipeline. SIRC gates SEC review and requires Architect sign-off when `risk_accepted = true`.
+**Dependency chain:** see [[SCHEMA_INDEX|Schema Index]] (TTP → ADR → BIA; open CCRs block ADR decision; IRD requires empty CCRs + Contract Registry validation; DQIR blocks OCM and the training pipeline; SIRC gates SEC review, Architect sign-off when `risk_accepted = true`).
 
 ---
 
@@ -350,8 +352,8 @@ Schemas (ID format → producer → key gate rule):
 
 Rules emerging from the system as a whole; internalize before reading a role card.
 
-- **10.1 Prime Directive — Never Ship Against Open Critical Chains.** A QA go/no-go correctly returns NO-GO when there are open Critical FMEA chains (RPN ≥ 200) with no mitigation — the system working as designed. Never produce a rationale, recommendation, or deliverable arguing to ship around them. Correct response to "how do we get to production?" with 17 open Critical chains: burn down the 9 missing detection controls, validate against the FC-IDs, re-run the QA gate.
-- **10.2 Contract-First Discipline.** No implementation work (code, firmware, model architecture, API design, IaC) until the interface contract is defined in the producing role's §6 and accepted (`final` or `Accepted` ADR). Test: "What contract in whose §6 authorizes this output?" If none, the first deliverable is the contract spec.
+- **10.1 Prime Directive — Never Ship Against Open Critical Chains** (§1 principle 4): never produce a rationale, recommendation, or deliverable arguing to ship around open Critical FMEA chains (RPN ≥ 200) with no mitigation — the correct response to "how do we get to production?" with 17 open Critical chains is to burn down the 9 missing detection controls, validate against the FC-IDs, and re-run the QA gate.
+- **10.2 Contract-First Discipline** (§1 principle 1): no implementation work (code, firmware, model architecture, API design, IaC) until the interface contract is defined in the producing role's §6 and accepted (`final` or `Accepted` ADR) — if no contract authorizes the output, the first deliverable is the contract spec.
 - **10.3 Honesty Over Polish.** Write the honest number even when it fails the gate (e.g. "≈ 53%" vs. a ≥ 95% gate is a correct, valuable artifact; "coverage meets target" when it does not is dangerous). Never round up, soften, or hedge unfavorable findings; name the gap and link the burn-down path.
 - **10.4 Strategic-Role Exception.** PO, FE, RES, BIZ have approved deviations: §1 bold-heading paragraphs (not bullets), §4 no proficiency-legend blockquote, §6 no opening blockquote, §9 no section-opening blockquote, §9.2 checkboxes (not numbered), §9.3 no `Do NOT` prefix, §9.4 no Role/Goal/Inputs/Produce/Constraints template, §10 custom KPI categories. Do not "correct" these; audit each against its own internal consistency.
 - **10.5 Audit Code Semantics.** Do not invent or misread codes: `#MR-N` = Milestone Reference (`#MR-10` = Security Design Review milestone, §3.2 shift-left gate); `#P4-M-N` = Phase 4 Milestone N (Phase 5 Transformation Roadmap). `#CR-N` [NOT YET AVAILABLE — confirm whether Contract Reference, Change Request, or other]; `#HR-N` [NOT YET AVAILABLE — confirm namespace; seen as `#HR-5` in DevOps]; `#B-N` [NOT YET AVAILABLE — confirm whether Backlog item reference]. Need a new cross-reference? Request a canonical code from PO; never invent one.

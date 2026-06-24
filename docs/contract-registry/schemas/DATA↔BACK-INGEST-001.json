@@ -1,0 +1,69 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/DATA↔BACK-INGEST-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DATA↔BACK-INGEST-001: Telemetry Ingest Routing + Schema Validation",
+  "description": "Backend routes broker telemetry to the ingest point; Data validates schema-conformance at the ingest boundary and owns ingest→storage. Includes Segment A of the joint Telemetry-Integrity SLO. Grounded in DATA_ENGINEER_SKILL §6.1 (Backend/Cloud Engineer) and BACKEND_CLOUD_ENGINEER_SKILL §6.4 (Data Engineer). Canonical ordering puts DATA before BACK.",
+  "type": "object",
+  "properties": {
+    "broker_endpoint": { "type": "string", "description": "MQTT broker endpoint Backend exposes to the ingest pipeline." },
+    "topic_structure": { "type": "string", "description": "Message routing / topic hierarchy, e.g. 'agrispectra/{cohort}/{device_id}/telemetry'." },
+    "qos": { "type": "integer", "enum": [0, 1, 2], "description": "MQTT QoS level for the routed stream." },
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "Telemetry schema version validated at ingest." },
+    "schema_validation": {
+      "type": "object",
+      "description": "Data-side schema-conformance check at the ingest boundary.",
+      "properties": {
+        "result": { "type": "string", "enum": ["PASS", "FAIL", "QUARANTINE"], "description": "Conformance result; QUARANTINE = held for review." },
+        "rejected_reason": { "type": ["string", "null"], "description": "Reason when result != PASS (e.g., unknown schema_version, type mismatch)." }
+      },
+      "required": ["result"],
+      "additionalProperties": false
+    },
+    "segment_a_slo": {
+      "type": "object",
+      "description": "BACK-owned SLO: broker → ingest routing point.",
+      "properties": {
+        "delivery_target_pct": { "type": "number", "const": 99.9, "description": "≥ 99.9% of broker messages delivered to the routing point." },
+        "delivery_window_seconds": { "type": "number", "const": 5, "description": "Delivery within 5 seconds." },
+        "measured_pct": { "type": "number", "minimum": 0, "maximum": 100, "description": "Measured delivery percentage in the review window." }
+      },
+      "required": ["delivery_target_pct", "delivery_window_seconds", "measured_pct"],
+      "additionalProperties": false
+    },
+    "handoff_counters": {
+      "type": "object",
+      "description": "Routing-point instrumentation; counter mismatch alerts both roles within 5 minutes.",
+      "properties": {
+        "inbound_count": { "type": "integer", "minimum": 0, "description": "Messages in from BACK." },
+        "outbound_count": { "type": "integer", "minimum": 0, "description": "Messages out to DATA." }
+      },
+      "required": ["inbound_count", "outbound_count"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["broker_endpoint", "topic_structure", "qos", "schema_version", "schema_validation"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "DATA↔BACK-INGEST-001",
+    "producer_role": "BACK",
+    "consumer_role": "DATA",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine ingest-boundary interpretation (agent-autonomous). SLO breaches trigger a joint RCA within 2 business days; topic/routing changes that break consumers escalate to a CCR + Tier-2 ADR.",
+    "cadence": "TRIGGER (ingest-contract alignment at planning); CONTINUOUS (SLO measured continuously, reviewed monthly); SLA_FROM_EVENT (counter-mismatch alert within 5 minutes)",
+    "confirm_conditions": [
+      "schema_version resolves in the telemetry schema registry and schema_validation.result = PASS",
+      "qos is 0/1/2 and topic_structure matches the agreed hierarchy",
+      "segment_a_slo.measured_pct ≥ 99.9 within the 5 s window",
+      "handoff_counters consistent (no inbound/outbound mismatch)"
+    ],
+    "reject_conditions": [
+      "unknown schema_version or schema_validation.result = FAIL without a rejected_reason",
+      "topic_structure changed without a CCR (breaks routing)",
+      "measured_pct < 99.9 asserted as acceptable without a joint RCA"
+    ],
+    "counter_conditions": [
+      "result = QUARANTINE — request schema clarification before commit",
+      "counter mismatch detected — request reconciliation before declaring the segment healthy"
+    ]
+  }
+}

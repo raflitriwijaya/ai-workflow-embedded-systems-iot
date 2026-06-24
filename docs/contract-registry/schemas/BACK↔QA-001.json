@@ -1,0 +1,64 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/BACK↔QA-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BACK↔QA-001: API Test Environments + Integration Results",
+  "description": "Backend provides testable APIs, service test environments, and contract/integration test support; QA provides API/load/integration test results and the quality gates to enforce. Grounded in BACKEND_CLOUD_ENGINEER_SKILL §6.8 and QA_TEST_AUTOMATION_ENGINEER_SKILL §6.3.",
+  "type": "object",
+  "properties": {
+    "artifact_kind": { "type": "string", "enum": ["TEST_ENVIRONMENT", "TEST_RESULTS"], "description": "Direction/kind of the exchanged artifact." },
+    "test_environment": {
+      "type": "object",
+      "description": "BACK→QA: a service test environment.",
+      "properties": {
+        "environment_name": { "type": "string" },
+        "environment_type": { "type": "string", "enum": ["SIMULATION", "STAGING", "PRODUCTION_SHADOW"] },
+        "api_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "contract_test_support": { "type": "boolean", "description": "Contract/integration test fixtures available." }
+      },
+      "required": ["environment_name", "environment_type", "api_version"],
+      "additionalProperties": false
+    },
+    "test_results": {
+      "type": "object",
+      "description": "QA→BACK: API/load/integration test outcomes plus the quality gates to enforce.",
+      "properties": {
+        "test_type": { "type": "string", "enum": ["API_CONTRACT", "LOAD", "INTEGRATION"] },
+        "result": { "type": "string", "enum": ["PASS", "FAIL"] },
+        "api_p99_latency_ms": { "type": "number", "minimum": 0, "description": "Measured P99 API latency in ms (PERF-3 ceiling 200 ms)." },
+        "sustained_rps": { "type": "number", "minimum": 0, "description": "Sustained request rate achieved (SCALE-4 target 500 req/s sustained)." },
+        "burst_rps": { "type": "number", "minimum": 0, "description": "Burst rate achieved (SCALE-4 target 2,000 req/s burst)." },
+        "quality_gate": { "type": "string", "enum": ["BLOCKING", "NON_BLOCKING"], "description": "Whether failure blocks the release gate." }
+      },
+      "required": ["test_type", "result", "quality_gate"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["artifact_kind"],
+  "additionalProperties": false,
+  "allOf": [
+    { "if": { "properties": { "artifact_kind": { "const": "TEST_ENVIRONMENT" } } }, "then": { "required": ["test_environment"] } },
+    { "if": { "properties": { "artifact_kind": { "const": "TEST_RESULTS" } } }, "then": { "required": ["test_results"] } }
+  ],
+  "x-macp": {
+    "contract_id": "BACK↔QA-001",
+    "producer_role": "BACK",
+    "consumer_role": "QA",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine API test-environment/result exchange (agent-autonomous). A BLOCKING quality-gate failure feeds the QA go/no-go (Tier-1 HITL gate).",
+    "cadence": "TRIGGER (contract-test alignment at planning; integration/load testing during execution; release-gate sign-off)",
+    "confirm_conditions": [
+      "TEST_ENVIRONMENT: api_version SemVer-valid and environment_type recognized",
+      "TEST_RESULTS: result/test_type/quality_gate valid; latency measured against PERF-3 and rates against SCALE-4",
+      "api_p99_latency_ms ≤ 200 ms when reported as PASS for an API_CONTRACT/LOAD test"
+    ],
+    "reject_conditions": [
+      "PASS asserted with api_p99_latency_ms > 200 ms (violates PERF-3)",
+      "BLOCKING gate failure presented as releasable",
+      "load result missing sustained/burst figures"
+    ],
+    "counter_conditions": [
+      "environment unavailable or API version mismatched — request a refreshed environment",
+      "quality_gate classification ambiguous — request gate definition from QA"
+    ]
+  }
+}

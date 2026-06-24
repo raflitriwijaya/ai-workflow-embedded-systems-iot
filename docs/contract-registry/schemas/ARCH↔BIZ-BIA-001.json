@@ -1,0 +1,142 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ARCH↔BIZ-BIA-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCH↔BIZ-BIA-001: Business Impact Assessment",
+  "description": "Business Consultant produces a BIA appended to a cost-material ADR (cost/schedule/market/risk + verdict). JSON Schema translation of the authoritative BUSINESS_IMPACT_ASSESSMENT_SCHEMA (v1.0.0). A STRATEGIC ADR with BIA recommendation = REJECT cannot be DECIDED without ARB override. Grounded in EMBEDDED_SYSTEMS_ARCHITECT_SKILL §6.13.",
+  "type": "object",
+  "properties": {
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "id": { "type": "string", "pattern": "^BIA-\\d{4}$" },
+    "linked_adr": { "type": "string", "pattern": "^ADR-\\d{4}$", "description": "The ADR this BIA is appended to." },
+    "date_produced": { "type": "string", "format": "date" },
+    "produced_by": {
+      "type": "object",
+      "properties": { "role": { "type": "string", "const": "[[BUSINESS_CONSULTANT_SKILL]]" } },
+      "required": ["role"],
+      "additionalProperties": true
+    },
+    "decision_summary": { "type": "string", "minLength": 30 },
+    "decision_options_compared": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "properties": {
+          "option_id": { "type": "string", "description": "Matches the ADR option id." },
+          "option_label": { "type": "string" },
+          "selected": { "type": "boolean" }
+        },
+        "required": ["option_id", "option_label", "selected"],
+        "additionalProperties": false
+      }
+    },
+    "cost_impact": {
+      "type": "object",
+      "properties": {
+        "selected_option": {
+          "type": "object",
+          "properties": {
+            "one_time_capex_usd": { "type": "number" },
+            "recurring_opex_usd_per_month": { "type": "number" },
+            "total_12_month_cost_usd": { "type": "number", "description": "Computed: capex + opex × 12 (agent validates)." },
+            "avoided_cost_usd": { "type": "number" },
+            "net_cost_usd": { "type": "number", "description": "Computed: total_12_month_cost_usd − avoided_cost_usd." }
+          },
+          "required": ["one_time_capex_usd", "recurring_opex_usd_per_month", "total_12_month_cost_usd", "net_cost_usd"],
+          "additionalProperties": false
+        },
+        "confidence": {
+          "type": "object",
+          "properties": {
+            "level": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+            "basis": { "type": "string", "minLength": 20 }
+          },
+          "required": ["level", "basis"],
+          "additionalProperties": false
+        },
+        "cost_assumptions": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+      },
+      "required": ["selected_option", "confidence", "cost_assumptions"],
+      "additionalProperties": true
+    },
+    "schedule_impact": {
+      "type": "object",
+      "properties": {
+        "delta_calendar_days": { "type": "integer", "description": "Positive = delay, negative = acceleration." },
+        "affected_milestones": { "type": "array", "items": { "type": "string" } },
+        "critical_path_impact": { "type": "boolean" },
+        "schedule_assumptions": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+      },
+      "required": ["delta_calendar_days", "affected_milestones", "critical_path_impact", "schedule_assumptions"],
+      "additionalProperties": false
+    },
+    "market_impact": {
+      "type": "object",
+      "properties": {
+        "competitive_impact": { "type": "string", "minLength": 30 },
+        "regulatory_impact": { "type": "string", "minLength": 20 },
+        "customer_impact": { "type": "string", "minLength": 20 },
+        "reputational_risk": { "type": "string", "enum": ["NONE", "LOW", "MEDIUM", "HIGH"] }
+      },
+      "required": ["competitive_impact", "regulatory_impact", "customer_impact", "reputational_risk"],
+      "additionalProperties": true
+    },
+    "business_risks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string", "minLength": 20 },
+          "probability": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+          "impact": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+          "risk_score": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+          "mitigation": { "type": "string", "minLength": 20 },
+          "owner": { "type": "string" },
+          "residual_risk": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] }
+        },
+        "required": ["id", "description", "probability", "impact", "risk_score", "mitigation", "owner", "residual_risk"],
+        "additionalProperties": false
+      }
+    },
+    "recommendation": {
+      "type": "object",
+      "properties": {
+        "verdict": { "type": "string", "enum": ["PROCEED", "PROCEED_WITH_MITIGATION", "REJECT", "DEFER"] },
+        "rationale": { "type": "string", "minLength": 50 },
+        "conditions": { "type": "array", "items": { "type": "string" }, "description": "Required when verdict = PROCEED_WITH_MITIGATION." },
+        "defer_until": { "type": ["string", "null"], "format": "date", "description": "Required when verdict = DEFER." }
+      },
+      "required": ["verdict", "rationale"],
+      "additionalProperties": true
+    }
+  },
+  "required": ["schema_version", "id", "linked_adr", "date_produced", "produced_by", "decision_summary", "decision_options_compared", "cost_impact", "schedule_impact", "market_impact", "business_risks", "recommendation"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "ARCH↔BIZ-BIA-001",
+    "producer_role": "BIZ",
+    "consumer_role": "ARCH",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Feeds STRATEGIC ADR decisions; a REJECT verdict gates the ADR (ARB override required). Cost estimates are advisory inputs the ARB ratifies.",
+    "cadence": "TRIGGER (appended to a cost-material ADR before the ADR is DECIDED)",
+    "confirm_conditions": [
+      "id matches ^BIA-\\d{4}$ and linked_adr matches ^ADR-\\d{4}$",
+      "decision_options_compared has ≥ 2 entries with exactly one selected = true",
+      "total_12_month_cost_usd = capex + opex × 12 and net_cost_usd = total − avoided_cost (agent validates arithmetic)",
+      "≥ 1 business_risk with mitigation and residual_risk",
+      "recommendation.verdict is a valid enum with a rationale ≥ 50 chars"
+    ],
+    "reject_conditions": [
+      "cost arithmetic inconsistent with stated capex/opex",
+      "linked_adr does not resolve in the ADR registry",
+      "verdict = PROCEED_WITH_MITIGATION without conditions, or DEFER without defer_until",
+      "exactly-one-selected invariant on options violated"
+    ],
+    "counter_conditions": [
+      "confidence.level = LOW on a STRATEGIC ADR — request firmer cost basis before ARB",
+      "reputational_risk ∈ {MEDIUM, HIGH} without notes — request elaboration"
+    ]
+  }
+}

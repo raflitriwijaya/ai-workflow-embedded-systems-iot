@@ -1,0 +1,114 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/DATA↔BIZ-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DATA↔BIZ-001: Data Monetization Strategy + Storage/Processing Cost",
+  "description": "Business Consultant provides data-product requirements derived from the monetization strategy, subscription-tier definitions (free vs. paid), and business constraints on retention/privacy cost; Data returns cloud storage+processing cost estimates per device per month at target fleet scale, pipeline-architecture options with operational cost profiles, and privacy-compliance implementation cost. Grounded in DATA_ENGINEER_SKILL §6.11 and BUSINESS_CONSULTANT_SKILL §6.5. NOTE: source unit is cost per device per month at fleet scale; the per-TB framing is captured as an optional secondary field, not the primary unit.",
+  "type": "object",
+  "properties": {
+    "monetization_requirements": {
+      "type": "object",
+      "description": "BIZ→DATA: what the monetization strategy needs from the data platform.",
+      "properties": {
+        "data_products": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "product_id": { "type": "string" },
+              "data_to_capture": { "type": "string" },
+              "aggregation": { "type": "string" },
+              "exposure": { "type": "string", "description": "How the data is exposed (API, export, dashboard)." }
+            },
+            "required": ["product_id", "data_to_capture"],
+            "additionalProperties": false
+          }
+        },
+        "subscription_tiers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "tier_name": { "type": "string" },
+              "tier_type": { "type": "string", "enum": ["FREE", "PAID"] },
+              "analytics_capabilities": { "type": "array", "items": { "type": "string" } }
+            },
+            "required": ["tier_name", "tier_type"],
+            "additionalProperties": false
+          }
+        },
+        "retention_privacy_constraints": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["data_products"],
+      "additionalProperties": false
+    },
+    "cost_estimates": {
+      "type": "object",
+      "description": "DATA→BIZ: cost profiles at target fleet scale.",
+      "properties": {
+        "cloud_cost_per_device_per_month_usd": { "type": "number", "minimum": 0, "description": "Storage + processing cost per device per month at target fleet scale (USD)." },
+        "storage_cost_usd_per_tb_month": { "type": ["number", "null"], "minimum": 0, "description": "Optional secondary unit: storage cost per TB per month (USD); null if reported only per-device." },
+        "pipeline_options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "option_id": { "type": "string" },
+              "description": { "type": "string" },
+              "operational_cost_profile": { "type": "string" }
+            },
+            "required": ["option_id", "operational_cost_profile"],
+            "additionalProperties": false
+          }
+        },
+        "privacy_compliance_cost_usd": { "type": "number", "minimum": 0, "description": "Data-privacy compliance implementation cost (USD)." }
+      },
+      "required": ["cloud_cost_per_device_per_month_usd"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["monetization_requirements"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "monetization_requirements": {
+            "properties": { "subscription_tiers": { "type": "array", "contains": { "properties": { "tier_type": { "const": "PAID" } }, "required": ["tier_type"] } } },
+            "required": ["subscription_tiers"]
+          }
+        },
+        "required": ["monetization_requirements"]
+      },
+      "then": {
+        "properties": {
+          "monetization_requirements": {
+            "properties": { "subscription_tiers": { "items": { "required": ["analytics_capabilities"] } } }
+          }
+        }
+      }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "DATA↔BIZ-001",
+    "producer_role": "BIZ",
+    "consumer_role": "DATA",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Cost-estimation and monetization-requirement exchange is agent-autonomous. A cost-material platform decision arising from it escalates to an ADR with a BIA (Tier-2).",
+    "cadence": "TRIGGER (at data-monetization-strategy definition; quarterly cloud cost review)",
+    "confirm_conditions": [
+      "monetization_requirements lists data_products with what to capture",
+      "every PAID subscription tier defines its analytics_capabilities",
+      "cost_estimates report cloud_cost_per_device_per_month_usd at target fleet scale (explicit USD unit)",
+      "privacy_compliance_cost_usd provided where retention/privacy constraints apply"
+    ],
+    "reject_conditions": [
+      "a PAID tier defined without analytics_capabilities (cannot price an undefined product)",
+      "cost figure emitted without a currency/unit or as TBD",
+      "PII-bearing data product without a SEC privacy-impact escalation (ESC-SEC)"
+    ],
+    "counter_conditions": [
+      "cost estimate requested at a fleet scale beyond the validated SCALE targets — request scope confirmation",
+      "monetization requirement implies new data capture not in the telemetry schema — request a schema-change (ARCH↔DATA-001 / FW↔DATA-001)"
+    ]
+  }
+}

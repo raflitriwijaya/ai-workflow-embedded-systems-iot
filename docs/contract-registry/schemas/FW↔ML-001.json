@@ -1,0 +1,80 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/FW↔ML-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FW↔ML-001: TFLite Micro Model Handoff + Preprocessing Spec",
+  "description": "Edge AI/ML hands a quantized model artifact plus an exact preprocessing specification to Firmware; Firmware returns on-target latency/RAM measurements and preprocessing-parity confirmation. Grounded in FIRMWARE_ENGINEER_SKILL §6.3 (Provides/Requires/Cadence).",
+  "type": "object",
+  "properties": {
+    "model_id": { "type": "string", "description": "Canonical model identifier, e.g. 'crop-disease-cnn'." },
+    "model_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "Model SemVer." },
+    "framework": {
+      "type": "string",
+      "enum": ["TFLITE_MICRO"],
+      "description": "On-device inference framework; AgriSpectra targets TFLite Micro on the STM32H7."
+    },
+    "quantization": {
+      "type": "string",
+      "enum": ["INT8", "INT4", "FLOAT16", "FLOAT32"],
+      "description": "Quantization scheme of the delivered artifact."
+    },
+    "model_file": { "type": "string", "description": "Filename of the quantized artifact within the handoff bundle." },
+    "sha256_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$", "description": "SHA-256 of model_file for integrity verification." },
+    "tensor_arena_size_bytes": { "type": "integer", "minimum": 0, "description": "Required TFLite Micro tensor-arena size in bytes; Firmware re-allocates the arena to this size before inference." },
+    "expected_operator_set": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Operators the model uses (must be supported by the on-device TFLite Micro op resolver / CMSIS-NN)."
+    },
+    "preprocessing_spec": {
+      "type": "object",
+      "description": "Exact preprocessing specification with a Python golden reference and test vectors; Firmware must confirm parity bit-for-bit / within stated tolerance.",
+      "properties": {
+        "spec_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "golden_reference_path": { "type": "string", "description": "Path to the Python golden reference implementation." },
+        "test_vectors_path": { "type": "string", "description": "Path to input→expected-output test vectors used for parity verification." },
+        "tolerance": { "type": "number", "minimum": 0, "description": "Allowed numerical deviation between firmware and golden-reference output." }
+      },
+      "required": ["spec_version", "golden_reference_path", "test_vectors_path", "tolerance"],
+      "additionalProperties": false
+    },
+    "firmware_measurements": {
+      "type": "object",
+      "description": "Returned by Firmware after integration (Provides side of §6.3).",
+      "properties": {
+        "inference_latency_ms_p95": { "type": "number", "minimum": 0, "description": "On-target p95 inference latency in milliseconds." },
+        "ram_peak_bytes": { "type": "integer", "minimum": 0, "description": "Measured peak RAM during inference in bytes." },
+        "preprocessing_parity_confirmed": { "type": "boolean", "description": "True when firmware preprocessing output matches the golden reference within tolerance." }
+      },
+      "required": ["inference_latency_ms_p95", "ram_peak_bytes", "preprocessing_parity_confirmed"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["model_id", "model_version", "framework", "quantization", "model_file", "sha256_hash", "tensor_arena_size_bytes", "expected_operator_set", "preprocessing_spec"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "FW↔ML-001",
+    "producer_role": "ML",
+    "consumer_role": "FW",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Cross-team interface affecting on-device resource budgets; arena/latency budget breaches escalate to ARB/ADR (Tier-2). Routine parity confirmation is Tier-3.",
+    "cadence": "TRIGGER (model handoff during development); SLA_FROM_EVENT (pre-integration latency sign-off)",
+    "confirm_conditions": [
+      "sha256_hash verifies against model_file",
+      "expected_operator_set is a subset of the firmware op resolver's supported operators",
+      "tensor_arena_size_bytes fits within the ML-arena flash/RAM budget defined by ARCH",
+      "preprocessing_spec includes a golden reference and test vectors with a stated tolerance",
+      "Firmware preprocessing-parity test passes within tolerance"
+    ],
+    "reject_conditions": [
+      "hash mismatch",
+      "model uses an operator absent from the firmware op resolver",
+      "tensor_arena_size_bytes exceeds the allocated budget (raise ADR — never silently re-budget)",
+      "preprocessing parity fails beyond tolerance"
+    ],
+    "counter_conditions": [
+      "operator set requires an op resolver update that is feasible but unplanned — request scheduling",
+      "tolerance unspecified or ambiguous for a new preprocessing stage — request clarification"
+    ]
+  }
+}

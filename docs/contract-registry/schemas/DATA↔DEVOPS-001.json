@@ -1,0 +1,71 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/DATA↔DEVOPS-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DATA↔DEVOPS-001: Data-Infrastructure Resource + Deployment Requirements",
+  "description": "Data declares its infrastructure resource and deployment requirements; DevOps provides compute/storage backends, the Kubernetes platform, CI/CD, and the observability stack. Grounded in DATA_ENGINEER_SKILL §6.6 (DevOps/Platform Engineer).",
+  "type": "object",
+  "properties": {
+    "component": { "type": "string", "description": "Data pipeline component requiring infrastructure, e.g. 'kafka-connect', 'airflow', 'timescaledb'." },
+    "compute_requirements": {
+      "type": "object",
+      "properties": {
+        "cpu_cores": { "type": "number", "minimum": 0, "description": "Requested vCPU cores." },
+        "memory_gb": { "type": "number", "minimum": 0, "description": "Requested memory in GB." },
+        "replicas": { "type": "integer", "minimum": 1, "description": "Desired replica count." }
+      },
+      "required": ["cpu_cores", "memory_gb", "replicas"],
+      "additionalProperties": false
+    },
+    "storage_requirements": {
+      "type": "object",
+      "properties": {
+        "storage_gb": { "type": "number", "minimum": 0, "description": "Requested persistent storage in GB." },
+        "storage_class": { "type": "string", "description": "Backend storage class, e.g. 'ssd-retain', 's3-parquet'." },
+        "retention_days": { "type": "integer", "minimum": 0, "description": "Data retention period in days." }
+      },
+      "required": ["storage_gb", "storage_class"],
+      "additionalProperties": false
+    },
+    "platform_dependencies": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["KUBERNETES", "CICD", "IAC_BACKEND", "OBSERVABILITY_STACK", "OBJECT_STORE"] },
+      "minItems": 1,
+      "description": "DevOps-provided platform capabilities the component depends on."
+    },
+    "observability_hooks": {
+      "type": "object",
+      "properties": {
+        "metrics_endpoint": { "type": "boolean", "description": "Component exposes a metrics endpoint for scraping." },
+        "log_forwarding": { "type": "boolean", "description": "Structured log forwarding to the observability stack." }
+      },
+      "required": ["metrics_endpoint", "log_forwarding"],
+      "additionalProperties": false
+    },
+    "scale_target": { "type": "string", "description": "Reference scale this provisioning supports, e.g. '50,000-device fleet'." }
+  },
+  "required": ["component", "compute_requirements", "storage_requirements", "platform_dependencies"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "DATA↔DEVOPS-001",
+    "producer_role": "DATA",
+    "consumer_role": "DEVOPS",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine resource provisioning (agent-autonomous). A platform/orchestration change (e.g., new cluster, new object store) is a platform decision → Tier-1 ADR.",
+    "cadence": "TRIGGER (infrastructure alignment at planning; pipeline deployment during development); CONTINUOUS (shared monitoring/incident response)",
+    "confirm_conditions": [
+      "compute and storage requirements are quantified with units",
+      "platform_dependencies reference capabilities DevOps actually provides",
+      "observability_hooks present (metrics + log forwarding) for production components",
+      "provisioning validated against the reference fleet scale"
+    ],
+    "reject_conditions": [
+      "resource request unbounded or missing units",
+      "dependency on a platform capability not in the supported set without an ADR",
+      "production component with no observability hooks"
+    ],
+    "counter_conditions": [
+      "requested capacity exceeds the current cluster budget — request capacity-planning review",
+      "retention_days conflicts with the security/compliance retention policy — request reconciliation with SEC"
+    ]
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ARCH↔ML-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCH↔ML-001: Tensor-Arena Budget + On-Device Latency Budget",
+  "description": "Architect supplies tensor-arena/footprint budget, latency/throughput deadline, target operator-support constraints, and the edge-vs-cloud inference split; Edge AI/ML returns actual model footprint, on-target latency, operator-coverage gaps, and accuracy-vs-resource trade-offs. Grounded in EMBEDDED_SYSTEMS_ARCHITECT_SKILL §6.4.",
+  "type": "object",
+  "properties": {
+    "budget": {
+      "type": "object",
+      "description": "ARCH→ML: resource and timing budget for on-device inference.",
+      "properties": {
+        "tensor_arena_budget_kb": { "type": "number", "minimum": 0, "description": "Tensor-arena (working RAM) budget in KB." },
+        "model_flash_budget_kb": { "type": "number", "minimum": 0, "description": "Model footprint (Flash) budget in KB." },
+        "inference_latency_deadline_ms": { "type": "number", "minimum": 0, "description": "On-device inference latency deadline in ms." },
+        "throughput_deadline_inferences_per_s": { "type": "number", "minimum": 0, "description": "Optional throughput deadline in inferences/s." },
+        "supported_operators": { "type": "array", "items": { "type": "string" }, "description": "Target operator-support constraints (TFLite Micro / CMSIS-NN kernels available)." },
+        "inference_split": { "type": "string", "enum": ["EDGE_ONLY", "EDGE_CLOUD_HYBRID", "CLOUD_ONLY"], "description": "Edge-vs-cloud inference split." }
+      },
+      "required": ["tensor_arena_budget_kb", "model_flash_budget_kb", "inference_latency_deadline_ms", "inference_split"],
+      "additionalProperties": false
+    },
+    "model_actuals": {
+      "type": "object",
+      "description": "ML→ARCH: measured footprint/latency and trade-offs.",
+      "properties": {
+        "measured_arena_kb": { "type": "number", "minimum": 0, "description": "Measured tensor-arena size in KB." },
+        "measured_flash_kb": { "type": "number", "minimum": 0, "description": "Measured model footprint in KB." },
+        "measured_latency_ms": { "type": "number", "minimum": 0, "description": "Measured on-target inference latency in ms." },
+        "operator_coverage_gaps": { "type": "array", "items": { "type": "string" }, "description": "Operators not covered by the target runtime." },
+        "accuracy_pct": { "type": "number", "minimum": 0, "maximum": 100, "description": "Model accuracy in %." },
+        "accuracy_resource_tradeoffs": { "type": "string", "description": "Accuracy-vs-resource trade-off summary." },
+        "within_budget": { "type": "boolean", "description": "True only if measured arena/flash/latency all fit the budget." },
+        "adr_ref": { "type": ["string", "null"], "pattern": "^ADR-\\d{4}$", "description": "Required when within_budget = false (budget exceedance must be raised as an ADR — never silently traded)." }
+      },
+      "required": ["measured_arena_kb", "measured_flash_kb", "measured_latency_ms", "within_budget"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["budget"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "model_actuals": { "properties": { "within_budget": { "const": false } }, "required": ["within_budget"] } }, "required": ["model_actuals"] },
+      "then": { "properties": { "model_actuals": { "required": ["adr_ref"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "ARCH↔ML-001",
+    "producer_role": "ARCH",
+    "consumer_role": "ML",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Resource-budget allocation is an architectural NFR crossing role boundaries (ARB-governed). A budget exceedance accepted as a trade is a STRATEGIC ADR (Tier-1).",
+    "cadence": "TRIGGER (budget definition at planning; arena-sizing validation as models mature; pre-integration latency sign-off)",
+    "confirm_conditions": [
+      "budget carries tensor_arena_budget_kb, model_flash_budget_kb, inference_latency_deadline_ms (all with units) and an inference_split",
+      "model_actuals.within_budget = true with measured arena ≤ budget, flash ≤ budget, latency ≤ deadline",
+      "operator_coverage_gaps empty, or each gap has a documented mitigation",
+      "accuracy_pct reported honestly against the target"
+    ],
+    "reject_conditions": [
+      "within_budget = false without an adr_ref (silent budget trade forbidden, §3.10 / §6.5)",
+      "any budget or measurement emitted without a unit or as TBD",
+      "operator_coverage_gaps non-empty presented as a clean fit"
+    ],
+    "counter_conditions": [
+      "measured value marginally over budget and tolerance bands not yet ratified (CLAUDE.md §6.5) — request the Architect confirm the budget-trade ADR",
+      "edge-vs-cloud split contested — request a joint latency/energy trade study before sign-off"
+    ]
+  }
+}

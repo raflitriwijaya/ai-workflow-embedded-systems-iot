@@ -1,0 +1,118 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/FW↔BACK-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FW↔BACK-001: Device–Cloud MQTT Telemetry + OTA Desired-State",
+  "description": "Firmware publishes sensor telemetry and OTA model/firmware status to the Backend desired-state control plane over MQTT; Backend issues desired-model-version commands. Grounded in FIRMWARE_ENGINEER_SKILL §6.7 and §6.4 (OTA Model Status Reporting). NOTE: the sensor payload field set is NOT enumerated here — AgriSpectra is a spectral crop-disease product, not a water-quality product; the authoritative per-field telemetry schema (units, sampling rates) is owned by DATA via the Git-based schema registry (see FW↔DATA schema-change process). This contract fixes the message envelope and OTA-status surface only.",
+  "type": "object",
+  "properties": {
+    "message_type": {
+      "type": "string",
+      "enum": ["TELEMETRY", "OTA_STATUS", "DESIRED_STATE_COMMAND"],
+      "description": "Discriminates the three message kinds carried over this contract. TELEMETRY and OTA_STATUS flow device→cloud; DESIRED_STATE_COMMAND flows cloud→device."
+    },
+    "device_id": {
+      "type": "string",
+      "pattern": "^AG-[0-9]{6}$",
+      "description": "AgriSpectra device identifier per Backend provisioning convention (e.g., AG-000142)."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp of the reading or state transition."
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "SemVer of the device telemetry schema, incremented by FW in the telemetry header and validated by DATA at ingest."
+    },
+    "fw_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Running firmware SemVer."
+    },
+    "active_model_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Currently ACTIVE inference model version; reported in every telemetry heartbeat so Backend can reconcile fleet-wide model distribution against desired state."
+    },
+    "payload": {
+      "type": "object",
+      "description": "Sensor reading object. Field-level structure (field names, types, units, ranges) is defined by the authoritative DATA telemetry schema registry, not by this contract. Validators MUST resolve payload against the schema_version-pinned DATA schema.",
+      "additionalProperties": true
+    },
+    "ota_status": {
+      "type": "object",
+      "description": "OTA model/firmware artifact status report (message_type = OTA_STATUS), per the OTA Model Artifact Contract.",
+      "properties": {
+        "model_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "Model version the status refers to." },
+        "current_state": {
+          "type": "string",
+          "enum": ["DOWNLOADING", "VERIFIED", "APPLYING", "ACTIVE", "ROLLED_BACK", "FAILED"],
+          "description": "Current OTA state. Firmware reports each transition to the Backend desired-state control plane."
+        },
+        "previous_state": {
+          "type": "string",
+          "enum": ["DOWNLOADING", "VERIFIED", "APPLYING", "ACTIVE", "ROLLED_BACK", "FAILED"],
+          "description": "Prior OTA state."
+        },
+        "failure_code": {
+          "type": "string",
+          "enum": ["NONE", "SIGNATURE_INVALID", "MANIFEST_MISMATCH", "FLASH_BUDGET_EXCEEDED", "HASH_MISMATCH", "SANITY_CHECK_FAILED", "WATCHDOG_RESET", "UNKNOWN_VERSION"],
+          "description": "Failure/rollback reason code; NONE when state is healthy."
+        }
+      },
+      "required": ["model_version", "current_state"],
+      "additionalProperties": false
+    },
+    "desired_state_command": {
+      "type": "object",
+      "description": "Backend→device command (message_type = DESIRED_STATE_COMMAND). Firmware acknowledges within 5 seconds of receipt.",
+      "properties": {
+        "desired_model_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "Model version Backend wants the device to run." }
+      },
+      "required": ["desired_model_version"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["message_type", "device_id", "timestamp", "schema_version"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "message_type": { "const": "TELEMETRY" } } },
+      "then": { "required": ["payload", "fw_version", "active_model_version"] }
+    },
+    {
+      "if": { "properties": { "message_type": { "const": "OTA_STATUS" } } },
+      "then": { "required": ["ota_status"] }
+    },
+    {
+      "if": { "properties": { "message_type": { "const": "DESIRED_STATE_COMMAND" } } },
+      "then": { "required": ["desired_state_command"] }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "FW↔BACK-001",
+    "producer_role": "FW",
+    "consumer_role": "BACK",
+    "decision_tier": "Tier-1",
+    "tier_rationale": "Touches the OTA strategy / device-cloud control plane (platform/protocol/OTA — permanent HITL gate). Routine telemetry shape clarifications within the rubric are Tier-3; any change to OTA state machine, signing, or desired-state semantics is Tier-1.",
+    "cadence": "CONTINUOUS (telemetry); SLA_FROM_EVENT (OTA status reported within 1 min of download completion, ROLLED_BACK within 30 s, desired-state ACK within 5 s)",
+    "confirm_conditions": [
+      "message_type, device_id, timestamp, schema_version all present and valid",
+      "schema_version resolves to a registered version in the DATA telemetry schema registry",
+      "for TELEMETRY: payload validates against the pinned DATA schema; active_model_version present",
+      "for OTA_STATUS: current_state is a valid enum and any non-healthy state carries a failure_code",
+      "device_id matches an enrolled device in the Backend fleet registry"
+    ],
+    "reject_conditions": [
+      "schema_version unknown / not in registry",
+      "OTA state transition is illegal (e.g., DOWNLOADING→ACTIVE skipping VERIFIED/APPLYING)",
+      "failure_code = UNKNOWN_VERSION returned for a desired_state_command (Backend must reconcile)",
+      "additionalProperties present (strict envelope)"
+    ],
+    "counter_conditions": [
+      "schema_version is newer than the consumer's known set but within the active transition window — request the registry pointer before accepting",
+      "payload field appears whose unit/range is ambiguous against the DATA schema — request schema-change coordination (FW↔DATA process)"
+    ]
+  }
+}

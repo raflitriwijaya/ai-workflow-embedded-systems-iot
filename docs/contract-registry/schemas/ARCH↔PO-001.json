@@ -1,0 +1,84 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ARCH↔PO-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCH↔PO-001: Product Requirements + Feasibility Feedback",
+  "description": "Product Owner/TPM provides prioritized feature requests with business/field context, target timelines, and constraints; the Architect returns feasibility assessments, technical trade-off options (cost/risk/timeline), and early warning of architectural constraints affecting scope. The Architect's feasibility assessment is authoritative input, not a negotiable opinion. Grounded in EMBEDDED_SYSTEMS_ARCHITECT_SKILL §6.1 and PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL §6.1.",
+  "type": "object",
+  "properties": {
+    "feature_request": {
+      "type": "object",
+      "description": "PO→ARCH: prioritized feature request.",
+      "properties": {
+        "feature_id": { "type": "string" },
+        "priority": { "type": "string", "enum": ["P0", "P1", "P2", "P3"], "description": "Backlog priority." },
+        "business_context": { "type": "string", "minLength": 20, "description": "Business/field rationale." },
+        "target_timeline": { "type": "string", "format": "date", "description": "Requested delivery date." },
+        "constraints": { "type": "array", "items": { "type": "string" }, "description": "Budget, certification, or field constraints." }
+      },
+      "required": ["feature_id", "priority", "business_context"],
+      "additionalProperties": false
+    },
+    "feasibility_assessment": {
+      "type": "object",
+      "description": "ARCH→PO: authoritative feasibility input.",
+      "properties": {
+        "verdict": { "type": "string", "enum": ["FEASIBLE", "FEASIBLE_WITH_TRADEOFFS", "INFEASIBLE"], "description": "Architect verdict." },
+        "tradeoff_options": {
+          "type": "array",
+          "description": "Technical options with cost/risk/timeline implications.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "option_id": { "type": "string" },
+              "description": { "type": "string", "minLength": 20 },
+              "cost_impact": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+              "risk": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+              "timeline_delta_days": { "type": "integer", "description": "Schedule delta in days (positive = delay)." }
+            },
+            "required": ["option_id", "description", "cost_impact", "risk"],
+            "additionalProperties": false
+          }
+        },
+        "architectural_constraints": { "type": "array", "items": { "type": "string" }, "description": "Early warning of constraints affecting scope." },
+        "adr_required": { "type": "boolean", "description": "True if a decision requires a formal ADR (e.g., platform/protocol/budget)." }
+      },
+      "required": ["verdict", "adr_required"],
+      "additionalProperties": false
+    },
+    "scope_lock": {
+      "type": "object",
+      "description": "Mandatory consultation before locking any release scope with architectural dependencies.",
+      "properties": {
+        "scope_locked": { "type": "boolean" },
+        "architect_consulted": { "type": "boolean", "description": "Must be true before scope_locked = true." }
+      },
+      "required": ["scope_locked", "architect_consulted"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["feature_request", "feasibility_assessment"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "ARCH↔PO-001",
+    "producer_role": "PO",
+    "consumer_role": "ARCH",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Scope/feasibility decisions with architectural dependencies require ARB-level deliberation; the Architect's feasibility verdict is authoritative (governance note §6.1). Feature intake without architectural impact is Tier-3.",
+    "cadence": "TRIGGER (weekly sync during planning; ad hoc feasibility review during backlog grooming); mandatory consultation before locking release scope with architectural dependencies",
+    "confirm_conditions": [
+      "feature_request carries priority and business_context",
+      "feasibility_assessment has a verdict; FEASIBLE_WITH_TRADEOFFS includes ≥ 1 tradeoff_option with cost/risk",
+      "adr_required = true is honored (ADR filed) before scope is locked",
+      "scope_lock.scope_locked = true only when architect_consulted = true"
+    ],
+    "reject_conditions": [
+      "scope_locked = true without architect_consulted (violates §6.1 governance note)",
+      "verdict = INFEASIBLE overridden by PO without an ADR (Architect verdict is authoritative)",
+      "adr_required = true but scope locked with no ADR"
+    ],
+    "counter_conditions": [
+      "FEASIBLE_WITH_TRADEOFFS but PO needs a single recommendation — request the Architect's preferred option",
+      "timeline target conflicts with every tradeoff option — request re-prioritization or timeline relaxation"
+    ]
+  }
+}

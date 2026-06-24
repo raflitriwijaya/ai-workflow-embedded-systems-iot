@@ -1,0 +1,118 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/PO↔BIZ-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PO↔BIZ-001: Product Roadmap + Market Requirement Updates",
+  "description": "Product Owner/TPM provides product backlog/roadmap timeline, engineering velocity/release forecasts, feature-completion status for GTM, and escalation of scope changes with business impact; Business Consultant provides business-value ranking, market-window analysis, GTM-readiness inputs, customer-feedback synthesis, and market-requirement change notifications. Grounded in PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL §6.15 and BUSINESS_CONSULTANT_SKILL §6.1. (Note: PO §6 lists Business Consultant twice — §6.13 and §6.15; §6.15 is the fuller, HR-2-tagged version used here.)",
+  "type": "object",
+  "properties": {
+    "product_roadmap": {
+      "type": "object",
+      "description": "PO→BIZ: roadmap, forecasts, and status.",
+      "properties": {
+        "roadmap_version": { "type": "string" },
+        "backlog_status": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "feature_id": { "type": "string" },
+              "status": { "type": "string", "enum": ["BACKLOG", "IN_PROGRESS", "DONE", "DEFERRED"] },
+              "completion_pct": { "type": "number", "minimum": 0, "maximum": 100 }
+            },
+            "required": ["feature_id", "status"],
+            "additionalProperties": false
+          }
+        },
+        "release_forecast": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "release_id": { "type": "string" },
+              "target_date": { "type": "string", "format": "date" }
+            },
+            "required": ["release_id", "target_date"],
+            "additionalProperties": false
+          }
+        },
+        "velocity_estimate": { "type": "string", "description": "Engineering velocity estimate (e.g., story points/sprint)." },
+        "scope_change_escalations": { "type": "array", "items": { "type": "string" }, "description": "Scope changes with business impact." }
+      },
+      "required": ["roadmap_version"],
+      "additionalProperties": false
+    },
+    "market_input": {
+      "type": "object",
+      "description": "BIZ→PO: business-value ranking + market signals.",
+      "properties": {
+        "business_value_ranking": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "feature_id": { "type": "string" },
+              "revenue_impact": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+              "market_differentiation": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+              "customer_priority": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] }
+            },
+            "required": ["feature_id", "revenue_impact"],
+            "additionalProperties": false
+          }
+        },
+        "market_window_analysis": { "type": "string" },
+        "gtm_readiness": {
+          "type": "object",
+          "properties": {
+            "certification_status": { "type": "string" },
+            "pricing_finalized": { "type": "boolean" },
+            "sales_channel_ready": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        "market_requirement_change": {
+          "type": "object",
+          "description": "Significant market-requirement change (≤2 business days to notify).",
+          "properties": {
+            "change_type": { "type": "string", "enum": ["COMPETITOR_ENTRY", "CUSTOMER_WIN_LOSS", "REGULATORY_CHANGE", "TECHNOLOGY_DISRUPTION"] },
+            "notified_date": { "type": "string", "format": "date" },
+            "product_impact_due_date": { "type": ["string", "null"], "format": "date", "description": "PO product-impact assessment due within 5 business days." }
+          },
+          "required": ["change_type", "notified_date"],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["product_roadmap"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "market_input": { "properties": { "market_requirement_change": { "type": "object" } }, "required": ["market_requirement_change"] } }, "required": ["market_input"] },
+      "then": { "properties": { "market_input": { "properties": { "market_requirement_change": { "required": ["product_impact_due_date"] } } } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "PO↔BIZ-001",
+    "producer_role": "PO",
+    "consumer_role": "BIZ",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine product-market coordination (weekly/monthly cadence) is agent-autonomous. GTM-readiness inputs feed the Tier-1 PO↔ALL-RELEASE-001 gate at release time.",
+    "cadence": "TRIGGER (Weekly Business-Product Sync Mondays; Monthly Alignment Review; market-requirement change notified ≤2 business days, PO impact assessment ≤5 business days; GTM readiness review 2 weeks before release)",
+    "confirm_conditions": [
+      "product_roadmap carries a roadmap_version and current backlog/forecast status",
+      "business_value_ranking present with at least revenue_impact per ranked feature",
+      "a market_requirement_change carries notified_date and a product_impact_due_date",
+      "gtm_readiness signals provided ahead of the Release GTM Readiness Review"
+    ],
+    "reject_conditions": [
+      "market_requirement_change reported without a product_impact_due_date (SLA unhonored)",
+      "GTM readiness asserted (pricing/sales/certification) without the underlying status",
+      "scope change with business impact not escalated to BIZ"
+    ],
+    "counter_conditions": [
+      "business-value ranking conflicts with engineering capacity — request joint re-prioritization at sprint planning",
+      "market-window date conflicts with the release forecast — request a GTM/timeline trade discussion"
+    ]
+  }
+}

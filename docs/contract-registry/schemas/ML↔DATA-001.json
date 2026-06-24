@@ -1,0 +1,80 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ML↔DATA-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ML↔DATA-001: Training Dataset + Feature Pipeline Handoff",
+  "description": "Data Engineer delivers curated, versioned datasets and engineered features (incl. the quantization-calibration set) to Edge AI/ML against stated dataset/feature requirements with leakage-safe split definitions. Grounded in DATA_ENGINEER_SKILL §6.2 and EDGE_AI_ML_ENGINEER §6 (DATA boundary).",
+  "type": "object",
+  "properties": {
+    "dataset_name": { "type": "string", "description": "Canonical dataset name, e.g. 'crop-spectra-train'." },
+    "dataset_version": { "type": "string", "description": "DVC SemVer or 12-char SHA-256 prefix.", "pattern": "^(\\d+\\.\\d+\\.\\d+|[a-f0-9]{12})$" },
+    "storage_location": { "type": "string", "description": "S3/GCS URI or local path prefix to the dataset." },
+    "feature_spec": {
+      "type": "object",
+      "description": "Engineered feature definitions delivered to ML.",
+      "properties": {
+        "features": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "type": { "type": "string", "enum": ["NUMERIC", "CATEGORICAL", "TIMESTAMP", "BINARY", "TEXT"] },
+              "unit": { "type": "string", "description": "Physical unit (required for NUMERIC features per measure-first discipline)." }
+            },
+            "required": ["name", "type"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["features"],
+      "additionalProperties": false
+    },
+    "split_definitions": {
+      "type": "object",
+      "description": "Train/validation/test split definitions designed to avoid leakage.",
+      "properties": {
+        "train": { "type": "number", "minimum": 0, "maximum": 1 },
+        "validation": { "type": "number", "minimum": 0, "maximum": 1 },
+        "test": { "type": "number", "minimum": 0, "maximum": 1 },
+        "split_key": { "type": "string", "description": "Grouping key ensuring no record group spans splits (leakage prevention), e.g. device_id or field_site." }
+      },
+      "required": ["train", "validation", "test", "split_key"],
+      "additionalProperties": false
+    },
+    "calibration_set_included": { "type": "boolean", "description": "True when a representative dataset for INT8 quantization calibration is provided." },
+    "lineage_ref": { "type": "string", "description": "Data lineage / provenance reference for the dataset version." },
+    "open_dqirs": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^DQIR-\\d{4}$" },
+      "description": "Open Data Quality Issue Report IDs on this dataset version; CRITICAL/HIGH block the training pipeline (see ML↔DATA-DQIR-002)."
+    }
+  },
+  "required": ["dataset_name", "dataset_version", "storage_location", "feature_spec", "split_definitions", "calibration_set_included", "lineage_ref"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "ML↔DATA-001",
+    "producer_role": "DATA",
+    "consumer_role": "ML",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine dataset delivery and schema interpretation within rubric (agent-autonomous if confidence ≥ 0.70). Breaking feature/schema changes escalate to ADR (Tier-2).",
+    "cadence": "TRIGGER (requirements handoff at planning; dataset delivery/iteration during development); CONTINUOUS (data-quality reviews)",
+    "confirm_conditions": [
+      "dataset_version resolves in the data catalog and storage_location is reachable",
+      "split_definitions sum to 1.0 (±0.001) and split_key enforces leakage-safe grouping",
+      "every NUMERIC feature carries a unit",
+      "open_dqirs contains no CRITICAL/HIGH DQIR (training pipeline not blocked)",
+      "calibration set present when INT8 quantization is planned"
+    ],
+    "reject_conditions": [
+      "split fractions do not sum to 1.0 or no split_key (leakage risk)",
+      "an open CRITICAL or HIGH DQIR is associated with this dataset version",
+      "storage_location unreachable or version absent from the catalog",
+      "NUMERIC feature missing its unit"
+    ],
+    "counter_conditions": [
+      "feature added/renamed vs. the agreed feature spec — request a feature-spec version bump",
+      "calibration_set_included = false but quantization is INT8 — request the calibration set before handoff"
+    ]
+  }
+}

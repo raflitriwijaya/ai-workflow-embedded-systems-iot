@@ -1,0 +1,89 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/DEVOPS↔SEC-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DEVOPS↔SEC-001: Artifact Signing + Secrets Management",
+  "description": "Security defines artifact-signing/key/PKI requirements, secrets-management requirements, hardening/compliance rules, and threat findings; DevOps implements signing infrastructure, secrets management (Vault), hardened infrastructure, RBAC, and image/dependency scanning to the baseline. Grounded in DEVOPS_PLATFORM_ENGINEER_SKILL §6.4 and SECURITY_ENGINEER_SKILL §6.5.",
+  "type": "object",
+  "properties": {
+    "signing": {
+      "type": "object",
+      "description": "Artifact-signing requirements and implementation evidence.",
+      "properties": {
+        "signing_required": { "type": "boolean", "description": "All release artifacts must be signed (security baseline)." },
+        "signature_algorithm": { "type": "string", "enum": ["ED25519", "ECDSA-P256", "RSA-4096"], "description": "Approved signing algorithm." },
+        "key_id": { "type": "string", "description": "Signing key identifier (reference only; key material never appears here)." },
+        "key_storage": { "type": "string", "enum": ["VAULT", "HSM", "KMS"], "description": "Where the signing key is held; raw keys are forbidden in repos/configs." }
+      },
+      "required": ["signing_required", "signature_algorithm", "key_storage"],
+      "additionalProperties": false
+    },
+    "secrets_management": {
+      "type": "object",
+      "properties": {
+        "backend": { "type": "string", "const": "VAULT", "description": "HashiCorp Vault per the baseline." },
+        "secret_refs": {
+          "type": "array",
+          "items": { "type": "string", "description": "Vault path reference, e.g. 'vault://kv/backend/mqtt-cert'." },
+          "description": "References only — never literal secret values."
+        },
+        "rotation_days": { "type": "integer", "minimum": 1, "description": "Maximum secret rotation interval in days." }
+      },
+      "required": ["backend", "secret_refs"],
+      "additionalProperties": false
+    },
+    "rbac": {
+      "type": "object",
+      "properties": {
+        "least_privilege": { "type": "boolean", "description": "RBAC follows least-privilege." },
+        "mfa_required_roles": { "type": "array", "items": { "type": "string" }, "description": "Roles requiring MFA." }
+      },
+      "required": ["least_privilege"],
+      "additionalProperties": false
+    },
+    "scanning": {
+      "type": "object",
+      "properties": {
+        "image_scan_passed": { "type": "boolean" },
+        "dependency_scan_passed": { "type": "boolean" },
+        "remediation_sla_days": {
+          "type": "object",
+          "description": "Remediation SLA by CVSS severity.",
+          "properties": {
+            "critical": { "type": "integer", "const": 7 },
+            "high": { "type": "integer", "const": 30 },
+            "medium": { "type": "integer", "const": 90 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["image_scan_passed", "dependency_scan_passed"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["signing", "secrets_management", "rbac", "scanning"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "DEVOPS↔SEC-001",
+    "producer_role": "SEC",
+    "consumer_role": "DEVOPS",
+    "decision_tier": "Tier-1",
+    "tier_rationale": "Security-baseline surface (signing, key storage, secrets) — ESC-SEC; SEC owns binding decisions and holds HG-01 release veto. Agents may only propose.",
+    "cadence": "TRIGGER (baseline handoff at planning); implementation reviews; pre-production security sign-off",
+    "confirm_conditions": [
+      "signing.signing_required = true with an approved algorithm and key_storage ∈ {VAULT, HSM, KMS}",
+      "secrets are Vault references only — no literal secret values anywhere in the artifact",
+      "rbac.least_privilege = true",
+      "image_scan_passed and dependency_scan_passed are true; open findings within the CVSS remediation SLA"
+    ],
+    "reject_conditions": [
+      "any literal secret/key material present (ESC-SEC — immediate)",
+      "signing disabled or a non-approved algorithm proposed",
+      "failed image/dependency scan with an open Critical past the 7-day SLA",
+      "key stored outside Vault/HSM/KMS"
+    ],
+    "counter_conditions": [
+      "rotation_days exceeds policy — request a rotation-schedule correction",
+      "a new artifact type lacks a signing path — request SEC to extend the baseline (do not self-approve)"
+    ]
+  }
+}

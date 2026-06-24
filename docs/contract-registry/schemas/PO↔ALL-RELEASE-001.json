@@ -1,0 +1,79 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/PO↔ALL-RELEASE-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PO↔ALL-RELEASE-001: Release Gate Status + OTA Release Calendar",
+  "description": "Product Owner/TPM publishes the OTA release-train schedule and tracks the ordered Release Gate Sequence (CLAUDE.md §6.7); each gating role reports its sign-off. The PO release decision is gate 4 and cannot precede the Architect, Security, and QA gates. Grounded in FIRMWARE_ENGINEER_SKILL §6.12 (PO/TPM) and the Release Gate Sequence. Models a release record, not a single deliverable.",
+  "type": "object",
+  "properties": {
+    "release_id": { "type": "string", "description": "Release identifier, e.g. 'REL-2026-Q3-01'." },
+    "release_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "Target release SemVer." },
+    "ota_calendar": {
+      "type": "object",
+      "description": "OTA release-train schedule (field-deployment timing).",
+      "properties": {
+        "release_window_start_utc": { "type": "string", "format": "date-time" },
+        "release_window_end_utc": { "type": "string", "format": "date-time" },
+        "field_deployment_date": { "type": "string", "format": "date" },
+        "seasonal_constraint_note": { "type": "string", "description": "AgriSpectra deploys in seasonal windows; note any blackout." }
+      },
+      "required": ["release_window_start_utc", "release_window_end_utc", "field_deployment_date"],
+      "additionalProperties": false
+    },
+    "release_gate_sequence": {
+      "type": "object",
+      "description": "Ordered gates per CLAUDE.md §6.7; must not be reversed or skipped. Each downstream gate requires all prior gates PASS.",
+      "properties": {
+        "gate1_architect_signoff": { "type": "string", "enum": ["PENDING", "PASS", "FAIL"], "description": "NFR matrix green, no TBD, OTA path integrity (HG-04)." },
+        "gate2_security_signoff": { "type": "string", "enum": ["PENDING", "PASS", "VETO"], "description": "Security release sign-off / veto (HG-01)." },
+        "gate3_qa_go_no_go": { "type": "string", "enum": ["PENDING", "GO", "NO_GO"], "description": "QA go/no-go; NO_GO on any open Critical FMEA chain (RPN ≥ 200)." },
+        "gate4_po_release_decision": { "type": "string", "enum": ["PENDING", "APPROVED", "HELD"], "description": "PO/TPM release decision (this contract's owning gate)." },
+        "gate5_ota_readiness": { "type": "string", "enum": ["PENDING", "PASS", "FAIL"], "description": "OCM per model; A/B rollback verified." },
+        "gate6_business_gtm_readiness": { "type": "string", "enum": ["PENDING", "PASS", "FAIL"], "description": "BIA appended to release ADR." }
+      },
+      "required": ["gate1_architect_signoff", "gate2_security_signoff", "gate3_qa_go_no_go", "gate4_po_release_decision", "gate5_ota_readiness", "gate6_business_gtm_readiness"],
+      "additionalProperties": false
+    },
+    "open_critical_fmea_chains": { "type": "integer", "minimum": 0, "description": "Count of open Critical FMEA chains (RPN ≥ 200) with no mitigation; must be 0 for QA GO (Prime Directive §10.1)." },
+    "feature_acceptance": {
+      "type": "array",
+      "description": "Feature requirements + testable acceptance criteria for capabilities in this release.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "feature_id": { "type": "string" },
+          "acceptance_criteria_met": { "type": "boolean" }
+        },
+        "required": ["feature_id", "acceptance_criteria_met"],
+        "additionalProperties": false
+      }
+    },
+    "release_adr_ref": { "type": ["string", "null"], "pattern": "^ADR-\\d{4}$", "description": "Release ADR with the BIA appended." }
+  },
+  "required": ["release_id", "release_version", "ota_calendar", "release_gate_sequence", "open_critical_fmea_chains"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "PO↔ALL-RELEASE-001",
+    "producer_role": "PO",
+    "consumer_role": "ALL",
+    "decision_tier": "Tier-1",
+    "tier_rationale": "Production release gating spans HG-01 (SEC veto), HG-04 (Architect production gate), and the QA go/no-go — all permanent HITL gates. No agent may produce a release-APPROVED record that bypasses them.",
+    "cadence": "TRIGGER (release-gate readiness review); SLA_FROM_EVENT (milestone-slip notification within 1 business day of a confirmed slip)",
+    "confirm_conditions": [
+      "gates evaluated strictly in order 1→6; each gate PENDING until all prior gates pass",
+      "gate4_po_release_decision = APPROVED only when gate1 PASS, gate2 PASS, gate3 GO",
+      "gate3_qa_go_no_go = GO only when open_critical_fmea_chains = 0",
+      "ota_calendar window is consistent (start < end) and respects seasonal constraints",
+      "release_adr_ref present with BIA appended for gate6 PASS"
+    ],
+    "reject_conditions": [
+      "gate4 APPROVED while gate2 = VETO or gate3 = NO_GO (bypasses HG-01/QA gate — ESC-TIER1)",
+      "gate3 = GO with open_critical_fmea_chains > 0 (violates Prime Directive §10.1)",
+      "gates recorded out of order or a gate skipped",
+      "any release rationale arguing to ship around open Critical chains"
+    ],
+    "counter_conditions": [
+      "a gate is PENDING past its SLA — request status (ESC-SLA), do not infer PASS",
+      "feature acceptance_criteria_met = false on a committed feature — request scope/priority reconciliation"
+    ]
+  }
+}

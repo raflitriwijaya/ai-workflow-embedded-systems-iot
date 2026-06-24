@@ -1,0 +1,63 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ML↔SEC-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ML↔SEC-001: Model Integrity Requirements + Security Review",
+  "description": "Security provides model-integrity, anti-extraction, and anti-tampering requirements for edge-deployed models; Edge AI/ML provides model artifacts and metadata for threat assessment and awareness of the deployment target. Grounded in SECURITY_ENGINEER_SKILL §6.7 (Edge AI/ML Engineer).",
+  "type": "object",
+  "properties": {
+    "model_id": { "type": "string" },
+    "model_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "deployment_target": { "type": "string", "description": "Target the integrity protections apply to, e.g. 'STM32H7 edge node'." },
+    "integrity_requirements": {
+      "type": "object",
+      "description": "SEC→ML: required protections for the deployed model.",
+      "properties": {
+        "model_signing_required": { "type": "boolean", "description": "Model bundle must be signed and verified on-device." },
+        "anti_extraction": { "type": "string", "enum": ["REQUIRED", "BEST_EFFORT", "NOT_REQUIRED"], "description": "Protection against model weight extraction." },
+        "anti_tampering": { "type": "string", "enum": ["REQUIRED", "BEST_EFFORT", "NOT_REQUIRED"], "description": "Protection against on-device model tampering." },
+        "model_anti_rollback": { "type": "boolean", "description": "Per-model monotonic version counter (mitigates FMEA FC-026 residual risk)." }
+      },
+      "required": ["model_signing_required", "anti_extraction", "anti_tampering", "model_anti_rollback"],
+      "additionalProperties": false
+    },
+    "model_metadata_for_assessment": {
+      "type": "object",
+      "description": "ML→SEC: artifacts/metadata for threat assessment.",
+      "properties": {
+        "framework": { "type": "string", "enum": ["TFLITE_MICRO"] },
+        "sha256_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "signature_algorithm": { "type": "string", "enum": ["ED25519", "ECDSA-P256"] },
+        "exposes_outputs_externally": { "type": "boolean", "description": "Whether inference outputs cross a trust boundary (informs information-disclosure risk)." }
+      },
+      "required": ["framework", "sha256_hash"],
+      "additionalProperties": false
+    },
+    "security_verdict": { "type": "string", "enum": ["APPROVED", "APPROVED_WITH_CONDITIONS", "REJECTED"], "description": "SEC threat-assessment outcome." }
+  },
+  "required": ["model_id", "model_version", "deployment_target", "integrity_requirements", "model_metadata_for_assessment"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "ML↔SEC-001",
+    "producer_role": "SEC",
+    "consumer_role": "ML",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Model-integrity is a security surface — ESC-SEC; SEC owns binding verdicts. A change weakening model signing/anti-rollback is a security-baseline change → Tier-1.",
+    "cadence": "TRIGGER (requirements alignment at planning; model-integrity review when model formats or deployment targets change)",
+    "confirm_conditions": [
+      "model_signing_required = true and model_metadata provides a matching signature_algorithm",
+      "model_anti_rollback = true where the deployment target supports a per-model monotonic counter",
+      "anti_extraction / anti_tampering levels satisfied for the target",
+      "security_verdict = APPROVED"
+    ],
+    "reject_conditions": [
+      "model_anti_rollback = false on a production target (FC-026 residual risk — ESC-SEC)",
+      "REQUIRED anti-tampering/anti-extraction not met",
+      "security_verdict = REJECTED",
+      "metadata hash/signature missing or mismatched"
+    ],
+    "counter_conditions": [
+      "anti_extraction = REQUIRED but target hardware cannot enforce it — escalate to ARCH+SEC trade-off",
+      "APPROVED_WITH_CONDITIONS — log conditions to the §3.3 checklist before proceeding"
+    ]
+  }
+}

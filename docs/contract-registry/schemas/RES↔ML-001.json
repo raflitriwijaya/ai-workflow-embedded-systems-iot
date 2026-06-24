@@ -1,0 +1,71 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/RES↔ML-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RES↔ML-001: Novel ML Findings + TFLite Micro Feasibility",
+  "description": "Researcher delivers a novel ML findings package (model architecture, training methodology, experimental results, unconventional operator requirements, preprocessing specifications); Edge AI/ML returns a TFLite Micro feasibility assessment within 15 business days (operator-support verification, estimated tensor-arena size, estimated inference latency, CMSIS-NN compatibility, showstopper gaps). Grounded in IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL §6.5.",
+  "type": "object",
+  "properties": {
+    "ml_findings": {
+      "type": "object",
+      "description": "RES→ML: novel ML findings package.",
+      "properties": {
+        "finding_id": { "type": "string" },
+        "model_architecture": { "type": "string", "minLength": 20 },
+        "training_methodology": { "type": "string" },
+        "experimental_results": { "type": "object", "additionalProperties": true, "description": "Reported metrics (e.g., accuracy, F1) with their definitions." },
+        "unconventional_operator_requirements": { "type": "array", "items": { "type": "string" }, "description": "Operators outside the standard TFLite Micro set." },
+        "preprocessing_specifications": { "type": "string", "description": "Preprocessing spec (Python golden reference + test vectors expected)." },
+        "dataset_ref": { "type": ["string", "null"], "description": "FAIR dataset reference (links RES↔DATA-001)." }
+      },
+      "required": ["finding_id", "model_architecture"],
+      "additionalProperties": false
+    },
+    "tflite_micro_feasibility": {
+      "type": "object",
+      "description": "ML→RES: TFLite Micro feasibility assessment (within 15 business days).",
+      "properties": {
+        "operator_support": { "type": "string", "enum": ["ALL_SUPPORTED", "PARTIAL", "UNSUPPORTED"] },
+        "unsupported_operators": { "type": "array", "items": { "type": "string" }, "description": "Required when operator_support is PARTIAL or UNSUPPORTED." },
+        "estimated_tensor_arena_kb": { "type": "number", "minimum": 0, "description": "Estimated tensor-arena size in KB." },
+        "estimated_inference_latency_ms": { "type": "number", "minimum": 0, "description": "Estimated on-target inference latency in ms." },
+        "cmsis_nn_compatible": { "type": "boolean" },
+        "showstopper_gaps": { "type": "array", "items": { "type": "string" } },
+        "verdict": { "type": "string", "enum": ["FEASIBLE", "FEASIBLE_WITH_CUSTOM_KERNELS", "INFEASIBLE"] }
+      },
+      "required": ["operator_support", "verdict"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["ml_findings"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "tflite_micro_feasibility": { "properties": { "operator_support": { "enum": ["PARTIAL", "UNSUPPORTED"] } }, "required": ["operator_support"] } }, "required": ["tflite_micro_feasibility"] },
+      "then": { "properties": { "tflite_micro_feasibility": { "properties": { "unsupported_operators": { "minItems": 1 } }, "required": ["unsupported_operators"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "RES↔ML-001",
+    "producer_role": "RES",
+    "consumer_role": "ML",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Novel ML modalities frequently exceed the contracted/precedented surface — novelty score may exceed 0.80 (ESC-NOV). Transfer aligns with the quarterly Technology Transfer Review; feasibility findings feed model-deployment ADRs.",
+    "cadence": "TRIGGER (Scheduled ML Research Transfer at quarterly TTR; novel ML findings ≥3 weeks before review; TFLite Micro feasibility within 15 business days; initial feasibility scan within 10 business days)",
+    "confirm_conditions": [
+      "ml_findings carries a finding_id and a model_architecture description",
+      "tflite_micro_feasibility returns operator_support + a verdict",
+      "PARTIAL/UNSUPPORTED operator_support enumerates the unsupported_operators",
+      "estimated tensor_arena_kb and inference_latency_ms reported with units when feasible"
+    ],
+    "reject_conditions": [
+      "verdict = FEASIBLE while showstopper_gaps remain unresolved",
+      "operator_support = PARTIAL/UNSUPPORTED with no unsupported_operators listed",
+      "experimental results reported without metric definitions (not reproducible)"
+    ],
+    "counter_conditions": [
+      "novel modality requires high-complexity assessment — request the extended window and flag ESC-NOV (novelty > 0.80)",
+      "preprocessing spec lacks a golden reference / test vectors — request them before fixed-point feasibility",
+      "FEASIBLE_WITH_CUSTOM_KERNELS — request the kernel-development effort estimate before transfer commit"
+    ]
+  }
+}

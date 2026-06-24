@@ -1,0 +1,66 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/FW↔SEC-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FW↔SEC-001: Secure Boot Implementation + mTLS Conformance",
+  "description": "Security provides secure-boot, mTLS, key-storage, and anti-rollback implementation specifications plus threat-model findings; Firmware implements the controls to specification and returns conformance evidence. Grounded in SECURITY_ENGINEER_SKILL §6.2 and FIRMWARE_ENGINEER_SKILL §6.6. Maps to the mandatory production security baseline.",
+  "type": "object",
+  "properties": {
+    "baseline_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "Security baseline version being conformed to." },
+    "controls": {
+      "type": "object",
+      "description": "Mandatory firmware security-baseline controls with conformance status.",
+      "properties": {
+        "secure_boot": { "type": "string", "enum": ["IMPLEMENTED", "PARTIAL", "NOT_IMPLEMENTED"], "description": "Verified secure-boot chain (bootloader → firmware → model)." },
+        "signed_images": { "type": "string", "enum": ["IMPLEMENTED", "PARTIAL", "NOT_IMPLEMENTED"] },
+        "mtls": { "type": "string", "enum": ["IMPLEMENTED", "PARTIAL", "NOT_IMPLEMENTED"], "description": "Mutual TLS with X.509 device certificates." },
+        "secure_key_storage": { "type": "string", "enum": ["IMPLEMENTED", "PARTIAL", "NOT_IMPLEMENTED"], "description": "Hardware root of trust / secure key handling." },
+        "debug_port_lockdown": { "type": "string", "enum": ["IMPLEMENTED", "PARTIAL", "NOT_IMPLEMENTED"] },
+        "anti_rollback": { "type": "string", "enum": ["IMPLEMENTED", "PARTIAL", "NOT_IMPLEMENTED"], "description": "Firmware anti-rollback via monotonic counter." }
+      },
+      "required": ["secure_boot", "signed_images", "mtls", "secure_key_storage", "debug_port_lockdown", "anti_rollback"],
+      "additionalProperties": false
+    },
+    "mtls_conformance": {
+      "type": "object",
+      "properties": {
+        "tls_version": { "type": "string", "enum": ["TLS1.3", "TLS1.2"], "description": "Minimum TLS 1.3 per baseline." },
+        "mutual_auth": { "type": "boolean", "description": "Both client and server X.509 certificates validated." },
+        "cert_validation_enabled": { "type": "boolean", "description": "No disabled verification; no self-signed certs in production." }
+      },
+      "required": ["tls_version", "mutual_auth", "cert_validation_enabled"],
+      "additionalProperties": false
+    },
+    "conformance_evidence": {
+      "type": "array",
+      "items": { "type": "string", "description": "Path/URI to evidence (boot-chain log, handshake pcap, key-provisioning record)." },
+      "minItems": 1
+    },
+    "threat_findings_addressed": { "type": "array", "items": { "type": "string" }, "description": "Threat-model finding IDs addressed by this implementation." }
+  },
+  "required": ["baseline_version", "controls", "mtls_conformance", "conformance_evidence"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "FW↔SEC-001",
+    "producer_role": "SEC",
+    "consumer_role": "FW",
+    "decision_tier": "Tier-1",
+    "tier_rationale": "Security-baseline implementation (secure boot, mTLS, anti-rollback) — ESC-SEC; SEC owns binding decisions and HG-01 release veto. Any baseline weakening is non-overridable by agents.",
+    "cadence": "TRIGGER (baseline/spec handoff at planning); secure-boot and transport-security implementation reviews; pre-production hardening sign-off",
+    "confirm_conditions": [
+      "all six baseline controls = IMPLEMENTED",
+      "mtls_conformance: tls_version = TLS1.3, mutual_auth = true, cert_validation_enabled = true",
+      "conformance_evidence present for each implemented control",
+      "anti_rollback IMPLEMENTED via monotonic counter (mitigates FMEA FC-026 residual risk)"
+    ],
+    "reject_conditions": [
+      "any control PARTIAL/NOT_IMPLEMENTED at pre-production sign-off (ESC-SEC; HG-01 veto)",
+      "cert_validation_enabled = false or self-signed certs in production",
+      "TLS below 1.3 without an accepted-risk ADR signed by SEC + ARCH",
+      "missing conformance evidence for a claimed-IMPLEMENTED control"
+    ],
+    "counter_conditions": [
+      "a control IMPLEMENTED but evidence incomplete — request the evidence artifact before sign-off",
+      "baseline_version older than current — request re-conformance against the latest baseline"
+    ]
+  }
+}
