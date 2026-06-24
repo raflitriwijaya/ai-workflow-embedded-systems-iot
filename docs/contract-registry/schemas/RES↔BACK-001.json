@@ -1,0 +1,116 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/RES↔BACK-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RES↔BACK-001: API/Broker Impact of Novel Data Types + Cloud Feasibility for Research",
+  "description": "The Researcher provides novel data-type specifications (schema, units, expected volume, expected velocity), communication-paradigm proposals (non-standard device-to-cloud patterns — QoS, topic structure, message sequencing), device-interaction pattern proposals, and backend-relevant Technology Transfer Packs; the Backend/Cloud Engineer provides API (Application Programming Interface) and broker impact assessment, device-twin schema impact analysis, cloud-side feasibility feedback (latency, throughput, scaling), and telemetry-schema compatibility assessment. Grounded in IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL §6.13. The authoritative per-field telemetry schema is owned by the Data Engineer (Git-based registry); novel fields requiring registration route through DATA, not duplicated here.",
+  "type": "object",
+  "properties": {
+    "novel_data_specifications": {
+      "type": "object",
+      "description": "RES→BACK: novel data types, communication paradigms, device-interaction patterns.",
+      "properties": {
+        "data_types": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "data_type": { "type": "string" },
+              "schema_ref": { "type": "string" },
+              "fields": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" },
+                    "unit": { "type": "string", "minLength": 1, "description": "Explicit unit per physical field (units rule §3.10); use 'enum'/'bool'/'string' for non-physical fields." }
+                  },
+                  "required": ["name", "unit"],
+                  "additionalProperties": false
+                }
+              },
+              "expected_volume": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., bytes/record, records/device/day." } }, "required": ["value", "unit"], "additionalProperties": false },
+              "expected_velocity": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., msgs/s." } }, "required": ["value", "unit"], "additionalProperties": false }
+            },
+            "required": ["data_type"],
+            "additionalProperties": false
+          }
+        },
+        "communication_paradigm": {
+          "type": "object",
+          "properties": {
+            "pattern": { "type": "string" },
+            "qos": { "type": "integer", "enum": [0, 1, 2] },
+            "topic_structure": { "type": "string" },
+            "message_sequencing": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "device_interaction_patterns": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["data_types"],
+      "additionalProperties": false
+    },
+    "backend_feasibility": {
+      "type": "object",
+      "description": "BACK→RES: API/broker impact, device-twin impact, cloud feasibility, telemetry compatibility.",
+      "properties": {
+        "api_broker_impact": { "type": "string", "enum": ["ACCOMMODATED", "REQUIRES_CHANGES", "INFEASIBLE"] },
+        "changes_required": { "type": "array", "items": { "type": "string" } },
+        "device_twin_impact": {
+          "type": "object",
+          "properties": {
+            "new_fields_required": { "type": "boolean" },
+            "provisioning_flow_change": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        "cloud_feasibility": {
+          "type": "object",
+          "properties": {
+            "latency": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., ms." } }, "required": ["value", "unit"], "additionalProperties": false },
+            "throughput": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., msgs/s." } }, "required": ["value", "unit"], "additionalProperties": false },
+            "scaling_implications": { "type": "string", "description": "Implications against fleet scale (SCALE-1 50,000 devices; SCALE-3 10,000 msgs/s MQTT)." }
+          },
+          "additionalProperties": false
+        },
+        "telemetry_schema_compatible": { "type": "boolean" }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "api_broker_impact": { "const": "REQUIRES_CHANGES" } }, "required": ["api_broker_impact"] },
+          "then": { "required": ["changes_required"], "properties": { "changes_required": { "minItems": 1 } } }
+        }
+      ]
+    }
+  },
+  "anyOf": [
+    { "required": ["novel_data_specifications"] },
+    { "required": ["backend_feasibility"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "RES↔BACK-001",
+    "producer_role": "RES",
+    "consumer_role": "BACK",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine API/broker impact and cloud-feasibility assessment for research data types is agent-autonomous (API/broker impact within 15 business days; device-twin schema impact within 10 business days). A breaking telemetry-schema change routes through the DATA-owned registry; a flow exceeding SCALE-3 throughput requires load validation before it is accommodated.",
+    "cadence": "TRIGGER (API/broker impact assessment within 15 business days; device-twin schema impact within 10 business days; backend-relevant findings transferred at the quarterly Technology Transfer Review; ad hoc consultation with 5 business days' notice)",
+    "confirm_conditions": [
+      "each novel data type's physical fields carry units; expected volume and velocity carry units",
+      "the API/broker impact verdict is stated; REQUIRES_CHANGES enumerates the changes",
+      "device-twin schema impact (new fields, provisioning-flow change) is assessed",
+      "cloud-feasibility latency and throughput carry explicit units"
+    ],
+    "reject_conditions": [
+      "a novel data field, volume, or velocity emitted without a unit (units rule §3.10)",
+      "a telemetry-schema change presented as compatible when it breaks the Data-Engineer-owned registry (must route through DATA)",
+      "a proposed data flow exceeding SCALE-3 (10,000 msgs/s) or driving > SCALE-1 (50,000 devices) presented as accommodated without load validation"
+    ],
+    "counter_conditions": [
+      "a novel data type implies a new telemetry field — request DATA telemetry-schema registration before backend commitment (DATA owns the schema)",
+      "a communication-paradigm proposal lacks QoS or topic structure — request these before assessing broker impact"
+    ]
+  }
+}

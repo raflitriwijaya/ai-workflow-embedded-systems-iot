@@ -1,0 +1,98 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/RES↔FE-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RES↔FE-001: Novel Data Visualization Requirements + Dashboard / Real-Time Rendering Feasibility",
+  "description": "The Researcher provides novel data-type visualization requirements (what the data represents, how it should be represented, update frequency, domain-specific conventions), real-time streaming requirements (expected data rate, latency tolerance, rendering constraints), and ML-output presentation requirements (confidence scores, uncertainty, novel output formats); the Frontend/Dashboard Engineer provides a visualization-feasibility assessment (whether the data can be visualized with current tooling — Grafana, Plotly, D3.js, Recharts — or requires custom development), UX (User Experience) impact analysis, real-time-streaming compatibility, and accessibility implications against WCAG 2.1 AA (Web Content Accessibility Guidelines 2.1, Level AA). Grounded in IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL §6.14 and FRONTEND_DASHBOARD_ENGINEER_SKILL §6.8. This single contract covers both the 'novel visualization requirements + dashboard feasibility' and 'visualization feasibility + real-time rendering of research data' framings (the same canonical RES↔FE pair).",
+  "type": "object",
+  "properties": {
+    "research_visualization_requirements": {
+      "type": "object",
+      "description": "RES→FE: novel data-type, real-time streaming, and ML-output presentation requirements.",
+      "properties": {
+        "novel_data_types": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "data_type": { "type": "string" },
+              "representation": { "type": "string", "description": "How the data should be visually represented." },
+              "update_frequency": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., Hz." } }, "required": ["value", "unit"], "additionalProperties": false },
+              "domain_conventions": { "type": "string" }
+            },
+            "required": ["data_type", "representation"],
+            "additionalProperties": false
+          }
+        },
+        "realtime_streaming": {
+          "type": "object",
+          "properties": {
+            "data_rate": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1 } }, "required": ["value", "unit"], "additionalProperties": false },
+            "latency_tolerance": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., ms." } }, "required": ["value", "unit"], "additionalProperties": false },
+            "rendering_constraints": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "ml_output_presentation": {
+          "type": "object",
+          "properties": {
+            "confidence_scores": { "type": "string" },
+            "uncertainty": { "type": "string" },
+            "novel_formats": { "type": "string" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["novel_data_types"],
+      "additionalProperties": false
+    },
+    "frontend_feasibility": {
+      "type": "object",
+      "description": "FE→RES: visualization feasibility, UX impact, real-time compatibility, accessibility.",
+      "properties": {
+        "visualization_feasibility": { "type": "string", "enum": ["FEASIBLE_WITH_CURRENT_TOOLING", "REQUIRES_CUSTOM_DEVELOPMENT", "INFEASIBLE"] },
+        "tooling": { "type": "array", "items": { "type": "string", "enum": ["Grafana", "Plotly", "D3.js", "Recharts", "custom"] } },
+        "ux_impact": { "type": "string", "description": "New dashboard views, controls, or alerting surfaces field operators would need." },
+        "realtime_compatibility": { "type": "string", "enum": ["RENDERS_WITHOUT_DEGRADATION", "DEGRADES", "INFEASIBLE"], "description": "Whether the data type's volume/velocity renders in a browser without performance degradation." },
+        "accessibility_wcag_2_1_aa": { "type": "string", "enum": ["MEETS", "PARTIAL", "FAILS"] },
+        "custom_dev_estimate": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1 } }, "required": ["value", "unit"], "additionalProperties": false }
+      },
+      "required": ["visualization_feasibility"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "visualization_feasibility": { "const": "REQUIRES_CUSTOM_DEVELOPMENT" } }, "required": ["visualization_feasibility"] },
+          "then": { "required": ["custom_dev_estimate"] }
+        }
+      ]
+    }
+  },
+  "anyOf": [
+    { "required": ["research_visualization_requirements"] },
+    { "required": ["frontend_feasibility"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "RES↔FE-001",
+    "producer_role": "RES",
+    "consumer_role": "FE",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine visualization-feasibility assessment for research data is agent-autonomous (feasibility within 15 business days; real-time-streaming compatibility within 10 business days). New dashboard surfaces affecting field-operator workflows route to PO sign-off; any backend data/stream contract change routes through ARCH↔FE-001 / BACK↔FE-001.",
+    "cadence": "TRIGGER (visualization-feasibility assessment within 15 business days; real-time-streaming compatibility within 10 business days; frontend-relevant findings transferred at the quarterly Technology Transfer Review; ad hoc consultation with 5 business days' notice)",
+    "confirm_conditions": [
+      "each novel data type states its representation; update frequency, data rate, and latency tolerance carry explicit units",
+      "the visualization-feasibility verdict is stated; REQUIRES_CUSTOM_DEVELOPMENT carries a custom-dev estimate",
+      "real-time compatibility and WCAG 2.1 AA accessibility are assessed for browser-rendered research data",
+      "ML-output presentation (confidence, uncertainty) semantics are specified where research models surface to operators"
+    ],
+    "reject_conditions": [
+      "a real-time requirement asserted as RENDERS_WITHOUT_DEGRADATION without a tested data-rate/latency basis (Honesty Over Polish §10.3)",
+      "an update frequency, data rate, or latency emitted without a unit (units rule §3.10)",
+      "a novel visualization shipped that FAILS WCAG 2.1 AA presented as accessibility-compliant"
+    ],
+    "counter_conditions": [
+      "a novel data type's volume/velocity is unstated — request the data rate and latency tolerance before a compatibility verdict",
+      "a research visualization implies a new backend data/event contract — request that it be raised via ARCH↔FE-001 / BACK↔FE-001 before committing the dashboard"
+    ]
+  }
+}

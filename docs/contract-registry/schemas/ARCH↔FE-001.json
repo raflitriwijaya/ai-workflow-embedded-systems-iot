@@ -1,0 +1,114 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ARCH↔FE-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCH↔FE-001: Data/Event Contracts for Visualization + UX-Driven Data Needs",
+  "description": "The Embedded Systems Architect provides data/event contracts for visualization (telemetry and event payload schemas with field definitions and units), real-time stream topology (MQTT-over-WebSockets topic structures, message schemas, QoS), and the semantics of inference outputs to be displayed (confidence scores, drift signals, model-version metadata); the Frontend/Dashboard Engineer provides UX-driven data needs (payload shape, update frequency, aggregation requirements), monitoring/alerting visualization requirements, and feedback on contract gaps raised via the ADR process with evidence. Grounded in EMBEDDED_SYSTEMS_ARCHITECT_SKILL §6.9 and FRONTEND_DASHBOARD_ENGINEER_SKILL §6.9.",
+  "type": "object",
+  "properties": {
+    "visualization_contracts": {
+      "type": "object",
+      "description": "ARCH→FE: data/event contracts, stream topology, inference-output semantics.",
+      "properties": {
+        "data_event_contracts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "contract_ref": { "type": "string" },
+              "payload_schema_ref": { "type": "string" },
+              "fields": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" },
+                    "unit": { "type": "string", "minLength": 1, "description": "Explicit unit for every physical quantity (units rule §3.10); use 'enum'/'bool'/'string'/'timestamp' for non-physical fields." }
+                  },
+                  "required": ["name", "unit"],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": ["contract_ref", "fields"],
+            "additionalProperties": false
+          }
+        },
+        "stream_topology": {
+          "type": "object",
+          "properties": {
+            "transport": { "type": "string", "description": "e.g., MQTT-over-WebSockets." },
+            "topic_structure": { "type": "string" },
+            "message_schema_ref": { "type": "string" },
+            "qos": { "type": "integer", "enum": [0, 1, 2], "description": "MQTT Quality-of-Service level." }
+          },
+          "additionalProperties": false
+        },
+        "inference_output_semantics": {
+          "type": "object",
+          "description": "Semantics of model outputs to display.",
+          "properties": {
+            "confidence_score_schema": { "type": "string" },
+            "drift_signal_schema": { "type": "string" },
+            "model_version_metadata": { "type": "string" },
+            "visual_interpretation": { "type": "string" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["data_event_contracts"],
+      "additionalProperties": false
+    },
+    "ux_data_needs": {
+      "type": "object",
+      "description": "FE→ARCH: UX-driven data needs and contract-gap feedback.",
+      "properties": {
+        "payload_shape": { "type": "string" },
+        "update_frequency": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1 } }, "required": ["value", "unit"], "additionalProperties": false },
+        "aggregation_requirements": { "type": "array", "items": { "type": "string" } },
+        "monitoring_alerting_requirements": { "type": "array", "items": { "type": "string" } },
+        "contract_gaps": {
+          "type": "array",
+          "description": "Contract gaps are raised via the ADR process with evidence.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "gap_type": { "type": "string", "enum": ["MISSING_FIELD", "UNSUPPORTED_UPDATE_FREQUENCY", "SCHEMA_MISMATCH"] },
+              "adr_ref": { "type": "string", "pattern": "^ADR-\\d{4}$", "description": "Gap raised via an ADR with evidence." },
+              "evidence": { "type": "string" }
+            },
+            "required": ["gap_type", "adr_ref", "evidence"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["visualization_contracts"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "ARCH↔FE-001",
+    "producer_role": "ARCH",
+    "consumer_role": "FE",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine data/event-contract definition for dashboard visualization is agent-autonomous. Contract gaps are raised via the ADR process (with evidence), and any breaking change to a ratified visualization data contract requires a CCR + version bump.",
+    "cadence": "TRIGGER (contract definition at planning; integration checkpoints during development; alert-semantics review before production)",
+    "confirm_conditions": [
+      "data_event_contracts are present and every field carries an explicit unit (or a non-physical type marker)",
+      "stream topology and QoS are specified where a real-time stream is provided",
+      "inference-output semantics are defined for any model output to be displayed (confidence, drift, model version)",
+      "FE UX-driven update frequencies carry an explicit unit"
+    ],
+    "reject_conditions": [
+      "a telemetry/event field emitted without a unit (units rule §3.10)",
+      "a contract gap asserted without an adr_ref + evidence (gaps must be raised via the ADR process)",
+      "a breaking change to a ratified visualization contract made without a CCR + version bump"
+    ],
+    "counter_conditions": [
+      "a requested update frequency exceeds the contracted stream cadence — request a feasible rate or a server-side aggregation",
+      "alerting threshold semantics are ambiguous — request the Architect's system-event taxonomy mapping before wiring alerts"
+    ]
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/FW↔BIZ-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FW↔BIZ-001: Firmware Effort Estimates + Feature Timeline for GTM Planning",
+  "description": "The Firmware Engineer provides firmware development timeline estimates for the business case and GTM (Go-to-Market) planning, OTA (Over-the-Air) update-infrastructure operational-cost inputs, and RTOS (Real-Time Operating System) and third-party-library licensing-cost information; the Business Consultant provides business prioritization of firmware features (e.g., OTA capability prioritized for subscription-model viability), market-driven connectivity requirements (protocol-selection rationale), and RTOS licensing-constraint inputs (open-source vs. commercial RTOS business risk). Grounded in FIRMWARE_ENGINEER_SKILL §6.10. SOURCE NOTE: the edge is asymmetrically documented — BUSINESS_CONSULTANT_SKILL §6 has no Firmware subsection — so fields derive from the Firmware side; reciprocity holds via the shared GTM-planning exchange. No business figures are invented.",
+  "type": "object",
+  "properties": {
+    "firmware_estimates": {
+      "type": "object",
+      "description": "FW→BIZ: development-timeline estimates, OTA operating-cost inputs, licensing costs.",
+      "properties": {
+        "development_timeline": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "feature_ref": { "type": "string" },
+              "estimate": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., weeks." } }, "required": ["value", "unit"], "additionalProperties": false },
+              "confidence": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] }
+            },
+            "required": ["feature_ref", "estimate"],
+            "additionalProperties": false
+          }
+        },
+        "ota_opex_inputs": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "currency": { "type": "string" }, "unit": { "type": "string", "minLength": 1, "description": "e.g., per device per month." } }, "required": ["value", "currency", "unit"], "additionalProperties": false },
+        "licensing_costs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "component": { "type": "string" },
+              "license_type": { "type": "string", "enum": ["OPEN_SOURCE", "COMMERCIAL"] },
+              "cost": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "currency": { "type": "string" } }, "required": ["value", "currency"], "additionalProperties": false }
+            },
+            "required": ["component", "license_type"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["development_timeline"],
+      "additionalProperties": false
+    },
+    "business_priorities": {
+      "type": "object",
+      "description": "BIZ→FW: feature prioritization, connectivity requirements, RTOS licensing constraints.",
+      "properties": {
+        "feature_prioritization": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "feature_ref": { "type": "string" },
+              "business_priority": { "type": "string" },
+              "rationale": { "type": "string", "description": "e.g., OTA prioritized for subscription-model viability." }
+            },
+            "required": ["feature_ref", "business_priority"],
+            "additionalProperties": false
+          }
+        },
+        "connectivity_requirements": { "type": "array", "items": { "type": "string" } },
+        "rtos_licensing_constraint": { "type": "string", "enum": ["OPEN_SOURCE_PREFERRED", "COMMERCIAL_ACCEPTABLE", "NO_CONSTRAINT"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["firmware_estimates"] },
+    { "required": ["business_priorities"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "FW↔BIZ-001",
+    "producer_role": "FW",
+    "consumer_role": "BIZ",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine firmware effort-estimate / GTM-timeline exchange is agent-autonomous (at product feasibility and GTM planning; on-demand for roadmap prioritization). An estimate that proves infeasible against a committed market window is raised as an ADR, not silently absorbed.",
+    "cadence": "TRIGGER (at product feasibility and GTM planning stages; on-demand for roadmap prioritization)",
+    "confirm_conditions": [
+      "every development-timeline estimate carries a value and an explicit time unit",
+      "OTA operating-cost inputs carry value, currency, and unit; licensing costs carry a currency",
+      "BIZ feature prioritization is expressed as BIZ-supplied priorities (not firmware-invented)",
+      "estimate confidence is disclosed where requested for GTM commitment"
+    ],
+    "reject_conditions": [
+      "a timeline or cost figure emitted without an explicit unit/currency (units rule §3.10)",
+      "a firmware timeline committed to a GTM date known to be infeasible without an ADR flagging the risk (Never Silently Deviate)",
+      "a licensing-cost obligation (commercial RTOS/library) omitted from the business case"
+    ],
+    "counter_conditions": [
+      "an effort estimate requested without the prioritized feature scope — request the BIZ feature ranking before estimating",
+      "a market-driven connectivity requirement lacking a protocol rationale — request the selection rationale before sizing firmware effort"
+    ]
+  }
+}

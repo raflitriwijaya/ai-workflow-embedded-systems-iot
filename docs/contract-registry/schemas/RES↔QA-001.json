@@ -1,0 +1,106 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/RES↔QA-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RES↔QA-001: Testability Feedback on Research Artifacts + Field-Failure Data for Research",
+  "description": "The Researcher provides testable acceptance criteria with each Technology Transfer Pack (quantified, measurable criteria QA can independently verify — e.g., sensor SNR ≥ 45 dB under specified field conditions), test vectors and golden-reference outputs for transferred algorithms, documented known limitations and edge cases, and scientific context for complex validation scenarios; the QA & Test Automation Engineer provides testability feedback on research artifacts, validation-criteria gap analysis, independent verification of research claims (measured validation results), and field-failure data showing any gap between research-stage predictions and production reality. Grounded in IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL §6.10. The QA testability gap analysis is a soft pre-transfer gate; the binding production go/no-go remains QA's gate (see QA↔PO-001).",
+  "type": "object",
+  "properties": {
+    "research_test_artifacts": {
+      "type": "object",
+      "description": "RES→QA: testable acceptance criteria, test vectors, golden references, limitations.",
+      "properties": {
+        "ttp_ref": { "type": "string" },
+        "acceptance_criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "criterion_id": { "type": "string" },
+              "metric": { "type": "string", "description": "e.g., sensor SNR (Signal-to-Noise Ratio)." },
+              "comparator": { "type": "string", "enum": ["GTE", "LTE", "EQ", "RANGE"] },
+              "value": { "type": "number" },
+              "unit": { "type": "string", "minLength": 1, "description": "Explicit unit — criteria must be independently measurable (e.g., dB)." },
+              "conditions": { "type": "string", "description": "Specified field/environmental conditions for the measurement." }
+            },
+            "required": ["criterion_id", "metric", "comparator", "value", "unit"],
+            "additionalProperties": false
+          }
+        },
+        "test_vectors_provided": { "type": "boolean" },
+        "golden_reference_provided": { "type": "boolean" },
+        "known_limitations": { "type": "array", "items": { "type": "string" } },
+        "edge_cases": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["ttp_ref", "acceptance_criteria"],
+      "additionalProperties": false
+    },
+    "qa_research_feedback": {
+      "type": "object",
+      "description": "QA→RES: testability assessment, gap analysis, independent verification, field-failure data.",
+      "properties": {
+        "testability_assessment": { "type": "string", "enum": ["SUFFICIENT", "INSUFFICIENT"] },
+        "validation_criteria_gaps": { "type": "array", "items": { "type": "string" } },
+        "independent_verification": {
+          "type": "object",
+          "properties": {
+            "claim_ref": { "type": "string" },
+            "measured_result": { "type": "object", "properties": { "value": { "type": "number" }, "unit": { "type": "string", "minLength": 1 } }, "required": ["value", "unit"], "additionalProperties": false },
+            "verdict": { "type": "string", "enum": ["CONFIRMED", "REFUTED", "PARTIAL"] }
+          },
+          "additionalProperties": false
+        },
+        "field_failure_data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "defect_ref": { "type": "string" },
+              "research_prediction": { "type": "string" },
+              "production_reality": { "type": "string" },
+              "gap_significance": { "type": "string" }
+            },
+            "required": ["defect_ref"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["testability_assessment"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "testability_assessment": { "const": "INSUFFICIENT" } }, "required": ["testability_assessment"] },
+          "then": { "required": ["validation_criteria_gaps"], "properties": { "validation_criteria_gaps": { "minItems": 1 } } }
+        }
+      ]
+    }
+  },
+  "anyOf": [
+    { "required": ["research_test_artifacts"] },
+    { "required": ["qa_research_feedback"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "RES↔QA-001",
+    "producer_role": "RES",
+    "consumer_role": "QA",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine testability review and field-failure feedback is agent-autonomous (gap analysis within 10 business days; transfer validation within 15 business days). The QA gap analysis can require the Researcher to supplement before transfer is finalized; the binding production go/no-go remains QA's permanent gate (QA↔PO-001).",
+    "cadence": "TRIGGER + CALENDAR (testability review with gap analysis within 10 business days of TTP receipt; technology-transfer validation within 15 business days; research-relevant field-defect summaries in the quarterly Field Quality Report; ad hoc test-design consultation within 5 business days)",
+    "confirm_conditions": [
+      "every acceptance criterion is quantified — metric, comparator, value, and explicit unit (independently measurable)",
+      "test vectors and a golden reference are provided for any transferred algorithm",
+      "known limitations and edge cases are documented in the Technology Transfer Pack",
+      "an INSUFFICIENT testability assessment returns a concrete validation-criteria gap list"
+    ],
+    "reject_conditions": [
+      "an acceptance criterion stated without a quantified value + unit (untestable — e.g., 'high SNR' instead of 'SNR ≥ 45 dB')",
+      "field-failure data that softens or omits a research-prediction-vs-production-reality gap (Honesty Over Polish §10.3)",
+      "a productized research finding declared validated without measured independent-verification results"
+    ],
+    "counter_conditions": [
+      "a transferred algorithm lacks test vectors for parity validation — request the golden reference before validation",
+      "a complex validation scenario needs domain knowledge — request the scientific-context consultation before designing the test"
+    ]
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/RES↔BIZ-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RES↔BIZ-001: Research Commercialization Potential + Market-Driven Research Priorities",
+  "description": "The Researcher provides TRL (Technology Readiness Level) assessments for research outputs, transition-to-product timeline estimates for innovations, and IP (Intellectual Property) landscape assessments relevant to planned product features; the Business Consultant provides market-driven research priorities (which technology areas have the highest near-term commercial potential), business constraints on research timelines aligned with market windows, and competitive technology intelligence to direct research focus. Grounded in BUSINESS_CONSULTANT_SKILL §6.8. SOURCE NOTE: the edge is asymmetrically documented — IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL §6 has no Business Consultant subsection (its §6.8 is Executive Leadership/CTO) — so fields derive from the Business Consultant side; reciprocity holds via the quarterly research-to-product alignment. A HIGH license-risk finding triggers legal review (per TTP_SCHEMA).",
+  "type": "object",
+  "properties": {
+    "commercialization_potential": {
+      "type": "object",
+      "description": "RES→BIZ: TRL, transition timeline, and IP-landscape assessment per research output.",
+      "properties": {
+        "research_outputs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "output_id": { "type": "string" },
+              "trl": { "type": "integer", "minimum": 1, "maximum": 9 },
+              "transition_to_product_timeline": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., months." } }, "required": ["value", "unit"], "additionalProperties": false },
+              "ip_landscape": {
+                "type": "object",
+                "properties": {
+                  "assessment": { "type": "string" },
+                  "license_risk": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+                  "freedom_to_operate": { "type": "string", "enum": ["CLEAR", "ENCUMBERED", "UNKNOWN"] },
+                  "legal_review_required": { "type": "boolean", "description": "Must be true when license_risk = HIGH (TTP_SCHEMA: HIGH license risk → legal review)." }
+                },
+                "required": ["license_risk"],
+                "additionalProperties": false,
+                "allOf": [
+                  {
+                    "if": { "properties": { "license_risk": { "const": "HIGH" } }, "required": ["license_risk"] },
+                    "then": { "required": ["legal_review_required"], "properties": { "legal_review_required": { "const": true } } }
+                  }
+                ]
+              }
+            },
+            "required": ["output_id", "trl"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["research_outputs"],
+      "additionalProperties": false
+    },
+    "market_research_priorities": {
+      "type": "object",
+      "description": "BIZ→RES: prioritized technology areas, timeline constraints, competitive intelligence.",
+      "properties": {
+        "priorities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "tech_area": { "type": "string" },
+              "commercial_potential": { "type": "string", "enum": ["HIGH", "MEDIUM", "LOW"] },
+              "market_window": { "type": "string" }
+            },
+            "required": ["tech_area", "commercial_potential"],
+            "additionalProperties": false
+          }
+        },
+        "timeline_constraints": { "type": "string" },
+        "competitive_intelligence": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["commercialization_potential"] },
+    { "required": ["market_research_priorities"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "RES↔BIZ-001",
+    "producer_role": "RES",
+    "consumer_role": "BIZ",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine commercialization-potential / research-priority alignment is agent-autonomous (quarterly research-to-product alignment; on-demand feasibility). A HIGH license-risk finding routes to legal review; commercialization that would seed a STRATEGIC product/technology bet is governed by the ADR/BIA process.",
+    "cadence": "TRIGGER (quarterly research-to-product alignment sessions; on-demand for technology-feasibility assessments)",
+    "confirm_conditions": [
+      "each research output carries a TRL (1–9) and a transition timeline with an explicit unit",
+      "the IP-landscape assessment states a license_risk and freedom_to_operate",
+      "a HIGH license-risk output flags legal_review_required = true",
+      "market priorities are BIZ-supplied (not researcher-invented commercial claims)"
+    ],
+    "reject_conditions": [
+      "a HIGH license-risk finding presented as product-ready without legal review (TTP_SCHEMA gate)",
+      "a TRL or transition timeline asserted without measured/characterized basis, or a timeline without a unit (units rule §3.10)",
+      "a commercialization recommendation that overstates readiness beyond the measured TRL (Honesty Over Polish §10.3)"
+    ],
+    "counter_conditions": [
+      "a market priority lacks a market-window date — request the window before sequencing research",
+      "an IP-landscape assessment is requested without the target product feature — request the feature scope before assessing freedom-to-operate"
+    ]
+  }
+}

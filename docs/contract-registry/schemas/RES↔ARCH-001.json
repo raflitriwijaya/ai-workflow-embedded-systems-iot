@@ -1,0 +1,108 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/RES↔ARCH-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RES↔ARCH-001: Technology Transfer Review + Long-Term Architecture Roadmap for Research",
+  "description": "The Embedded Systems Architect provides the long-term architecture roadmap (platform-evolution direction, planned protocol/technology shifts, technology-horizon challenges and architectural constraints that seed research), engineering-feasibility feedback on research findings at PoC (Proof-of-Concept) review, system-level constraints for experimental design, and ADR notifications with research implications; the Researcher provides Technology Transfer Packs, Feasibility Assessment Reports for novel sensing/communication/computation paradigms, and PoC demonstrations with characterized performance metrics. Grounded in EMBEDDED_SYSTEMS_ARCHITECT_SKILL §6.12 and IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL §6.1. The Technology Transfer Pack artifact itself (TRL ≥ 5 transfer gate) is schematized separately as RES↔ARCH-TTP-001 (cross-referenced, not duplicated here); this contract carries the bilateral review-verdict + roadmap exchange.",
+  "type": "object",
+  "properties": {
+    "architecture_roadmap_for_research": {
+      "type": "object",
+      "description": "ARCH→RES: long-term roadmap + system-level constraints seeding research.",
+      "properties": {
+        "roadmap_horizon_years": { "type": "number", "minimum": 0 },
+        "platform_evolution_direction": { "type": "string" },
+        "planned_protocol_shifts": { "type": "array", "items": { "type": "string" } },
+        "technology_horizon_challenges": { "type": "array", "items": { "type": "string" } },
+        "system_level_constraints": {
+          "type": "object",
+          "description": "Resource budgets the Researcher designs experiments against (for eventual technology transfer).",
+          "properties": {
+            "power_budget": { "type": "object", "properties": { "value": { "type": "number" }, "unit": { "type": "string", "minLength": 1 } }, "required": ["value", "unit"], "additionalProperties": false },
+            "form_factor": { "type": "string" },
+            "comm_bandwidth": { "type": "object", "properties": { "value": { "type": "number" }, "unit": { "type": "string", "minLength": 1 } }, "required": ["value", "unit"], "additionalProperties": false },
+            "latency": { "type": "object", "properties": { "value": { "type": "number" }, "unit": { "type": "string", "minLength": 1 } }, "required": ["value", "unit"], "additionalProperties": false },
+            "cost_target": { "type": "object", "properties": { "value": { "type": "number" }, "currency": { "type": "string" } }, "required": ["value", "currency"], "additionalProperties": false }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "technology_transfer_review": {
+      "type": "object",
+      "description": "ARCH→RES: written feasibility verdict on a submitted Technology Transfer Pack (provided ≥1 week before the review).",
+      "properties": {
+        "ttp_ref": { "type": "string" },
+        "feasibility_verdict": { "type": "string", "enum": ["FEASIBLE", "FEASIBLE_WITH_ARCHITECTURE_CHANGES", "INFEASIBLE"] },
+        "identified_gaps": { "type": "array", "items": { "type": "string" } },
+        "required_architecture_changes": { "type": "array", "items": { "type": "string" } },
+        "assessment_delivered_business_days_before_review": { "type": "integer", "minimum": 0, "description": "Architect provides written feasibility assessment ≥1 week (≥5 business days) before the review meeting." }
+      },
+      "required": ["ttp_ref", "feasibility_verdict"],
+      "additionalProperties": false,
+      "allOf": [
+        { "if": { "properties": { "feasibility_verdict": { "const": "FEASIBLE_WITH_ARCHITECTURE_CHANGES" } }, "required": ["feasibility_verdict"] }, "then": { "required": ["required_architecture_changes"], "properties": { "required_architecture_changes": { "minItems": 1 } } } },
+        { "if": { "properties": { "feasibility_verdict": { "const": "INFEASIBLE" } }, "required": ["feasibility_verdict"] }, "then": { "required": ["identified_gaps"], "properties": { "identified_gaps": { "minItems": 1 } } } }
+      ]
+    },
+    "adr_research_notification": {
+      "type": "object",
+      "description": "ARCH→RES: ADR with research implications, notified within 5 business days of acceptance.",
+      "properties": {
+        "adr_ref": { "type": "string", "pattern": "^ADR-\\d{4}$" },
+        "notified_within_business_days": { "type": "integer", "minimum": 0, "maximum": 5 }
+      },
+      "required": ["adr_ref"],
+      "additionalProperties": false
+    },
+    "research_submission": {
+      "type": "object",
+      "description": "RES→ARCH: TTP + PoC artifacts submitted ≥3 weeks before the quarterly Technology Transfer Review.",
+      "properties": {
+        "ttp_ref": { "type": "string" },
+        "trl": { "type": "integer", "minimum": 1, "maximum": 9, "description": "Technology Readiness Level; TRL ≥ 5 required to transfer (see RES↔ARCH-TTP-001)." },
+        "intent_to_transfer": { "type": "boolean" },
+        "feasibility_assessment_reports": { "type": "array", "items": { "type": "string" } },
+        "poc_demos": { "type": "array", "items": { "type": "object", "properties": { "metric_name": { "type": "string" }, "value": { "type": "number" }, "unit": { "type": "string", "minLength": 1 } }, "required": ["metric_name", "value", "unit"], "additionalProperties": false } },
+        "submitted_weeks_before_review": { "type": "number", "minimum": 0 }
+      },
+      "required": ["ttp_ref", "trl"],
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["architecture_roadmap_for_research"] },
+    { "required": ["technology_transfer_review"] },
+    { "required": ["research_submission"] }
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "research_submission": { "properties": { "intent_to_transfer": { "const": true } }, "required": ["intent_to_transfer"] } }, "required": ["research_submission"] },
+      "then": { "properties": { "research_submission": { "properties": { "trl": { "minimum": 5 } } } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "RES↔ARCH-001",
+    "producer_role": "ARCH",
+    "consumer_role": "RES",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Technology-transfer feasibility review can gate productization (the Technology Transfer Pack requires TRL ≥ 5 to transfer — RES↔ARCH-TTP-001) and the long-term roadmap is strategic and ARB-relevant. Binding transfer decisions are ratified by humans.",
+    "cadence": "CALENDAR + TRIGGER (quarterly Technology Transfer Review — first Tuesday Feb/May/Aug/Nov; TTP submitted ≥3 weeks before, written feasibility ≥1 week before; annual Long-term Architecture Roadmap Briefing first Tuesday March; ADR research-implication notification within 5 business days; ad hoc scientific consultation within 5 business days)",
+    "confirm_conditions": [
+      "a feasibility verdict references a Technology Transfer Pack (ttp_ref)",
+      "FEASIBLE_WITH_ARCHITECTURE_CHANGES enumerates the required architecture changes; INFEASIBLE enumerates the gaps",
+      "system-level constraints and PoC demo metrics each carry an explicit unit",
+      "ADR with research implications notified within 5 business days of acceptance"
+    ],
+    "reject_conditions": [
+      "a research finding marked for transfer with TRL < 5 (violates the TTP transfer gate — see RES↔ARCH-TTP-001)",
+      "a PoC metric or system-level constraint emitted without a unit (units rule §3.10)",
+      "a roadmap, platform, protocol, or budget change requiring an ADR recorded without one (Never Silently Deviate)"
+    ],
+    "counter_conditions": [
+      "a Technology Transfer Pack submitted < 3 weeks before the review — request rescheduling or a scoped interim review (max 2/quarter)",
+      "a feasibility assessment requested without characterized PoC metrics — request the performance characterization before a verdict"
+    ]
+  }
+}

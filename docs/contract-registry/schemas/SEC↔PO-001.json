@@ -1,0 +1,97 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/SEC↔PO-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SEC↔PO-001: Security Posture for Release Planning + Compliance Milestone Tracking",
+  "description": "The Security Engineer provides security risk assessments, required pre-release mitigations, compliance constraints affecting scope/timeline, compliance-milestone status, and the release security sign-off (which can block a release); the Product Owner/TPM provides visibility into features touching connectivity, data handling, or OTA (Over-the-Air) delivery that may carry security implications, plus schedule context for security work. Grounded in SECURITY_ENGINEER_SKILL §6.9 and PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL §6.11. The release security sign-off is a permanent HITL gate (HG-01): a BLOCKED sign-off is not overridable by the PO/TPM without the Security Engineer's explicit clearance.",
+  "type": "object",
+  "properties": {
+    "security_release_posture": {
+      "type": "object",
+      "description": "SEC→PO: risk assessment, mitigations, compliance milestones, and the release security sign-off.",
+      "properties": {
+        "release_security_signoff": { "type": "string", "enum": ["APPROVED", "CONDITIONAL", "BLOCKED"], "description": "Per-release security sign-off; can block the release (HG-01)." },
+        "security_risk_assessment": { "type": "string" },
+        "required_pre_release_mitigations": { "type": "array", "items": { "type": "string" } },
+        "compliance_constraints": { "type": "array", "items": { "type": "string" }, "description": "Compliance constraints affecting scope/timeline." },
+        "open_findings": {
+          "type": "object",
+          "properties": {
+            "critical": { "type": "integer", "minimum": 0 },
+            "high": { "type": "integer", "minimum": 0 }
+          },
+          "required": ["critical", "high"],
+          "additionalProperties": false
+        },
+        "compliance_milestones": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "milestone": { "type": "string" },
+              "target_date": { "type": "string", "description": "YYYY-MM-DD." },
+              "status": { "type": "string", "enum": ["ON_TRACK", "AT_RISK", "MISSED"] }
+            },
+            "required": ["milestone", "status"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["release_security_signoff"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "release_security_signoff": { "const": "CONDITIONAL" } }, "required": ["release_security_signoff"] },
+          "then": { "required": ["required_pre_release_mitigations"], "properties": { "required_pre_release_mitigations": { "minItems": 1 } } }
+        }
+      ]
+    },
+    "release_planning_visibility": {
+      "type": "object",
+      "description": "PO→SEC: features touching security-relevant surfaces + schedule context.",
+      "properties": {
+        "features_touching_security": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "feature_ref": { "type": "string" },
+              "surface": { "type": "string", "enum": ["CONNECTIVITY", "DATA_HANDLING", "OTA"], "description": "Surface that triggers mandatory SEC consultation." }
+            },
+            "required": ["feature_ref", "surface"],
+            "additionalProperties": false
+          }
+        },
+        "schedule_context": { "type": "string" },
+        "target_release": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["security_release_posture"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "SEC↔PO-001",
+    "producer_role": "SEC",
+    "consumer_role": "PO",
+    "decision_tier": "Tier-1",
+    "tier_rationale": "The release security sign-off is the Security Engineer Release Veto (HG-01) — a permanent HITL gate. A BLOCKED sign-off halts the release and is not overridable by the PO/TPM (or CTO) without the Security Engineer's explicit clearance. ESC-SEC applies: agents may only propose; SEC owns all binding decisions here. Zero autonomous resolution.",
+    "escalation_triggers": ["ESC-SEC", "ESC-TIER1"],
+    "cadence": "TRIGGER (mandatory consultation for any feature involving new connectivity, data flows, or OTA mechanisms; per-release security sign-off)",
+    "confirm_conditions": [
+      "release_security_signoff = APPROVED, or CONDITIONAL with the required pre-release mitigations enumerated and logged",
+      "every feature touching connectivity, data handling, or OTA was routed to SEC for the mandatory consultation",
+      "open critical/high findings are disclosed honestly",
+      "compliance milestones carry a status (and a target date where committed)"
+    ],
+    "reject_conditions": [
+      "a BLOCKED security sign-off presented as release-ready (gates the release — ESC-SEC / ESC-TIER1)",
+      "the PO/TPM overriding a SEC BLOCKED sign-off without the Security Engineer's explicit clearance (HG-01 — forbidden)",
+      "a feature touching connectivity, data handling, or OTA scheduled for release without the mandatory SEC sign-off",
+      "a change weakening the security baseline cleared without SEC sign-off and an ADR (Never Silently Deviate; ESC-SEC)"
+    ],
+    "counter_conditions": [
+      "a CONDITIONAL sign-off — request the remediation conditions be logged to the §3.3 checklist before proceeding (do not self-clear)",
+      "a compliance milestone lacks a committed target date — request the date before building the release plan around it"
+    ]
+  }
+}
