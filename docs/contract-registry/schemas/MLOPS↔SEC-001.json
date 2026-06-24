@@ -1,0 +1,81 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/MLOPS↔SEC-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MLOPS↔SEC-001: Model Artifact Signing + Supply-Chain Integrity",
+  "description": "Security provides model-signing and integrity requirements, supply-chain integrity rules, and pipeline-security requirements; MLOps implements pipeline RBAC, artifact signing, and secrets handling to the baseline, returning conformance evidence. Grounded in SECURITY_ENGINEER_SKILL §6.6 and MLOPS_ENGINEER_SKILL §6.7. Model signing is part of the OTA security baseline; SEC veto can block any release weakening model signing or anti-rollback.",
+  "type": "object",
+  "properties": {
+    "security_requirements": {
+      "type": "object",
+      "description": "SEC→MLOPS: signing + supply-chain + pipeline-security baseline.",
+      "properties": {
+        "model_signing_required": { "type": "boolean", "const": true, "description": "Model artifacts must be signed (always true in the baseline)." },
+        "signing_algorithm": { "type": "string", "description": "Required signing scheme (e.g., ECDSA-P256, Ed25519)." },
+        "supply_chain_rules": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "Supply-chain integrity rules (provenance, SBOM, pinned dependencies)." },
+        "pipeline_rbac_required": { "type": "boolean" },
+        "secrets_via_vault_required": { "type": "boolean", "const": true, "description": "Secrets handled via HashiCorp Vault references only — never inline." }
+      },
+      "required": ["model_signing_required", "supply_chain_rules", "secrets_via_vault_required"],
+      "additionalProperties": false
+    },
+    "mlops_conformance": {
+      "type": "object",
+      "description": "MLOPS→SEC: implementation conformance evidence.",
+      "properties": {
+        "artifact_signing_implemented": { "type": "boolean", "description": "Must be true to conform." },
+        "signature_verified_at_dispatch": { "type": "boolean", "description": "OTA dispatch verifies the model signature (links FW↔DEVOPS-001 / OTA loop)." },
+        "sbom_attached": { "type": "boolean" },
+        "rbac_implemented": { "type": "boolean" },
+        "inline_secrets_present": { "type": "boolean", "description": "Must be false — any literal secret/key material is rejected." },
+        "model_anti_rollback_counter": { "type": "boolean", "description": "Per-model monotonic version counter present (mitigates FC-026 model anti-rollback residual risk)." },
+        "open_findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "finding_id": { "type": "string" },
+              "severity": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+              "remediation_due_date": { "type": ["string", "null"], "format": "date" }
+            },
+            "required": ["finding_id", "severity"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["artifact_signing_implemented", "inline_secrets_present"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["security_requirements"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "mlops_conformance": { "type": "object" } }, "required": ["mlops_conformance"] },
+      "then": { "properties": { "mlops_conformance": { "properties": { "artifact_signing_implemented": { "const": true }, "inline_secrets_present": { "const": false } } } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "MLOPS↔SEC-001",
+    "producer_role": "SEC",
+    "consumer_role": "MLOPS",
+    "decision_tier": "Tier-1",
+    "tier_rationale": "Model artifact signing and supply-chain integrity are part of the OTA security baseline behind HG-01 (SEC release veto). ESC-SEC: agents may only propose; SEC owns binding decisions. Touches FC-026 (model anti-rollback residual risk).",
+    "escalation_triggers": ["ESC-SEC", "ESC-TIER1"],
+    "cadence": "TRIGGER (baseline handoff at planning; pipeline-security implementation review; pre-production sign-off)",
+    "confirm_conditions": [
+      "security_requirements pins model_signing_required = true, ≥1 supply_chain_rule, and secrets_via_vault_required = true",
+      "mlops_conformance.artifact_signing_implemented = true and inline_secrets_present = false",
+      "signature_verified_at_dispatch = true (OTA verifies the signature)",
+      "model_anti_rollback_counter = true (mitigates FC-026); CRITICAL/HIGH findings carry a remediation_due_date"
+    ],
+    "reject_conditions": [
+      "any inline_secrets_present = true (literal secret/key material — never accept; Vault references only)",
+      "artifact_signing_implemented = false on a release path (baseline violation → ESC-SEC, HG-01)",
+      "model signing or anti-rollback weakened without an ADR + SEC sign-off"
+    ],
+    "counter_conditions": [
+      "signing algorithm proposal differs from the device-side verifier — request FW/SEC alignment before adoption",
+      "SBOM incomplete for a transitive dependency — request completion before pre-production sign-off"
+    ]
+  }
+}

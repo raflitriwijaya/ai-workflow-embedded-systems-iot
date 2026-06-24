@@ -1,0 +1,72 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/QA↔PO-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QA↔PO-001: Release-Readiness Assessment + Quality-Gate Status",
+  "description": "QA provides quality and release-readiness status, coverage/defect reporting, and a sign-off recommendation; Product Owner/TPM provides acceptance criteria, prioritization, and the release gates/criteria. Grounded in QA_TEST_AUTOMATION_ENGINEER_SKILL §6.8 and PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL §6.10. The QA go/no-go is a permanent HITL gate: a NO-GO halts the lifecycle and is not autonomously overridable.",
+  "type": "object",
+  "properties": {
+    "release_readiness": {
+      "type": "object",
+      "description": "QA→PO: readiness assessment + recommendation.",
+      "properties": {
+        "go_no_go_recommendation": { "type": "string", "enum": ["GO", "NO_GO", "GO_WITH_CONDITIONS"] },
+        "coverage_pct": { "type": "number", "minimum": 0, "maximum": 100, "description": "Test coverage in %." },
+        "open_defects": {
+          "type": "object",
+          "properties": {
+            "critical": { "type": "integer", "minimum": 0 },
+            "high": { "type": "integer", "minimum": 0 },
+            "medium": { "type": "integer", "minimum": 0 }
+          },
+          "required": ["critical", "high"],
+          "additionalProperties": false
+        },
+        "open_critical_fmea_chains": { "type": "integer", "minimum": 0, "description": "Open Critical FMEA chains (RPN ≥ 200) with no mitigation — must be 0 to ship (Prime Directive §10.1)." },
+        "conditions": { "type": "array", "items": { "type": "string" }, "description": "Required when recommendation = GO_WITH_CONDITIONS." }
+      },
+      "required": ["go_no_go_recommendation", "open_defects"],
+      "additionalProperties": false
+    },
+    "release_criteria": {
+      "type": "object",
+      "description": "PO→QA: acceptance criteria + release gates.",
+      "properties": {
+        "acceptance_criteria_ref": { "type": "string" },
+        "release_gates": { "type": "array", "items": { "type": "string" } },
+        "prioritization": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["release_readiness"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "release_readiness": { "properties": { "go_no_go_recommendation": { "const": "GO_WITH_CONDITIONS" } }, "required": ["go_no_go_recommendation"] } }, "required": ["release_readiness"] },
+      "then": { "properties": { "release_readiness": { "properties": { "conditions": { "minItems": 1 } }, "required": ["conditions"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "QA↔PO-001",
+    "producer_role": "QA",
+    "consumer_role": "PO",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "QA owns the go/no-go gate (permanent HITL). A QA NO_GO halts the lifecycle for the affected component and is not overridable by PO; the binding release decision is ratified by humans.",
+    "cadence": "TRIGGER + CONTINUOUS (acceptance-criteria intake; milestone quality reviews; mandatory sign-off checkpoint before any go/no-go release decision)",
+    "confirm_conditions": [
+      "release_readiness carries a go_no_go_recommendation and open_defects counts",
+      "coverage_pct reported honestly with its % unit",
+      "open_critical_fmea_chains = 0 and open critical defects = 0 for a GO",
+      "GO_WITH_CONDITIONS enumerates the conditions"
+    ],
+    "reject_conditions": [
+      "a GO recommended with open Critical FMEA chains (RPN ≥ 200) or open CRITICAL defects (violates Prime Directive §10.1)",
+      "PO overriding a QA NO_GO without QA clearance (bypasses the go/no-go gate — forbidden)",
+      "coverage or defect counts softened/rounded to clear a gate (Honesty Over Polish, §10.3)"
+    ],
+    "counter_conditions": [
+      "acceptance criteria untestable as written — request measurable criteria before the readiness assessment",
+      "release gate definition incomplete — request the full gate list before sign-off"
+    ]
+  }
+}

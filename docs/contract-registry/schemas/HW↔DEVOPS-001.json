@@ -1,0 +1,64 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/HW↔DEVOPS-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HW↔DEVOPS-001: Device Provisioning + Production-Programming Hooks",
+  "description": "Hardware supplies the programming/provisioning interface, board identifiers, production-programming hooks, and field-diagnostics access; DevOps provides device provisioning and enrollment, production-programming integration, and fleet onboarding. Grounded in DEVOPS_PLATFORM_ENGINEER_SKILL §6.7.",
+  "type": "object",
+  "properties": {
+    "programming_interface": {
+      "type": "object",
+      "description": "HW→DEVOPS: programming/provisioning interface + board identity.",
+      "properties": {
+        "interface_type": { "type": "string", "enum": ["SWD", "JTAG", "UART_BOOTLOADER", "ISP", "CUSTOM"], "description": "Production-programming interface." },
+        "board_identifier_scheme": { "type": "string", "description": "Board/unit identifier scheme used at enrollment." },
+        "production_programming_hooks": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "Hooks exposed for production programming." },
+        "field_diagnostics_access": { "type": "string", "description": "Field-diagnostics access mechanism/needs." }
+      },
+      "required": ["interface_type", "board_identifier_scheme", "production_programming_hooks"],
+      "additionalProperties": false
+    },
+    "provisioning_system": {
+      "type": "object",
+      "description": "DEVOPS→HW: provisioning/enrollment + onboarding.",
+      "properties": {
+        "provisioning_flow": { "type": "string", "description": "Provisioning and enrollment flow." },
+        "fleet_onboarding_validated": { "type": "boolean" },
+        "injects_cryptographic_identity": { "type": "boolean", "description": "True if provisioning injects device keys/certificates — a security-baseline touchpoint (ESC-SEC; governed by BACK↔SEC-001 / HW↔SEC-001)." },
+        "sec_escalation_ref": { "type": ["string", "null"], "description": "Required when injects_cryptographic_identity = true: reference to the SEC review/approval (SIRC or ADR)." }
+      },
+      "required": ["provisioning_flow"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["programming_interface"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "provisioning_system": { "properties": { "injects_cryptographic_identity": { "const": true } }, "required": ["injects_cryptographic_identity"] } }, "required": ["provisioning_system"] },
+      "then": { "properties": { "provisioning_system": { "required": ["sec_escalation_ref"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "HW↔DEVOPS-001",
+    "producer_role": "HW",
+    "consumer_role": "DEVOPS",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Mechanical provisioning/onboarding is agent-autonomous. If provisioning injects cryptographic device identity (keys/X.509 certificates), that is part of the mandatory security baseline and escalates to SEC (ESC-SEC, Tier-1) under HW↔SEC-001 / BACK↔SEC-001.",
+    "cadence": "TRIGGER (provisioning-interface alignment at planning; production-programming setup before manufacturing; onboarding validation)",
+    "confirm_conditions": [
+      "programming_interface declares interface_type, board_identifier_scheme, and ≥1 production_programming_hook",
+      "provisioning_flow defined and fleet_onboarding_validated before manufacturing",
+      "if injects_cryptographic_identity = true, a sec_escalation_ref is present",
+      "field-diagnostics access aligned with the debug-port lockdown policy (HW↔SEC-001)"
+    ],
+    "reject_conditions": [
+      "cryptographic-identity injection without a SEC review reference (ESC-SEC — security baseline)",
+      "field-diagnostics access that re-opens a locked debug port without SEC sign-off",
+      "production-programming setup finalized without a validated provisioning flow"
+    ],
+    "counter_conditions": [
+      "programming hook conflicts with the debug-port lockdown — request a joint HW/SEC review before manufacturing setup",
+      "board identifier scheme not unique at fleet scale — request a collision-safe scheme"
+    ]
+  }
+}

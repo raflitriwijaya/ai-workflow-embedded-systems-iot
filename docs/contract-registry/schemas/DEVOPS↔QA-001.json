@@ -1,0 +1,70 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/DEVOPS↔QA-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DEVOPS↔QA-001: CI Test Environments + Quality Gates",
+  "description": "DevOps provides CI/CD test stages, test environments, and HIL (Hardware-in-the-Loop) infrastructure integrated into the pipeline; QA provides the test suites, test-automation requirements, and the quality gates to enforce. Grounded in DEVOPS_PLATFORM_ENGINEER_SKILL §6.6 and QA_TEST_AUTOMATION_ENGINEER_SKILL §6.4.",
+  "type": "object",
+  "properties": {
+    "ci_test_infrastructure": {
+      "type": "object",
+      "description": "DEVOPS→QA: pipeline test stages + environments.",
+      "properties": {
+        "test_stages": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "Ordered CI/CD test stages." },
+        "test_environments": { "type": "array", "items": { "type": "string", "enum": ["unit", "integration", "staging", "hil", "e2e"] } },
+        "hil_integrated": { "type": "boolean", "description": "Whether HIL infrastructure is integrated into the pipeline." }
+      },
+      "required": ["test_stages"],
+      "additionalProperties": false
+    },
+    "quality_gates": {
+      "type": "object",
+      "description": "QA→DEVOPS: gates to enforce in the pipeline.",
+      "properties": {
+        "gates": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "gate_id": { "type": "string" },
+              "metric": { "type": "string", "description": "Enforced metric (e.g., coverage_pct, defect_escape_rate)." },
+              "threshold": { "type": "number", "description": "Pass threshold." },
+              "unit": { "type": "string", "minLength": 1, "description": "Explicit unit (%, count, ms)." },
+              "blocking": { "type": "boolean", "description": "True ⇒ a failing gate halts the pipeline (release-gate enforcement)." }
+            },
+            "required": ["gate_id", "metric", "threshold", "unit", "blocking"],
+            "additionalProperties": false
+          }
+        },
+        "test_automation_requirements": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["gates"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["ci_test_infrastructure"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "DEVOPS↔QA-001",
+    "producer_role": "DEVOPS",
+    "consumer_role": "QA",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "CI test-stage integration is agent-autonomous. A blocking quality gate enforces the QA go/no-go (permanent HITL) at release time — a gate failure is not autonomously overridable.",
+    "cadence": "TRIGGER (test-stage definition at planning; CI test-automation integration during development; release-gate enforcement)",
+    "confirm_conditions": [
+      "ci_test_infrastructure declares ≥1 test_stage and the required environments",
+      "every quality gate carries a metric, threshold, explicit unit, and a blocking flag",
+      "HIL-dependent suites have hil_integrated = true",
+      "blocking gates are wired to halt the pipeline on failure"
+    ],
+    "reject_conditions": [
+      "a quality gate threshold without a unit (violates §3.10)",
+      "a blocking gate downgraded to non-blocking without QA authority (bypasses the go/no-go)",
+      "release-gate enforcement requested while a blocking gate is red"
+    ],
+    "counter_conditions": [
+      "requested HIL environment not yet provisionable — request a provisioning timeline before committing the stage",
+      "gate threshold not measurable in the current pipeline — request an instrumentation hook first"
+    ]
+  }
+}

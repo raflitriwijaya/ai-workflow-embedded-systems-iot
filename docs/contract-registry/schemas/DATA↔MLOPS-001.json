@@ -1,0 +1,72 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/DATA↔MLOPS-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DATA↔MLOPS-001: Dataset Versioning + Lineage at the Model Boundary",
+  "description": "Data provides versioned datasets, in-pipeline data validation, and lineage at the model boundary; MLOps provides the dataset-versioning integration approach and the data requirements derived from training and retraining. Grounded in DATA_ENGINEER_SKILL §6.3 and MLOPS_ENGINEER_SKILL §6.4.",
+  "type": "object",
+  "properties": {
+    "dataset_delivery": {
+      "type": "object",
+      "description": "DATA→MLOPS: versioned dataset + lineage.",
+      "properties": {
+        "dataset_id": { "type": "string" },
+        "dvc_version": { "type": "string", "description": "DVC (Data Version Control) snapshot version." },
+        "in_pipeline_validation_passed": { "type": "boolean", "description": "In-pipeline data validation result." },
+        "lineage": {
+          "type": "object",
+          "description": "Lineage at the model boundary (source → transform → training set).",
+          "properties": {
+            "source_refs": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+            "transform_steps": { "type": "array", "items": { "type": "string" } },
+            "lineage_complete": { "type": "boolean", "description": "True only if every training record is traceable to a source (no untracked data)." }
+          },
+          "required": ["source_refs", "lineage_complete"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["dataset_id", "dvc_version", "lineage"],
+      "additionalProperties": false
+    },
+    "mlops_requirements": {
+      "type": "object",
+      "description": "MLOPS→DATA: versioning-integration approach + training data requirements.",
+      "properties": {
+        "versioning_integration_approach": { "type": "string" },
+        "training_data_requirements": { "type": "array", "items": { "type": "string" } },
+        "retraining_trigger": { "type": "string", "description": "What triggers a retraining-data pull (schedule, drift, new labels)." }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["dataset_delivery"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "dataset_delivery": { "properties": { "lineage": { "properties": { "lineage_complete": { "const": true } }, "required": ["lineage_complete"] } }, "required": ["lineage"] } }, "required": ["dataset_delivery"] },
+      "then": { "properties": { "dataset_delivery": { "properties": { "lineage": { "properties": { "source_refs": { "minItems": 1 } }, "required": ["source_refs", "transform_steps"] } } } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "DATA↔MLOPS-001",
+    "producer_role": "DATA",
+    "consumer_role": "MLOPS",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine dataset versioning/lineage exchange is agent-autonomous. Lineage feeds the closed-loop retraining path; a lineage gap that re-baselines a drift monitor on contaminated data is an FC-022 escalation (Tier-2).",
+    "cadence": "TRIGGER (versioning-integration alignment at planning; data-pipeline integration during development; retraining-data reviews)",
+    "confirm_conditions": [
+      "dataset_delivery carries a dataset_id and a dvc_version",
+      "lineage has ≥1 source_ref and lineage_complete with traceable transform steps",
+      "in_pipeline_validation_passed = true before the dataset crosses the model boundary",
+      "retraining-data requirements acknowledged"
+    ],
+    "reject_conditions": [
+      "lineage_complete = true while transform_steps or source_refs are absent (untraceable training data)",
+      "dataset promoted to training without a DVC version (irreproducible)",
+      "a CRITICAL/HIGH DQIR open against the dataset (blocks the training pipeline — see ML↔DATA-DQIR-002)"
+    ],
+    "counter_conditions": [
+      "retraining trigger draws from a window that may include drifted production data — request provenance review (FC-022)",
+      "feature definitions changed since last version — request a feature-spec diff before retraining"
+    ]
+  }
+}

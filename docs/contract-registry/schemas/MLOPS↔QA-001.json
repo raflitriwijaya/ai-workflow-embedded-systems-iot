@@ -1,0 +1,88 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/MLOPS↔QA-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MLOPS↔QA-001: Pipeline Validation + Drift-Trigger Verification",
+  "description": "MLOps provides pipeline test hooks, staging deployments for validation, and enforced validation gates; QA returns validation test results, deployment-dry-run validation, and drift-trigger verification. Grounded in MLOPS_ENGINEER_SKILL §6.6. (QA §6 has no MLOps subsection; this edge is grounded from the MLOps side.) Drift-trigger verification addresses erosion-shaped failure (FMEA FC-022 closed-loop drift).",
+  "type": "object",
+  "properties": {
+    "pipeline_validation_surface": {
+      "type": "object",
+      "description": "MLOPS→QA: hooks, staging, and gates.",
+      "properties": {
+        "test_hooks": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "staging_deployment_available": { "type": "boolean" },
+        "validation_gates": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "gate_id": { "type": "string" },
+              "metric": { "type": "string" },
+              "threshold": { "type": "number" },
+              "unit": { "type": "string", "minLength": 1 },
+              "blocking": { "type": "boolean" }
+            },
+            "required": ["gate_id", "metric", "threshold", "unit", "blocking"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["test_hooks", "validation_gates"],
+      "additionalProperties": false
+    },
+    "qa_verification": {
+      "type": "object",
+      "description": "QA→MLOPS: validation outcomes + drift-trigger verification.",
+      "properties": {
+        "validation_result": { "type": "string", "enum": ["PASS", "FAIL"] },
+        "deployment_dry_run": { "type": "string", "enum": ["PASS", "FAIL", "NOT_RUN"] },
+        "drift_trigger_verification": {
+          "type": "object",
+          "description": "Verification that drift triggers fire correctly (erosion-shaped detection).",
+          "properties": {
+            "drift_metric": { "type": "string", "description": "Monitored drift metric (e.g., accuracy delta vs. baseline, PSI)." },
+            "trigger_threshold": { "type": "number", "description": "Threshold that should fire a retrain/alert." },
+            "unit": { "type": "string", "minLength": 1 },
+            "trigger_fires_correctly": { "type": "boolean", "description": "Verified that the trigger fires at the threshold (no silent erosion)." }
+          },
+          "required": ["drift_metric", "trigger_threshold", "unit", "trigger_fires_correctly"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["validation_result"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["pipeline_validation_surface"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "qa_verification": { "properties": { "validation_result": { "const": "PASS" } }, "required": ["validation_result"] } }, "required": ["qa_verification"] },
+      "then": { "properties": { "qa_verification": { "required": ["drift_trigger_verification"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "MLOPS↔QA-001",
+    "producer_role": "MLOPS",
+    "consumer_role": "QA",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Pipeline validation gates feed the release-gate sign-off and the QA go/no-go. Drift-trigger verification guards the closed-loop retraining path (FC-022) — a silently-eroding monitor is a Critical-chain risk.",
+    "cadence": "TRIGGER (gate definition at planning; validation during execution; release-gate sign-off)",
+    "confirm_conditions": [
+      "pipeline_validation_surface exposes ≥1 test_hook and ≥1 validation_gate (with unit + blocking)",
+      "a PASS validation_result includes a completed drift_trigger_verification",
+      "drift_trigger_verification.trigger_fires_correctly = true (trigger demonstrably fires at threshold)",
+      "deployment_dry_run = PASS before promotion"
+    ],
+    "reject_conditions": [
+      "validation_result = PASS without drift-trigger verification (erosion blind spot — FC-022)",
+      "trigger_fires_correctly = false declared release-ready (silent drift accepted — Prime Directive §10.1)",
+      "a drift threshold emitted without a unit"
+    ],
+    "counter_conditions": [
+      "drift baseline itself may be re-baselined on contaminated data — request longitudinal baseline provenance (FC-022)",
+      "staging environment unavailable for dry-run — request provisioning before sign-off"
+    ]
+  }
+}

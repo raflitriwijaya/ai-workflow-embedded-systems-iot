@@ -1,0 +1,71 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/QA↔BIZ-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QA↔BIZ-001: Quality Metrics for Business Cases + Market Quality Requirements (DERIVED — provisional)",
+  "description": "QA supplies quality and reliability metrics (coverage, defect-escape, field-quality, RPN burn-down) as objective evidence for business cases, SLA commitments, and GTM readiness; Business Consultant supplies market-driven quality requirements (customer SLA expectations, warranty/return tolerances, competitive quality bars). SOURCE GAP: there is NO direct §6 contract on either the QA or Business Consultant side (QA §6 lists no BIZ; BIZ §6 lists no QA). This schema is DERIVED from QA_TEST_AUTOMATION_ENGINEER_SKILL §6.8 (quality/release-readiness reporting) and the analogous DEVOPS_PLATFORM_ENGINEER_SKILL §6.10 BIZ pattern (reliability/uptime metrics feeding customer SLA commitments) + BUSINESS_CONSULTANT_SKILL §6.1 (GTM readiness / business-value inputs). It is PROVISIONAL pending ratification of a formal §6 QA↔BIZ contract (recommend a CCR). No quality thresholds are invented here.",
+  "type": "object",
+  "properties": {
+    "quality_metrics": {
+      "type": "object",
+      "description": "QA→BIZ: objective quality evidence for business cases. Targets are optional strings — not invented.",
+      "properties": {
+        "metrics": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "metric_id": { "type": "string" },
+              "metric_name": { "type": "string", "description": "e.g., defect escape rate, field MTBF, OTA success rate, RPN burn-down." },
+              "value": { "type": "number" },
+              "unit": { "type": "string", "minLength": 1, "description": "Explicit unit (%, count, hours, ...)." }
+            },
+            "required": ["metric_id", "metric_name", "value", "unit"],
+            "additionalProperties": false
+          }
+        },
+        "evidence_basis": { "type": "string", "enum": ["MEASURED", "PROJECTED"], "description": "Whether figures are measured or projected (must be disclosed)." }
+      },
+      "required": ["metrics", "evidence_basis"],
+      "additionalProperties": false
+    },
+    "market_quality_requirements": {
+      "type": "object",
+      "description": "BIZ→QA: market-driven quality requirements.",
+      "properties": {
+        "customer_sla_expectations": { "type": "array", "items": { "type": "string" } },
+        "warranty_return_tolerance": { "type": ["string", "null"], "description": "Acceptable field-failure/return rate as stated by BIZ (not fabricated; null if unspecified)." },
+        "competitive_quality_bar": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["quality_metrics"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "QA↔BIZ-001",
+    "producer_role": "QA",
+    "consumer_role": "BIZ",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine quality-evidence exchange for business cases is agent-autonomous. Elevated by the source gap: see source_status.",
+    "source_status": "DERIVED / PROVISIONAL — no direct §6 contract exists on either side (QA §6 lists no BIZ; BIZ §6 lists no QA). Composed from QA §6.8 + DEVOPS §6.10-BIZ pattern + BIZ §6.1. RECOMMENDED ACTION: ratify a formal QA↔BIZ §6 interface contract via a CCR before this schema is treated as authoritative. Until then, agents must COUNTER (request §6 ratification) rather than CONFIRM a binding change.",
+    "cadence": "TRIGGER (at GTM readiness review; quarterly quality review) — provisional pending a ratified QA↔BIZ cadence",
+    "confirm_conditions": [
+      "every quality metric carries a value and an explicit unit",
+      "evidence_basis is disclosed (MEASURED vs. PROJECTED)",
+      "market quality requirements expressed as BIZ-supplied values (not QA-invented)",
+      "metrics reported honestly against the market bar"
+    ],
+    "reject_conditions": [
+      "a quality figure presented as MEASURED when it is PROJECTED (or vice versa) — misrepresentation",
+      "a quality metric emitted without a unit",
+      "a quality target asserted that BIZ did not supply (no invented metrics — measure-first)",
+      "this provisional schema cited as a ratified contract without the recommended CCR"
+    ],
+    "counter_conditions": [
+      "ALWAYS until ratified: request a formal §6 QA↔BIZ contract + CCR before treating CONFIRM as binding",
+      "market quality requirement not measurable by QA — request an evaluable acceptance definition",
+      "business case needs a metric QA does not yet capture — request instrumentation before committing the figure"
+    ]
+  }
+}

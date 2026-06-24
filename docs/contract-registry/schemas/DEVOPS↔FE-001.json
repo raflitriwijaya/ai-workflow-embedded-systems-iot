@@ -1,0 +1,74 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/DEVOPS↔FE-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DEVOPS↔FE-001: Frontend Build/Deploy + Staging Environments",
+  "description": "DevOps provides the CI/CD pipeline for frontend builds, staging/production environment provisioning with parity, a tested rollback path, frontend observability integration, and CDN/static-asset hosting; Frontend provides build/deploy requirements, per-environment configuration, and frontend performance/error budgets for SLO definition. Grounded in DEVOPS_PLATFORM_ENGINEER_SKILL §6.11 and FRONTEND_DASHBOARD_ENGINEER_SKILL §6.6.",
+  "type": "object",
+  "properties": {
+    "pipeline_provision": {
+      "type": "object",
+      "description": "DEVOPS→FE: build/deploy pipeline + environments.",
+      "properties": {
+        "build_stages": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "environments": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "enum": ["staging", "production"] },
+          "description": "Provisioned environments (parity expected between staging and production)."
+        },
+        "environment_parity": { "type": "boolean", "description": "Staging/production parity maintained." },
+        "rollback_path_tested": { "type": "boolean", "description": "Automated rollback path tested per release." },
+        "observability_integrated": { "type": "boolean", "description": "Client-side error tracking + Core Web Vitals monitoring wired up." },
+        "cdn_configured": { "type": "boolean" }
+      },
+      "required": ["build_stages", "environments", "rollback_path_tested"],
+      "additionalProperties": false
+    },
+    "frontend_requirements": {
+      "type": "object",
+      "description": "FE→DEVOPS: build/config/SLO requirements.",
+      "properties": {
+        "build_tooling": { "type": "string", "enum": ["Vite", "Webpack", "other"], "description": "Build toolchain." },
+        "env_config": { "type": "array", "items": { "type": "string" }, "description": "Per-environment config (API endpoints, broker URLs, feature flags)." },
+        "performance_budgets": {
+          "type": "object",
+          "description": "Core Web Vitals + error budgets for SLO definition.",
+          "properties": {
+            "lcp_ms": { "type": "number", "minimum": 0, "description": "Largest Contentful Paint target in ms." },
+            "inp_ms": { "type": "number", "minimum": 0, "description": "Interaction to Next Paint target in ms." },
+            "cls": { "type": "number", "minimum": 0, "description": "Cumulative Layout Shift target (unitless score)." },
+            "error_rate_threshold_pct": { "type": "number", "minimum": 0, "maximum": 100, "description": "Client error-rate threshold in %." }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["build_tooling"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["pipeline_provision"],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "DEVOPS↔FE-001",
+    "producer_role": "DEVOPS",
+    "consumer_role": "FE",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Frontend build/deploy pipeline configuration is agent-autonomous operational coordination.",
+    "cadence": "TRIGGER (initial pipeline setup at project start; ongoing release-cycle coordination; pre-release infrastructure health check)",
+    "confirm_conditions": [
+      "pipeline_provision declares build_stages, ≥1 environment, and rollback_path_tested = true",
+      "staging/production environment_parity maintained",
+      "frontend performance budgets (LCP, INP, CLS, error rate) carry explicit units where set",
+      "observability integrated before production release"
+    ],
+    "reject_conditions": [
+      "a production deploy with rollback_path_tested = false (no tested rollback)",
+      "a Core Web Vitals budget emitted without its unit",
+      "staging/production environment parity broken without disclosure"
+    ],
+    "counter_conditions": [
+      "requested build tooling unsupported by the current pipeline — request a toolchain onboarding plan",
+      "performance budget infeasible on the target CDN/region — request a budget renegotiation"
+    ]
+  }
+}

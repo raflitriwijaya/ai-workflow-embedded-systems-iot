@@ -1,0 +1,100 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/FE↔SEC-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FE↔SEC-001: Frontend Security Review + CSP Requirements",
+  "description": "Security provides token-handling requirements (JWT storage/refresh/revocation), session-management policy, Content Security Policy (CSP) requirements, vulnerability-scan results, and frontend threat-model findings (XSS/CSRF/token exfiltration); Frontend provides authentication/authorization implementation details, dependency manifests (lockfile, SBOM), and build artifacts for security assessment. Grounded in SECURITY_ENGINEER_SKILL §6.12 and FRONTEND_DASHBOARD_ENGINEER_SKILL §6.7.",
+  "type": "object",
+  "properties": {
+    "security_requirements": {
+      "type": "object",
+      "description": "SEC→FE: token/session/CSP requirements + review findings.",
+      "properties": {
+        "token_handling": {
+          "type": "object",
+          "properties": {
+            "storage": { "type": "string", "enum": ["httpOnly_cookie", "memory", "localStorage", "sessionStorage"], "description": "Required JWT storage mechanism." },
+            "refresh_required": { "type": "boolean" },
+            "revocation_supported": { "type": "boolean" }
+          },
+          "required": ["storage"],
+          "additionalProperties": false
+        },
+        "session_management": {
+          "type": "object",
+          "properties": {
+            "idle_timeout_minutes": { "type": "number", "minimum": 0, "description": "Idle session timeout in minutes." },
+            "concurrent_session_policy": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "csp": {
+          "type": "object",
+          "description": "Content Security Policy requirements.",
+          "properties": {
+            "csp_header_required": { "type": "boolean", "const": true },
+            "frame_ancestors": { "type": "string", "description": "frame-ancestors directive (e.g., 'none')." },
+            "script_src": { "type": "string", "description": "script-src directive." }
+          },
+          "required": ["csp_header_required"],
+          "additionalProperties": false
+        },
+        "threat_findings": { "type": "array", "items": { "type": "string", "enum": ["XSS", "CSRF", "TOKEN_EXFILTRATION", "CLICKJACKING", "DEPENDENCY_CVE"] } }
+      },
+      "required": ["token_handling", "csp"],
+      "additionalProperties": false
+    },
+    "frontend_security_evidence": {
+      "type": "object",
+      "description": "FE→SEC: implementation details + manifests for review.",
+      "properties": {
+        "authn_authz_details": { "type": "string", "description": "Token lifecycle, OAuth 2.0 flow, role-based UI gating." },
+        "dependency_manifest_provided": { "type": "boolean", "description": "package lockfile + SBOM provided for scanning." },
+        "vuln_scan": {
+          "type": "object",
+          "properties": {
+            "scanned": { "type": "boolean" },
+            "open_critical": { "type": "integer", "minimum": 0, "description": "Open CRITICAL frontend-dependency vulnerabilities." },
+            "open_high": { "type": "integer", "minimum": 0 }
+          },
+          "required": ["scanned"],
+          "additionalProperties": false
+        },
+        "review_verdict": { "type": "string", "enum": ["APPROVED", "CONDITIONAL", "BLOCKED"], "description": "SEC frontend security-review outcome." }
+      },
+      "required": ["dependency_manifest_provided"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["security_requirements"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "frontend_security_evidence": { "properties": { "review_verdict": { "const": "CONDITIONAL" } }, "required": ["review_verdict"] } }, "required": ["frontend_security_evidence"] },
+      "then": { "properties": { "frontend_security_evidence": { "properties": { "vuln_scan": { "required": ["scanned", "open_critical", "open_high"] } }, "required": ["vuln_scan"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "FE↔SEC-001",
+    "producer_role": "SEC",
+    "consumer_role": "FE",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Frontend application security (token handling, CSP, XSS/CSRF) is security-relevant: ESC-SEC applies — agents may only propose; SEC owns the binding review verdict. Not the core device/OTA baseline, hence Tier-2 rather than Tier-1, but a BLOCKED verdict gates the dashboard release.",
+    "escalation_triggers": ["ESC-SEC"],
+    "cadence": "TRIGGER (security review at major release milestones touching authentication, session management, or new data-surfacing features; ad hoc on auth-flow changes and new CSP requirements)",
+    "confirm_conditions": [
+      "token_handling.storage and a CSP with csp_header_required = true are specified",
+      "Frontend provided authn/authz details and the dependency manifest (lockfile + SBOM)",
+      "vuln_scan run with open_critical = 0 on the release path",
+      "review_verdict = APPROVED (or CONDITIONAL with conditions logged and scan counts disclosed)"
+    ],
+    "reject_conditions": [
+      "review_verdict = BLOCKED (unresolved frontend security risk — gates the release; ESC-SEC)",
+      "token stored in localStorage where the requirement mandates an httpOnly cookie (baseline deviation)",
+      "open_critical > 0 presented as release-ready, or CSP header omitted"
+    ],
+    "counter_conditions": [
+      "CONDITIONAL verdict — request the remediation conditions be logged to the §3.3 checklist before proceeding (do not self-clear)",
+      "SBOM missing a third-party script — request a complete manifest before assessment"
+    ]
+  }
+}

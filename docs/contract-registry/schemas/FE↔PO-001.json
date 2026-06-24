@@ -1,0 +1,68 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/FE↔PO-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FE↔PO-001: UX Requirements + Dashboard Feature Requests",
+  "description": "Product Owner/TPM provides user-facing requirements, field-operator workflow context, and acceptance criteria for dashboard/UI features; Frontend provides UX prototypes, implementation feasibility feedback, sprint progress, and design-constraint feedback. Grounded in PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL §6.9 and FRONTEND_DASHBOARD_ENGINEER_SKILL §6.3.",
+  "type": "object",
+  "properties": {
+    "dashboard_feature_requests": {
+      "type": "array",
+      "description": "PO→FE: user-facing requirements + acceptance criteria.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "feature_id": { "type": "string" },
+          "operator_workflow_context": { "type": "string", "minLength": 20, "description": "Field-operator workflow context." },
+          "acceptance_criteria": { "type": "string", "minLength": 20 },
+          "priority": { "type": "string", "enum": ["P0", "P1", "P2", "P3"] }
+        },
+        "required": ["feature_id", "acceptance_criteria"],
+        "additionalProperties": false
+      }
+    },
+    "frontend_feedback": {
+      "type": "object",
+      "description": "FE→PO: UX feasibility + status.",
+      "properties": {
+        "ux_feasibility": { "type": "string", "enum": ["FEASIBLE", "FEASIBLE_WITH_CONSTRAINTS", "INFEASIBLE"] },
+        "ux_prototype_ref": { "type": ["string", "null"] },
+        "implementation_status": { "type": "string", "enum": ["NOT_STARTED", "IN_PROGRESS", "DONE", "BLOCKED"] },
+        "design_constraints": { "type": "array", "items": { "type": "string" }, "description": "Design-constraint feedback affecting scope." }
+      },
+      "required": ["ux_feasibility"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["dashboard_feature_requests"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "frontend_feedback": { "properties": { "ux_feasibility": { "const": "FEASIBLE_WITH_CONSTRAINTS" } }, "required": ["ux_feasibility"] } }, "required": ["frontend_feedback"] },
+      "then": { "properties": { "frontend_feedback": { "properties": { "design_constraints": { "minItems": 1 } }, "required": ["design_constraints"] } } }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "FE↔PO-001",
+    "producer_role": "PO",
+    "consumer_role": "FE",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Dashboard feature intake and UX feasibility are agent-autonomous sprint-level coordination.",
+    "cadence": "TRIGGER (sprint-level sync; dedicated review session for any user-facing release)",
+    "confirm_conditions": [
+      "each dashboard_feature_request carries acceptance_criteria and operator workflow context",
+      "frontend_feedback returns a ux_feasibility verdict",
+      "FEASIBLE_WITH_CONSTRAINTS enumerates design_constraints",
+      "implementation_status reported against committed features"
+    ],
+    "reject_conditions": [
+      "a user-facing feature committed without acceptance criteria",
+      "ux_feasibility = FEASIBLE_WITH_CONSTRAINTS without listed design_constraints",
+      "PO requirement dictating implementation detail FE owns (overreach)"
+    ],
+    "counter_conditions": [
+      "acceptance criteria not verifiable in the UI — request a measurable definition",
+      "operator workflow underspecified for an edge case — request field-operator validation"
+    ]
+  }
+}

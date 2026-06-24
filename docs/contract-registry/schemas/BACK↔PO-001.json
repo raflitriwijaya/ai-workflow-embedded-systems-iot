@@ -1,0 +1,86 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/BACK↔PO-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BACK↔PO-001: API Readiness + Service Status Reporting",
+  "description": "Backend provides service status, scaling/cost reporting, and API readiness; Product Owner/TPM provides feature requirements for cloud-side processing/APIs/integrations, prioritization, and SLAs, and requires service-readiness status, API contract changes affecting frontend/firmware, and scalability constraints. Grounded in BACKEND_CLOUD_ENGINEER_SKILL §6.9 and PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL §6.8.",
+  "type": "object",
+  "properties": {
+    "service_report": {
+      "type": "object",
+      "description": "BACK→PO: readiness + status + scaling/cost.",
+      "properties": {
+        "api_readiness": { "type": "string", "enum": ["NOT_READY", "IN_PROGRESS", "READY"] },
+        "service_status": { "type": "string", "enum": ["HEALTHY", "DEGRADED", "DOWN"] },
+        "api_contract_changes": {
+          "type": "array",
+          "description": "API contract changes affecting frontend/firmware (downstream notification).",
+          "items": {
+            "type": "object",
+            "properties": {
+              "change_id": { "type": "string" },
+              "breaking": { "type": "boolean" },
+              "affected_consumers": { "type": "array", "items": { "type": "string", "enum": ["FE", "FW"] } }
+            },
+            "required": ["change_id", "breaking"],
+            "additionalProperties": false
+          }
+        },
+        "scalability_constraints": { "type": "array", "items": { "type": "string" } },
+        "cost_report": { "type": ["string", "null"], "description": "Scaling/cost reporting summary." }
+      },
+      "required": ["api_readiness", "service_status"],
+      "additionalProperties": false
+    },
+    "po_requirements": {
+      "type": "object",
+      "description": "PO→BACK: requirements, prioritization, SLAs.",
+      "properties": {
+        "api_requirements": { "type": "array", "items": { "type": "string" } },
+        "prioritization": { "type": "string", "enum": ["P0", "P1", "P2", "P3"] },
+        "sla_targets": { "type": "array", "items": { "type": "string" }, "description": "SLA targets (e.g., availability, latency)." }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["service_report"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "service_report": {
+            "properties": { "api_contract_changes": { "type": "array", "contains": { "properties": { "breaking": { "const": true } }, "required": ["breaking"] } } },
+            "required": ["api_contract_changes"]
+          }
+        },
+        "required": ["service_report"]
+      },
+      "then": {
+        "properties": { "service_report": { "properties": { "api_contract_changes": { "items": { "required": ["affected_consumers"] } } } } }
+      }
+    }
+  ],
+  "x-macp": {
+    "contract_id": "BACK↔PO-001",
+    "producer_role": "BACK",
+    "consumer_role": "PO",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine API-readiness and status reporting is agent-autonomous. A breaking API contract change must be notified to FE/FW and, if it alters a ratified interface contract, requires a CCR + version bump (Tier-2).",
+    "cadence": "TRIGGER (requirement intake; milestone reviews; cost/SLA review; dedicated checkpoint before any release with cloud-side dependencies)",
+    "confirm_conditions": [
+      "service_report carries api_readiness and service_status",
+      "every breaking api_contract_change lists its affected_consumers (FE/FW)",
+      "scalability_constraints surfaced against the PO's SLA targets",
+      "api_readiness = READY only when the release-blocking endpoints are live"
+    ],
+    "reject_conditions": [
+      "a breaking API change reported without notifying affected FE/FW consumers",
+      "api_readiness = READY asserted while service_status = DOWN/DEGRADED on the release path",
+      "a ratified interface contract altered without a CCR + version bump"
+    ],
+    "counter_conditions": [
+      "SLA target conflicts with the current scalability ceiling (SCALE-4/PERF-3) — request a scope or capacity decision",
+      "API contract change ambiguous in blast radius — request a consumer-impact analysis before sign-off"
+    ]
+  }
+}
