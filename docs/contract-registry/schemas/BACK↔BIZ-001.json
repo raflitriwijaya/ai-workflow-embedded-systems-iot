@@ -1,0 +1,104 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/BACK↔BIZ-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BACK↔BIZ-001: Cloud OpEx vs Business Budget + API Scalability/Monetization Inputs",
+  "description": "The Backend/Cloud Engineer provides cloud operational-cost estimates (compute, storage, data transfer, and IoT — Internet of Things — platform fees per device per month), an API (Application Programming Interface) infrastructure scalability assessment and cost-scaling curve, and cloud vendor contract terms with volume-discount availability; the Business Consultant provides the cloud platform-selection business rationale (cost, vendor lock-in risk, GTM — Go-to-Market — partner alignment), API monetization requirements derived from the data strategy, and the device-connectivity cost budget from the unit-economics model. Grounded in BACKEND_CLOUD_ENGINEER_SKILL §6.11 and BUSINESS_CONSULTANT_SKILL §6.6. Cloud-platform selection outside the approved stack is an Architect/ADR decision; the Business Consultant supplies rationale only — the binding choice is ratified via ADR.",
+  "type": "object",
+  "properties": {
+    "cloud_cost_package": {
+      "type": "object",
+      "description": "BACK→BIZ: per-device-month OpEx, API scalability + cost curve, vendor terms.",
+      "properties": {
+        "opex_per_device_month": {
+          "type": "object",
+          "description": "Operational cost components per device per month; each carries currency and a per-device/month unit.",
+          "properties": {
+            "compute": { "$ref": "#/$defs/money_per_device_month" },
+            "storage": { "$ref": "#/$defs/money_per_device_month" },
+            "data_transfer": { "$ref": "#/$defs/money_per_device_month" },
+            "iot_platform_fees": { "$ref": "#/$defs/money_per_device_month" }
+          },
+          "minProperties": 1,
+          "additionalProperties": false
+        },
+        "api_scalability_assessment": { "type": "string" },
+        "cost_scaling_curve": {
+          "type": "array",
+          "description": "Cost vs fleet-size points; each carries a device-count and a cost with units.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "fleet_size": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., devices." } }, "required": ["value", "unit"], "additionalProperties": false },
+              "monthly_cost": { "$ref": "#/$defs/money" }
+            },
+            "required": ["fleet_size", "monthly_cost"],
+            "additionalProperties": false
+          }
+        },
+        "vendor_contract_terms": { "type": "string" },
+        "volume_discount_available": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "business_cloud_inputs": {
+      "type": "object",
+      "description": "BIZ→BACK: platform-selection rationale, API monetization requirements, device-connectivity cost budget.",
+      "properties": {
+        "platform_selection_rationale": { "type": "string" },
+        "api_monetization_requirements": { "type": "array", "items": { "type": "string" } },
+        "device_connectivity_cost_budget": { "$ref": "#/$defs/money_per_device_month" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["cloud_cost_package"] },
+    { "required": ["business_cloud_inputs"] }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "money": {
+      "type": "object",
+      "properties": {
+        "value": { "type": "number", "minimum": 0 },
+        "currency": { "type": "string", "minLength": 1 },
+        "unit": { "type": "string", "minLength": 1, "description": "e.g., USD/month." }
+      },
+      "required": ["value", "currency", "unit"],
+      "additionalProperties": false
+    },
+    "money_per_device_month": {
+      "type": "object",
+      "properties": {
+        "value": { "type": "number", "minimum": 0 },
+        "currency": { "type": "string", "minLength": 1 },
+        "unit": { "type": "string", "minLength": 1, "description": "e.g., USD/device/month." }
+      },
+      "required": ["value", "currency", "unit"],
+      "additionalProperties": false
+    }
+  },
+  "x-macp": {
+    "contract_id": "BACK↔BIZ-001",
+    "producer_role": "BACK",
+    "consumer_role": "BIZ",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine cloud-cost reporting and unit-economics input exchange is agent-autonomous (architecture design stage; quarterly cloud cost review; scaling decision points). A cloud OpEx projection over the device-connectivity cost budget is surfaced as a unit-economics trade; a cloud-platform change outside the approved stack escalates to an Architect/ADR decision.",
+    "cadence": "TRIGGER + CALENDAR (at architecture design stage; quarterly cloud cost review; at scaling decision points)",
+    "confirm_conditions": [
+      "every cloud-cost component carries value, currency, and a per-device/month (or per-month) unit",
+      "the cost-scaling curve ties cost to an explicit device-count unit (e.g., devices)",
+      "the device-connectivity cost budget is stated with units for comparison against OpEx",
+      "vendor terms and volume-discount availability are reported where a scaling decision depends on them"
+    ],
+    "reject_conditions": [
+      "a cloud-cost or budget quantity emitted without a unit (units rule §3.10)",
+      "projected OpEx over the device-connectivity cost budget presented as within unit economics without flagging the trade (Honesty Over Polish §10.3)",
+      "a cloud-platform selection outside the approved stack treated as decided here without an ADR (Architect decision)"
+    ],
+    "counter_conditions": [
+      "API monetization requirements imply an architecture change beyond the contracted API surface — request an ADR / Architect review before commitment",
+      "the cost-scaling curve is requested beyond the validated fleet ceiling (SCALE-1 50,000 devices) — request load validation before quoting"
+    ]
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/DATA↔PO-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DATA↔PO-001: Data Readiness for Release + Cost/Retention Reporting",
+  "description": "The Data Engineer provides data-readiness status, data pipeline status, data quality / availability blockers affecting ML or feature readiness, and cost/retention reporting; the Product Owner/TPM provides data requirements (driven by ML/feature needs and field-data availability constraints), the retention/compliance policy, and prioritization. Grounded in DATA_ENGINEER_SKILL §6.8 and PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL §6.6. Data-quality severities are governed by the DQIR (Data Quality Incident Report, ML→DATA); a CRITICAL/HIGH DQIR blocks the MLOps training pipeline and must not be reported as release-ready.",
+  "type": "object",
+  "properties": {
+    "data_status_report": {
+      "type": "object",
+      "description": "DATA→PO: data readiness, pipeline status, quality/availability blockers, cost/retention reporting.",
+      "properties": {
+        "data_readiness": { "type": "string", "enum": ["NOT_READY", "IN_PROGRESS", "READY"] },
+        "pipeline_status": { "type": "string", "enum": ["HEALTHY", "DEGRADED", "DOWN"] },
+        "quality_blockers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "blocker_id": { "type": "string" },
+              "severity": { "type": "string", "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"] },
+              "dqir_ref": { "type": "string", "pattern": "^DQIR-\\d{2,}$", "description": "DQIR reference when the blocker is a logged data-quality incident." }
+            },
+            "required": ["blocker_id", "severity"],
+            "additionalProperties": false
+          }
+        },
+        "availability_blockers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "dataset": { "type": "string" },
+              "blocks_ml_milestone": { "type": "boolean", "description": "True forces immediate escalation (cadence)." },
+              "description": { "type": "string" }
+            },
+            "required": ["dataset", "blocks_ml_milestone"],
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "if": { "properties": { "blocks_ml_milestone": { "const": true } }, "required": ["blocks_ml_milestone"] },
+                "then": { "required": ["description"] }
+              }
+            ]
+          }
+        },
+        "cost_report": {
+          "type": "object",
+          "properties": {
+            "value": { "type": "number", "minimum": 0 },
+            "currency": { "type": "string", "minLength": 1 },
+            "unit": { "type": "string", "minLength": 1, "description": "e.g., USD/month." }
+          },
+          "required": ["value", "currency", "unit"],
+          "additionalProperties": false
+        },
+        "retention_reporting": {
+          "type": "object",
+          "properties": {
+            "retention_period": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., days, months, years." } }, "required": ["value", "unit"], "additionalProperties": false },
+            "compliance_status": { "type": "string", "enum": ["COMPLIANT", "AT_RISK", "NON_COMPLIANT"] }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["data_readiness"],
+      "additionalProperties": false
+    },
+    "po_data_inputs": {
+      "type": "object",
+      "description": "PO→DATA: data requirements, retention/compliance policy, prioritization.",
+      "properties": {
+        "data_requirements": { "type": "array", "items": { "type": "string" } },
+        "retention_compliance_policy_ref": { "type": "string" },
+        "prioritization": { "type": "string", "enum": ["P0", "P1", "P2", "P3"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["data_status_report"] },
+    { "required": ["po_data_inputs"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "DATA↔PO-001",
+    "producer_role": "DATA",
+    "consumer_role": "PO",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine data-readiness and cost/retention reporting is agent-autonomous (requirement intake; milestone reviews; cost/retention review). A data-availability blocker on an ML milestone forces immediate escalation; a CRITICAL/HIGH DQIR is governed by the DQIR gate (blocks the training pipeline), not resolved here.",
+    "cadence": "TRIGGER (requirement intake; milestone reviews; cost/retention review; sprint-level sync; immediate escalation if data availability blocks an ML milestone)",
+    "confirm_conditions": [
+      "data_status_report carries a data_readiness verdict",
+      "cost figures carry value, currency, and unit; retention period carries an explicit unit",
+      "every quality blocker carries a severity; a logged data-quality incident carries its DQIR reference",
+      "an availability blocker on an ML milestone is described and flagged for immediate escalation"
+    ],
+    "reject_conditions": [
+      "data_readiness = READY asserted while an open CRITICAL/HIGH quality blocker (or unresolved CRITICAL/HIGH DQIR) exists (Honesty Over Polish §10.3; DQIR blocks the pipeline)",
+      "a cost or retention quantity emitted without a unit (units rule §3.10)",
+      "retention_reporting.compliance_status = NON_COMPLIANT reported as release-ready without a remediation plan"
+    ],
+    "counter_conditions": [
+      "a data requirement is untestable / lacks an availability constraint — request a measurable definition before committing readiness",
+      "a quality blocker lacks a DQIR yet meets CRITICAL/HIGH severity — request DQIR filing before the readiness call (DQIR owns the correction SLA)"
+    ]
+  }
+}

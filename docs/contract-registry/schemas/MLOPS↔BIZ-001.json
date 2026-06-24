@@ -1,0 +1,96 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/MLOPS↔BIZ-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MLOPS↔BIZ-001: Model Deployment/Retraining Cost vs Business Case + Update Cadence",
+  "description": "The MLOps Engineer provides cloud-infrastructure cost estimates for the MLOps (Machine Learning Operations) pipeline at target fleet scale, model-deployment and retraining operational-cost projections, and infrastructure-scaling assumptions for financial-model inputs; the Business Consultant provides the fleet-scale deployment requirements that determine MLOps infrastructure investment, the business case for model-retraining (update) cadence (data-freshness value vs. cloud-compute cost), and the operational-cost budget constraints for cloud-based MLOps pipelines. Grounded in MLOPS_ENGINEER_SKILL §6.11. ASYMMETRY: BUSINESS_CONSULTANT_SKILL §6 has no MLOps subsection, so this contract is documented one-sided from the MLOps card; the §6.11 Provides/Requires pair documents both directions, so reciprocity is reconstructed from the single grounded side — this is grounded, NOT a DERIVED/invented contract. Model-update cadence informs but does not set OTA strategy; binding OTA cadence/governance lives in the MLOPS→DEVOPS→FW→BACK OTA chain (ADR-gated).",
+  "type": "object",
+  "properties": {
+    "mlops_cost_package": {
+      "type": "object",
+      "description": "MLOPS→BIZ: pipeline infra cost at fleet scale, deployment/retraining OpEx, scaling assumptions.",
+      "properties": {
+        "pipeline_infra_cost_at_fleet_scale": {
+          "type": "object",
+          "properties": {
+            "cost": { "$ref": "#/$defs/money" },
+            "fleet_scale": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., devices." } }, "required": ["value", "unit"], "additionalProperties": false }
+          },
+          "required": ["cost", "fleet_scale"],
+          "additionalProperties": false
+        },
+        "deployment_retraining_opex": { "$ref": "#/$defs/money" },
+        "infra_scaling_assumptions": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "business_mlops_inputs": {
+      "type": "object",
+      "description": "BIZ→MLOPS: fleet-scale deployment requirements, retraining/update-cadence business case, OpEx budget constraints.",
+      "properties": {
+        "fleet_scale_deployment_requirements": {
+          "type": "object",
+          "properties": {
+            "value": { "type": "number", "minimum": 0 },
+            "unit": { "type": "string", "minLength": 1, "description": "e.g., devices." }
+          },
+          "required": ["value", "unit"],
+          "additionalProperties": false
+        },
+        "retraining_cadence_business_case": {
+          "type": "object",
+          "description": "Business case for model-retraining (customer-update) cadence: data-freshness value vs. cloud-compute cost.",
+          "properties": {
+            "proposed_cadence": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., per quarter, days." } }, "required": ["value", "unit"], "additionalProperties": false },
+            "data_freshness_value": { "type": "string" },
+            "compute_cost_tradeoff": { "type": "string" }
+          },
+          "required": ["proposed_cadence"],
+          "additionalProperties": false
+        },
+        "opex_budget_constraints": { "$ref": "#/$defs/money" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["mlops_cost_package"] },
+    { "required": ["business_mlops_inputs"] }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "money": {
+      "type": "object",
+      "properties": {
+        "value": { "type": "number", "minimum": 0 },
+        "currency": { "type": "string", "minLength": 1 },
+        "unit": { "type": "string", "minLength": 1, "description": "e.g., USD/month." }
+      },
+      "required": ["value", "currency", "unit"],
+      "additionalProperties": false
+    }
+  },
+  "x-macp": {
+    "contract_id": "MLOPS↔BIZ-001",
+    "producer_role": "MLOPS",
+    "consumer_role": "BIZ",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine MLOps cost projection and update-cadence business-case exchange is agent-autonomous (scaling stage; quarterly operational cost review). A retraining cadence over the OpEx budget is surfaced as a freshness-vs-cost trade; binding model-update / OTA cadence is set in the OTA chain (ADR-gated), not here.",
+    "source_status": "ASYMMETRIC — grounded one-sided from MLOPS §6.11 (no BIZ §6 MLOps subsection); reciprocity reconstructed from the single documented side, not invented.",
+    "cadence": "TRIGGER + CALENDAR (at scaling stage; quarterly operational cost review)",
+    "confirm_conditions": [
+      "pipeline infra cost, deployment/retraining OpEx, and budget constraints carry value, currency, and unit",
+      "fleet scale carries an explicit device-count unit",
+      "the retraining/update cadence carries an explicit unit (e.g., per quarter, days)",
+      "infra-scaling assumptions are stated where they feed the financial model"
+    ],
+    "reject_conditions": [
+      "a cost, fleet-scale, or cadence quantity emitted without a unit (units rule §3.10)",
+      "a retraining cadence over the OpEx budget presented as costed without the freshness-vs-cost trade (Honesty Over Polish §10.3)",
+      "a model-update / OTA cadence treated as set in this contract without the OTA-chain ADR (OTA governance stays in MLOPS→DEVOPS→FW→BACK)"
+    ],
+    "counter_conditions": [
+      "a fleet-scale requirement exceeds the validated ceiling (SCALE-1 50,000 devices) — request load/scaling validation before quoting infra cost",
+      "a proposed update cadence implies an OTA-strategy change — route the cadence change through the OTA chain (ADR) before committing the business case"
+    ]
+  }
+}

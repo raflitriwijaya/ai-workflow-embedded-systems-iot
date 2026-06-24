@@ -1,0 +1,160 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/HW↔PO-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HW↔PO-001: Hardware Milestone & Cost Reporting + BOM Cost vs Product Budget",
+  "description": "The Hardware Engineer provides unit-cost estimates, BOM (Bill of Materials) cost rollups, certification status, lead-time / supply-risk, hardware-revision availability dates, and manufacturing-readiness updates; the Product Owner/TPM provides roadmap visibility into upcoming hardware-dependent features, field durability / deployment-environment requirements, cost and schedule targets, certification scope, and volume forecasts. Grounded in HARDWARE_ENGINEER_SKILL §6.7 and PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL §6.2. A BOM rollup exceeding the PO-provided cost target is raised as a cost-exceedance ADR, never silently traded (Never-Silently-Deviate); budget tolerance bands per CLAUDE §6.5 are not yet instantiated, so the boolean within_budget is reported rather than a fabricated ± margin.",
+  "type": "object",
+  "properties": {
+    "hardware_status_report": {
+      "type": "object",
+      "description": "HW→PO: unit cost, BOM rollup, certification, lead-time / supply risk, hardware-revision availability, manufacturing readiness.",
+      "properties": {
+        "unit_cost_estimate": {
+          "type": "object",
+          "properties": {
+            "value": { "type": "number", "minimum": 0 },
+            "currency": { "type": "string", "minLength": 1 },
+            "unit": { "type": "string", "minLength": 1, "description": "e.g., USD/unit." }
+          },
+          "required": ["value", "currency", "unit"],
+          "additionalProperties": false
+        },
+        "bom_cost_rollup": {
+          "type": "object",
+          "properties": {
+            "value": { "type": "number", "minimum": 0 },
+            "currency": { "type": "string", "minLength": 1 },
+            "unit": { "type": "string", "minLength": 1, "description": "e.g., USD/unit." }
+          },
+          "required": ["value", "currency", "unit"],
+          "additionalProperties": false
+        },
+        "certification_status": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "scheme": { "type": "string", "description": "e.g., CE, FCC, SDPPI, RoHS." },
+              "status": { "type": "string", "enum": ["NOT_STARTED", "IN_PROGRESS", "PASSED", "FAILED"] }
+            },
+            "required": ["scheme", "status"],
+            "additionalProperties": false
+          }
+        },
+        "lead_time_supply_risk": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "component": { "type": "string" },
+              "lead_time": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., weeks." } }, "required": ["value", "unit"], "additionalProperties": false },
+              "single_source": { "type": "boolean" },
+              "lead_time_shift": { "type": "boolean", "description": "True triggers immediate PO notification (cadence)." }
+            },
+            "required": ["component"],
+            "additionalProperties": false
+          }
+        },
+        "hardware_revision_availability": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "revision": { "type": "string" },
+              "available_date": { "type": "string", "format": "date" }
+            },
+            "required": ["revision", "available_date"],
+            "additionalProperties": false
+          }
+        },
+        "manufacturing_readiness": { "type": "string", "enum": ["NOT_READY", "PILOT", "PRODUCTION_READY"] },
+        "bom_vs_budget": {
+          "type": "object",
+          "description": "BOM rollup vs the PO cost target; an over-budget rollup requires a cost-exceedance ADR (no fabricated tolerance band — CLAUDE §6.5 bands NOT YET AVAILABLE).",
+          "properties": {
+            "within_budget": { "type": "boolean" },
+            "exceedance_adr_ref": { "type": "string", "pattern": "^ADR-\\d{4}$", "description": "Required when within_budget = false." }
+          },
+          "required": ["within_budget"],
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": { "properties": { "within_budget": { "const": false } }, "required": ["within_budget"] },
+              "then": { "required": ["exceedance_adr_ref"] }
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "po_hardware_inputs": {
+      "type": "object",
+      "description": "PO→HW: roadmap, field/deployment requirements, cost/schedule targets, certification scope, volume forecast.",
+      "properties": {
+        "roadmap_features": { "type": "array", "items": { "type": "string" } },
+        "field_environment_requirements": { "type": "array", "items": { "type": "string" } },
+        "cost_target": {
+          "type": "object",
+          "properties": {
+            "value": { "type": "number", "minimum": 0 },
+            "currency": { "type": "string", "minLength": 1 },
+            "unit": { "type": "string", "minLength": 1, "description": "e.g., USD/unit." }
+          },
+          "required": ["value", "currency", "unit"],
+          "additionalProperties": false
+        },
+        "schedule_targets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "milestone": { "type": "string" },
+              "target_date": { "type": "string", "format": "date" }
+            },
+            "required": ["milestone", "target_date"],
+            "additionalProperties": false
+          }
+        },
+        "certification_scope": { "type": "array", "items": { "type": "string" } },
+        "volume_forecast": {
+          "type": "object",
+          "properties": {
+            "value": { "type": "number", "minimum": 0 },
+            "unit": { "type": "string", "minLength": 1, "description": "e.g., units, units/year." }
+          },
+          "required": ["value", "unit"],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["hardware_status_report"] },
+    { "required": ["po_hardware_inputs"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "HW↔PO-001",
+    "producer_role": "HW",
+    "consumer_role": "PO",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine hardware milestone, cost, and lead-time reporting is agent-autonomous (bi-weekly / per hardware milestone). A BOM rollup over the PO cost target is not silently traded — it is raised as a cost-exceedance ADR (Tier-2 governance); a lead-time shift forces immediate PO notification.",
+    "cadence": "TRIGGER + CALENDAR (requirement intake; bi-weekly or per hardware milestone; cost/schedule reviews; release-gate manufacturing-readiness; immediate notification if lead times shift)",
+    "confirm_conditions": [
+      "every cost figure (unit cost, BOM rollup, cost target) carries a value, a currency, and a per-unit unit",
+      "volume forecast and component lead times carry explicit units",
+      "bom_vs_budget states within_budget; an over-budget rollup carries a cost-exceedance ADR reference",
+      "a lead-time shift is flagged for immediate PO notification"
+    ],
+    "reject_conditions": [
+      "a cost, lead-time, or volume quantity emitted without a unit (units rule §3.10)",
+      "a BOM rollup over the PO cost target presented as acceptable without a cost-exceedance ADR (Never-Silently-Deviate)",
+      "manufacturing_readiness = PRODUCTION_READY asserted while a mandatory certification is NOT_STARTED/FAILED (Honesty Over Polish §10.3)"
+    ],
+    "counter_conditions": [
+      "a fabricated ± tolerance band invoked to call an over-budget BOM 'within budget' — CLAUDE §6.5 bands are NOT YET AVAILABLE; request the instantiated band or raise the ADR",
+      "a single-source component on the critical path lacks a second-source plan — request supply-risk mitigation before manufacturing-readiness sign-off"
+    ]
+  }
+}
