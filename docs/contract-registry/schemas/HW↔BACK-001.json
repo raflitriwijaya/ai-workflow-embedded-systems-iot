@@ -1,0 +1,65 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/HW↔BACK-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HW↔BACK-001: Hardware Identity Anchors + Backend Provisioning Requirements (DERIVED)",
+  "description": "DERIVED / PROVISIONAL — there is NO direct §6 contract on either the Hardware Engineer or the Backend/Cloud Engineer side (HARDWARE_ENGINEER_SKILL §6 lists no Backend; BACKEND_CLOUD_ENGINEER_SKILL §6 lists no Hardware Engineer). The relationship is mediated and security-relevant: the hardware root of trust / secure element is governed by HW↔SEC-001, the cloud PKI / X.509 device identity by BACK↔SEC-001, and production provisioning/enrollment by HW↔DEVOPS-001. This schema reconstructs the plausible direct interface (hardware identity anchors ↔ backend provisioning requirements) for machine validation; per its x-macp.source_status it mandates a COUNTER, and any device-identity touchpoint fires ESC-SEC.",
+  "type": "object",
+  "properties": {
+    "hardware_identity_anchors": {
+      "type": "object",
+      "description": "HW→BACK: hardware roots for device identity (security-governed).",
+      "properties": {
+        "secure_element_present": { "type": "boolean" },
+        "root_of_trust_present": { "type": "boolean" },
+        "device_id_source": { "type": "string", "description": "e.g., secure-element serial, eFUSE." }
+      },
+      "additionalProperties": false
+    },
+    "backend_provisioning_requirements": {
+      "type": "object",
+      "description": "BACK→HW: device-management / provisioning hardware requirements.",
+      "properties": {
+        "provisioning_flow": { "type": "string" },
+        "identity_requirements": { "type": "array", "items": { "type": "string" } },
+        "security_touchpoint": { "type": "boolean", "description": "True when the requirement touches cryptographic device identity — fires ESC-SEC." },
+        "security_review_ref": { "type": "string", "description": "Required when security_touchpoint = true (HW↔SEC-001 / BACK↔SEC-001)." },
+        "mediated_via": { "type": "array", "items": { "type": "string", "enum": ["HW↔SEC-001", "BACK↔SEC-001", "HW↔DEVOPS-001"] } }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        { "if": { "properties": { "security_touchpoint": { "const": true } }, "required": ["security_touchpoint"] },
+          "then": { "required": ["security_review_ref"] } }
+      ]
+    }
+  },
+  "anyOf": [
+    { "required": ["hardware_identity_anchors"] },
+    { "required": ["backend_provisioning_requirements"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "HW↔BACK-001",
+    "producer_role": "HW",
+    "consumer_role": "BACK",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Provisional/DERIVED edge — no §6 contract exists on either side; the relationship is mediated and security-relevant. Routine non-security provisioning coordination is provisional and must COUNTER for ratification; any cryptographic-device-identity touchpoint fires ESC-SEC and is bound under HW↔SEC-001 / BACK↔SEC-001.",
+    "source_status": "DERIVED — no direct §6 on either the HW or BACK side; reconstructed from the mediated path (HW↔SEC-001 / BACK↔SEC-001 / HW↔DEVOPS-001). Mandates COUNTER (CCR to ratify a §6 contract), not a binding CONFIRM.",
+    "escalation_triggers": ["ESC-SEC"],
+    "cadence": "TRIGGER (provisional — to be set by the ratifying §6 contract / CCR)",
+    "confirm_conditions": [
+      "device-identity touchpoints carry a Security review reference (HW↔SEC-001 / BACK↔SEC-001)",
+      "the provisioning/enrollment path defers to HW↔DEVOPS-001",
+      "the mediated path is declared",
+      "no PKI/identity material is defined here outside the SEC-owned contracts"
+    ],
+    "reject_conditions": [
+      "a device-identity / provisioning requirement accepted without a Security review reference when security_touchpoint = true (security baseline — ESC-SEC)",
+      "cryptographic device identity (keys/X.509) defined here instead of BACK↔SEC-001 / HW↔SEC-001",
+      "this DERIVED schema treated as a binding contract — it is provisional pending §6 ratification"
+    ],
+    "counter_conditions": [
+      "ALWAYS COUNTER: request ratification of a real HW↔BACK §6 contract (or confirm the relationship is intentionally mediated via SEC/DEVOPS) via a CCR before any binding CONFIRM",
+      "ALWAYS escalate ESC-SEC when the coordination touches device identity — propose, do not auto-confirm; the Security Engineer owns the binding decision"
+    ]
+  }
+}

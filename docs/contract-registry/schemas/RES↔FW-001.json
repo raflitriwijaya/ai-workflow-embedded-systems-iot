@@ -1,0 +1,130 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/RES↔FW-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RES↔FW-001: Research Algorithm Transfer + Firmware Feasibility Assessment",
+  "description": "The Researcher provides research-grade PoC (Proof-of-Concept) firmware, algorithm specifications (signal-processing steps, calibration procedures, sensor-fusion logic), scientific rationale for design choices, and preprocessing specifications with a Python golden reference and test vectors; the Firmware Engineer provides a firmware-feasibility assessment (estimated CPU cycles, Flash/SRAM budget impact, peripheral conflicts, RTOS compatibility, real-time deadline feasibility, showstoppers), fixed-point conversion feedback (Q-format, precision analysis, error bounds), real-time deadline assessment (worst-case execution time, jitter), porting support, and a reusability assessment of PoC firmware. Grounded in IOT_EMBEDDED_SYSTEMS_RESEARCHER_SKILL §6.4 and FIRMWARE_ENGINEER_SKILL §6.9. A novel algorithm outside the precedented surface escalates ESC-NOV; binding production-firmware changes route through ARCH↔FW-001 (ADR).",
+  "type": "object",
+  "properties": {
+    "research_algorithm_transfer": {
+      "type": "object",
+      "description": "RES→FW: algorithm spec, PoC firmware, scientific rationale, preprocessing spec (≥4 weeks before implementation start).",
+      "properties": {
+        "algorithm_spec": {
+          "type": "object",
+          "properties": {
+            "math_description": { "type": "string" },
+            "pseudocode_ref": { "type": "string" },
+            "python_reference_ref": { "type": "string" },
+            "test_vectors": { "type": "array", "items": { "type": "string" } },
+            "expected_resources": {
+              "type": "object",
+              "properties": {
+                "flash": { "$ref": "#/$defs/qty" },
+                "sram": { "$ref": "#/$defs/qty" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["math_description"],
+          "additionalProperties": false
+        },
+        "poc_firmware_ref": { "type": "string" },
+        "scientific_rationale": { "type": "string" },
+        "preprocessing_spec": {
+          "type": "object",
+          "properties": {
+            "golden_reference_ref": { "type": "string" },
+            "test_vectors": { "type": "array", "items": { "type": "string" } }
+          },
+          "additionalProperties": false
+        },
+        "handoff_lead": { "$ref": "#/$defs/qty" },
+        "early_notification_business_days": { "type": "integer", "minimum": 0, "maximum": 5 }
+      },
+      "additionalProperties": false
+    },
+    "firmware_feasibility": {
+      "type": "object",
+      "description": "FW→RES: feasibility verdict, estimated resources, peripheral/RTOS/timing analysis, fixed-point feedback, reusability.",
+      "properties": {
+        "feasibility_verdict": { "type": "string", "enum": ["FEASIBLE", "FEASIBLE_WITH_CHANGES", "INFEASIBLE"] },
+        "estimated_resources": {
+          "type": "object",
+          "properties": {
+            "flash": { "$ref": "#/$defs/qty" },
+            "sram": { "$ref": "#/$defs/qty" },
+            "cpu_cycles": { "$ref": "#/$defs/qty" }
+          },
+          "additionalProperties": false
+        },
+        "peripheral_conflicts": { "type": "array", "items": { "type": "string" } },
+        "rtos_compatible": { "type": "boolean" },
+        "realtime_deadline": {
+          "type": "object",
+          "properties": {
+            "wcet": { "$ref": "#/$defs/qty" },
+            "jitter": { "$ref": "#/$defs/qty" },
+            "feasible": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        "fixed_point_conversion": {
+          "type": "object",
+          "properties": {
+            "q_format": { "type": "string" },
+            "error_bound": { "$ref": "#/$defs/qty" }
+          },
+          "additionalProperties": false
+        },
+        "reusability_assessment": { "type": "string" },
+        "showstoppers": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["feasibility_verdict"],
+      "additionalProperties": false,
+      "allOf": [
+        { "if": { "properties": { "feasibility_verdict": { "const": "INFEASIBLE" } }, "required": ["feasibility_verdict"] },
+          "then": { "required": ["showstoppers"], "properties": { "showstoppers": { "minItems": 1 } } } }
+      ]
+    }
+  },
+  "anyOf": [
+    { "required": ["research_algorithm_transfer"] },
+    { "required": ["firmware_feasibility"] }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "qty": {
+      "type": "object",
+      "properties": {
+        "value": { "type": "number" },
+        "unit": { "type": "string", "minLength": 1, "description": "Explicit unit, e.g., KB, cycles, µs, weeks, LSB." }
+      },
+      "required": ["value", "unit"],
+      "additionalProperties": false
+    }
+  },
+  "x-macp": {
+    "contract_id": "RES↔FW-001",
+    "producer_role": "RES",
+    "consumer_role": "FW",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine firmware-feasibility assessment and PoC reusability review for research algorithms is agent-autonomous (feasibility within 15 business days; reusability within 10 business days). A novel algorithm/methodology outside the precedented surface escalates ESC-NOV; binding production-firmware adoption routes through ARCH↔FW-001 (ADR).",
+    "escalation_triggers": ["ESC-NOV"],
+    "cadence": "TRIGGER + CALENDAR (algorithm-spec handoff ≥4 weeks before implementation; feasibility within 15 business days; reusability within 10 business days; bi-weekly joint review during implementation; early notification within 5 business days; annual Research-Firmware Technology Scan, first Tuesday of November)",
+    "confirm_conditions": [
+      "the algorithm spec carries a math description and (for transfer) a Python reference + test vectors",
+      "estimated/expected resources and timing (Flash/SRAM/CPU/WCET/jitter/error bound) carry explicit units",
+      "the feasibility verdict is stated; INFEASIBLE enumerates the showstoppers",
+      "fixed-point conversion feedback carries a Q-format and a bounded error"
+    ],
+    "reject_conditions": [
+      "a resource, timing, or error-bound quantity emitted without a unit (units rule §3.10)",
+      "a research algorithm presented as production-ready firmware without the ARCH↔FW-001 contract/ADR (Contract-First §10.2)",
+      "a feasibility verdict of FEASIBLE asserted while real-time deadlines are not met (Honesty Over Polish §10.3)"
+    ],
+    "counter_conditions": [
+      "ALWAYS escalate ESC-NOV when the algorithm/sensing modality is outside the precedented surface (novelty > 0.80) — propose, do not auto-confirm",
+      "a floating-point algorithm lacks fixed-point guidance — request Q-format recommendations and error bounds before implementation"
+    ]
+  }
+}

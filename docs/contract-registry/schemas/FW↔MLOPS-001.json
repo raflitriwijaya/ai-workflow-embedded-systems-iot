@@ -1,0 +1,110 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/FW↔MLOPS-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FW↔MLOPS-001: Signed Model Artifact + On-Device OTA Verification",
+  "description": "The MLOps Engineer provides the OTA (Over-the-Air)-ready model artifact (TFLite Micro binary), its compatibility manifest (model version, target hardware ID, firmware compatibility range, tensor-arena size, flash-budget-check result), the MLOps artifact signature, and a flash-budget-fit confirmation; the Firmware Engineer provides the OTA image format specification (MCUboot-compatible layout, manifest header, signing envelope), the on-device bundling and verification mechanism (A/B partition slot, signature-chain verification, SHA-256 hash validation), device-side compatibility constraints (hardware-ID match, firmware-version-range check, flash-budget check), and on-device inference resource measurements (tensor-arena usage, flash consumption, inference latency). Grounded in MLOPS_ENGINEER_SKILL §6.3 and FIRMWARE_ENGINEER_SKILL §6.11. This is an OTA-chain, security-critical contract: model signing and signature-chain verification are baseline controls (ESC-SEC); FC-026 (model anti-rollback weaker than firmware anti-rollback) requires a per-model monotonic version counter on-device.",
+  "type": "object",
+  "properties": {
+    "model_artifact_delivery": {
+      "type": "object",
+      "description": "MLOPS→FW: signed OTA-ready model artifact + compatibility manifest + flash-budget fit.",
+      "properties": {
+        "model_binary_ref": { "type": "string" },
+        "compatibility_manifest": {
+          "type": "object",
+          "properties": {
+            "model_version": { "type": "string" },
+            "target_hardware_id": { "type": "string" },
+            "firmware_compat_range": { "type": "string" },
+            "tensor_arena_size": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., KB." } }, "required": ["value", "unit"], "additionalProperties": false },
+            "flash_budget_check_result": { "type": "string", "enum": ["PASS", "FAIL"] }
+          },
+          "required": ["model_version", "target_hardware_id", "flash_budget_check_result"],
+          "additionalProperties": false
+        },
+        "artifact_signature": { "type": "string", "description": "MLOps signature (Vault-referenced key material; never a literal secret)." },
+        "artifact_sha256": { "type": "string", "pattern": "^[A-Fa-f0-9]{64}$" },
+        "flash_budget_fit_confirmed": { "type": "boolean" }
+      },
+      "required": ["model_binary_ref", "compatibility_manifest", "artifact_signature"],
+      "additionalProperties": false
+    },
+    "firmware_ota_verification": {
+      "type": "object",
+      "description": "FW→MLOPS: OTA image format, on-device verification, compatibility check, inference measurements, anti-rollback.",
+      "properties": {
+        "ota_image_format_ref": { "type": "string" },
+        "ondevice_verification": {
+          "type": "object",
+          "properties": {
+            "ab_partition": { "type": "boolean" },
+            "signature_chain_verified": { "type": "boolean" },
+            "sha256_validated": { "type": "boolean" }
+          },
+          "required": ["signature_chain_verified", "sha256_validated"],
+          "additionalProperties": false
+        },
+        "compatibility_check": {
+          "type": "object",
+          "properties": {
+            "hardware_id_match": { "type": "boolean" },
+            "firmware_version_in_range": { "type": "boolean" },
+            "flash_budget_ok": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        "inference_measurements": {
+          "type": "object",
+          "properties": {
+            "tensor_arena": { "$ref": "#/$defs/qty" },
+            "flash": { "$ref": "#/$defs/qty" },
+            "latency": { "$ref": "#/$defs/qty" }
+          },
+          "additionalProperties": false
+        },
+        "anti_rollback_monotonic_counter_ok": { "type": "boolean", "description": "Per-model monotonic version counter check (FC-026 mitigation)." }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["model_artifact_delivery"] },
+    { "required": ["firmware_ota_verification"] }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "qty": {
+      "type": "object",
+      "properties": {
+        "value": { "type": "number", "minimum": 0 },
+        "unit": { "type": "string", "minLength": 1, "description": "Explicit unit, e.g., KB, ms." }
+      },
+      "required": ["value", "unit"],
+      "additionalProperties": false
+    }
+  },
+  "x-macp": {
+    "contract_id": "FW↔MLOPS-001",
+    "producer_role": "MLOPS",
+    "consumer_role": "FW",
+    "decision_tier": "Tier-1",
+    "tier_rationale": "The signed-model-artifact ↔ on-device-verification edge is part of the OTA closed loop and sits behind permanent HITL gates: model signing and signature-chain verification are baseline controls, and a flash-budget FAIL blocks dispatch. ESC-SEC applies (Security Engineer owns binding signing/anti-rollback decisions); FC-026 anti-rollback is an open residual-risk control.",
+    "escalation_triggers": ["ESC-SEC"],
+    "cadence": "TRIGGER + SLA_FROM_EVENT (artifact-format alignment at planning; model-artifact handoff + on-device verification during development; compatibility verification before fleet rollout)",
+    "confirm_conditions": [
+      "the model artifact carries a signature, a 64-hex SHA-256, and a compatibility manifest with flash_budget_check_result = PASS",
+      "on-device verification confirms signature_chain_verified = true and sha256_validated = true",
+      "tensor-arena, flash, and latency measurements carry explicit units",
+      "the per-model monotonic anti-rollback counter is checked (FC-026 mitigation)"
+    ],
+    "reject_conditions": [
+      "a model artifact dispatched with flash_budget_check_result = FAIL (OCM gate — blocks OTA dispatch)",
+      "an artifact accepted with signature_chain_verified = false or an invalid SHA-256 (security baseline — ESC-SEC; Security veto)",
+      "a key/secret emitted as a literal value rather than a Vault reference, or anti-rollback bypassed (FC-026; weakens the baseline)"
+    ],
+    "counter_conditions": [
+      "ALWAYS escalate ESC-SEC when the coordination touches model signing / signature-chain / anti-rollback — propose, do not auto-confirm; the Security Engineer owns the binding decision",
+      "the firmware-compatibility range excludes the device's current firmware — request a compatible artifact or a firmware update path before dispatch"
+    ]
+  }
+}

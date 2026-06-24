@@ -1,0 +1,69 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/HW↔DATA-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HW↔DATA-001: Hardware-Generated Data Formats + Sensor Data Pipeline Requirements (DERIVED)",
+  "description": "DERIVED / PROVISIONAL — there is NO direct §6 contract on either the Hardware Engineer or the Data Engineer side (HARDWARE_ENGINEER_SKILL §6 lists no Data Engineer; DATA_ENGINEER_SKILL §6 lists no Hardware Engineer). The hardware→data relationship is mediated: raw sensor signals are formatted into telemetry by Firmware (HW↔FW-001) and validated against the DATA-owned schema registry via FW↔DATA-001, while sensor characterization for modeling flows through HW↔ML-001. This schema reconstructs the plausible direct interface (hardware-generated data formats ↔ sensor-data-pipeline ingestion requirements) for machine validation; per its x-macp.source_status it mandates a COUNTER (request §6 ratification via a CCR) rather than a binding CONFIRM. No data ranges, rates, or quality thresholds are invented.",
+  "type": "object",
+  "properties": {
+    "hardware_data_formats": {
+      "type": "object",
+      "description": "HW→DATA: raw sensor output formats and data-generation characteristics.",
+      "properties": {
+        "sensor_outputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sensor": { "type": "string" },
+              "signal_type": { "type": "string", "description": "e.g., analog, I2C, SPI, 1-Wire." },
+              "resolution": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., bits." } }, "required": ["value", "unit"], "additionalProperties": false },
+              "sampling_rate": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., Hz." } }, "required": ["value", "unit"], "additionalProperties": false }
+            },
+            "required": ["sensor", "signal_type"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "data_pipeline_requirements": {
+      "type": "object",
+      "description": "DATA→HW: ingestion/schema requirements for hardware-generated data (routed through the DATA-owned registry).",
+      "properties": {
+        "schema_registration_required": { "type": "boolean" },
+        "ingestion_constraints": { "type": "array", "items": { "type": "string" } },
+        "mediated_via": { "type": "array", "items": { "type": "string", "enum": ["HW↔FW-001", "FW↔DATA-001", "HW↔ML-001"] } }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["hardware_data_formats"] },
+    { "required": ["data_pipeline_requirements"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "HW↔DATA-001",
+    "producer_role": "HW",
+    "consumer_role": "DATA",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Provisional/DERIVED edge — no §6 contract exists on either side; the real data path is mediated (HW↔FW-001 → FW↔DATA-001 telemetry schema; HW↔ML-001 characterization). Until a §6 contract is ratified, agents coordinate provisionally and must COUNTER for ratification; the authoritative per-field telemetry schema remains DATA-owned.",
+    "source_status": "DERIVED — no direct §6 on either the HW or DATA side; reconstructed from the mediated path (HW↔FW-001 / FW↔DATA-001 / HW↔ML-001). Mandates COUNTER (CCR to ratify a §6 contract), not a binding CONFIRM.",
+    "cadence": "TRIGGER (provisional — to be set by the ratifying §6 contract / CCR)",
+    "confirm_conditions": [
+      "every sensor data-format quantity (resolution, sampling rate) carries an explicit unit",
+      "novel hardware-generated data routes through the DATA-owned schema registry (FW↔DATA-001)",
+      "the mediated path is declared (HW↔FW-001 / FW↔DATA-001 / HW↔ML-001)",
+      "no telemetry field name/unit/range is invented outside the DATA registry"
+    ],
+    "reject_conditions": [
+      "a sensor resolution or sampling rate emitted without a unit (units rule §3.10)",
+      "a hardware-generated telemetry field defined here instead of the DATA-owned registry (schema ownership)",
+      "this DERIVED schema treated as a binding contract — it is provisional pending §6 ratification (source_status)"
+    ],
+    "counter_conditions": [
+      "ALWAYS COUNTER: request ratification of a real HW↔DATA §6 contract (or confirm the relationship is intentionally mediated) via a CCR before any binding CONFIRM",
+      "a direct hardware→data flow is proposed that bypasses Firmware formatting — request routing through HW↔FW-001 / FW↔DATA-001"
+    ]
+  }
+}

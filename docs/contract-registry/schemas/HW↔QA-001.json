@@ -1,0 +1,70 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/HW↔QA-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HW↔QA-001: DFT Access & Test Fixtures + Coverage/HIL Requirements",
+  "description": "The Hardware Engineer provides test points and DFT (Design for Test) access, test fixtures, manufacturing/test procedures, and reliability-test support; the QA & Test Automation Engineer provides test-coverage requirements, HIL (Hardware-in-the-Loop) test needs, and validation/defect findings from board testing. Grounded in HARDWARE_ENGINEER_SKILL §6.5 and QA_TEST_AUTOMATION_ENGINEER_SKILL §6.6.",
+  "type": "object",
+  "properties": {
+    "hardware_test_enablement": {
+      "type": "object",
+      "description": "HW→QA: test points / DFT access, fixtures, procedures, reliability-test support.",
+      "properties": {
+        "test_points_dft_access": { "type": "string" },
+        "test_fixtures": { "type": "array", "items": { "type": "string" } },
+        "test_procedures_ref": { "type": "string" },
+        "reliability_test_support": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "qa_test_requirements": {
+      "type": "object",
+      "description": "QA→HW: coverage requirements, HIL needs, validation/defect findings.",
+      "properties": {
+        "coverage_requirements": { "type": "array", "items": { "type": "string" } },
+        "hil_test_needs": { "type": "array", "items": { "type": "string" } },
+        "defect_findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "defect_id": { "type": "string" },
+              "severity": { "type": "string", "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"] },
+              "description": { "type": "string" }
+            },
+            "required": ["defect_id", "severity"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["hardware_test_enablement"] },
+    { "required": ["qa_test_requirements"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "HW↔QA-001",
+    "producer_role": "HW",
+    "consumer_role": "QA",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine DFT-access / fixture handoff and board-test coordination is agent-autonomous (DFT planning; fixture handoff; reliability and environmental test campaigns). Defect findings flow into the QA go/no-go gate, which remains the permanent HITL stage-transition control.",
+    "cadence": "TRIGGER (DFT planning; fixture handoff; reliability and environmental test campaigns)",
+    "confirm_conditions": [
+      "DFT access and test fixtures are provided against QA's coverage requirements",
+      "HIL test needs are addressed by the hardware test enablement",
+      "defect findings carry an id and a severity",
+      "reliability-test support is identified for the environmental campaign"
+    ],
+    "reject_conditions": [
+      "a board-test defect downgraded or omitted to clear a gate (Honesty Over Polish §10.3)",
+      "PRODUCTION test procedures asserted without the DFT access they depend on",
+      "a CRITICAL board-test defect presented as non-blocking for the QA go/no-go gate"
+    ],
+    "counter_conditions": [
+      "a coverage requirement has no corresponding test point / DFT access — request the access or a fixture before committing coverage",
+      "a HIL need exceeds available fixtures — request a fixture-development plan before the campaign"
+    ]
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/MLOPS↔PO-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MLOPS↔PO-001: Model Deployment Status & Health Reporting + Release Priorities/Windows",
+  "description": "The MLOps Engineer provides deployment status, rollout schedules, and model-health reporting, plus pipeline-health status, the model-monitoring/drift-alert process, and deployment-readiness confirmation; the Product Owner/TPM provides the release schedule requiring model deployment/monitoring support, release priorities, approved rollout windows, and the acceptable risk tolerance for fleet changes. Grounded in MLOPS_ENGINEER_SKILL §6.8 and PRODUCT_OWNER_TECHNICAL_PROJECT_MANAGER_SKILL §6.5. This contract reports status and coordinates windows only; binding OTA rollout governance lives in the MLOPS→DEVOPS→FW→BACK chain (ADR-gated), and post-deployment drift maps to FC-022.",
+  "type": "object",
+  "properties": {
+    "mlops_deployment_report": {
+      "type": "object",
+      "description": "MLOPS→PO: deployment status, rollout schedule, model-health, pipeline-health, deployment readiness.",
+      "properties": {
+        "deployment_status": { "type": "string", "enum": ["PENDING", "CANARY", "STAGED_ROLLOUT", "COMPLETE", "ROLLED_BACK"] },
+        "rollout_schedule": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": { "stage": { "type": "string" }, "target_date": { "type": "string", "format": "date" } },
+            "required": ["stage", "target_date"],
+            "additionalProperties": false
+          }
+        },
+        "model_health": {
+          "type": "object",
+          "properties": {
+            "accuracy_delta": { "type": "object", "properties": { "value": { "type": "number" }, "unit": { "type": "string", "minLength": 1, "description": "e.g., %, pp (percentage points)." } }, "required": ["value", "unit"], "additionalProperties": false },
+            "drift_alert_active": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        "pipeline_health": { "type": "string", "enum": ["HEALTHY", "DEGRADED", "DOWN"] },
+        "deployment_readiness": { "type": "string", "enum": ["NOT_READY", "READY"] }
+      },
+      "additionalProperties": false
+    },
+    "po_release_inputs": {
+      "type": "object",
+      "description": "PO→MLOPS: release schedule/priorities, approved rollout windows, risk tolerance.",
+      "properties": {
+        "release_schedule_ref": { "type": "string" },
+        "release_priorities": { "type": "array", "items": { "type": "string" } },
+        "approved_rollout_windows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": { "window_id": { "type": "string" }, "start": { "type": "string", "format": "date-time" }, "end": { "type": "string", "format": "date-time" } },
+            "required": ["window_id", "start", "end"],
+            "additionalProperties": false
+          }
+        },
+        "risk_tolerance": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["mlops_deployment_report"] },
+    { "required": ["po_release_inputs"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "MLOPS↔PO-001",
+    "producer_role": "MLOPS",
+    "consumer_role": "PO",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Routine model deployment-status and health reporting plus rollout-window coordination is agent-autonomous (release planning; rollout coordination; post-deployment review). Binding OTA rollout governance stays in the OTA chain (ADR-gated); a drift alert maps to FC-022 and feeds the post-deployment review.",
+    "cadence": "TRIGGER (release planning; rollout coordination; per-release checkpoint; post-deployment review; ad hoc on pipeline-blocking issues)",
+    "confirm_conditions": [
+      "deployment status and deployment readiness are reported with the rollout schedule",
+      "model-health accuracy delta carries an explicit unit",
+      "pipeline health is stated; a drift alert is surfaced honestly",
+      "a rollout is coordinated against an approved window and the stated risk tolerance"
+    ],
+    "reject_conditions": [
+      "an accuracy-delta quantity emitted without a unit (units rule §3.10)",
+      "deployment_readiness = READY asserted while pipeline_health = DEGRADED/DOWN or a drift alert is active (Honesty Over Polish §10.3)",
+      "an OTA rollout-strategy change decided in this contract without the OTA-chain ADR"
+    ],
+    "counter_conditions": [
+      "a requested rollout window conflicts with pipeline health — request a window or risk-tolerance decision before scheduling",
+      "a drift alert during rollout implies a rollback — route the rollback through the OTA chain (MLOPS↔DEVOPS-001) and report status here"
+    ]
+  }
+}

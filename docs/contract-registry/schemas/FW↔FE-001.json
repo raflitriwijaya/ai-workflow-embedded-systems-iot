@@ -1,0 +1,59 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/FW↔FE-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FW↔FE-001: Firmware-Status Semantics + Device-Management UI Requirements (DERIVED)",
+  "description": "DERIVED / PROVISIONAL — there is NO direct §6 contract on either the Firmware Engineer or the Frontend/Dashboard Engineer side (FIRMWARE_ENGINEER_SKILL §6 lists no Frontend; FRONTEND_DASHBOARD_ENGINEER_SKILL §6 lists no Firmware). Firmware status reaches dashboards via the cloud: Firmware telemetry / OTA state to Backend (FW↔BACK-001), served to the Frontend (BACK↔FE-001). This schema reconstructs the plausible direct interface (firmware-status / device-management semantics ↔ device-management UI requirements) for machine validation; per its x-macp.source_status it mandates a COUNTER. Device-management actions that re-flash or re-key escalate via FW↔BACK-001 / the security baseline.",
+  "type": "object",
+  "properties": {
+    "firmware_status_semantics": {
+      "type": "object",
+      "description": "FW→FE: firmware/device-management status semantics (surfaced via FW↔BACK-001 → BACK↔FE-001).",
+      "properties": {
+        "ota_state": { "type": "string", "enum": ["IDLE", "DOWNLOADING", "VERIFYING", "ACTIVE", "ROLLED_BACK", "FAILED"] },
+        "boot_health": { "type": "string", "enum": ["HEALTHY", "DEGRADED", "BOOT_FAILURE"] },
+        "firmware_version": { "type": "string" },
+        "device_management_actions": { "type": "array", "items": { "type": "string", "description": "e.g., reboot, request-diagnostics (binding actions route through FW↔BACK-001)." } }
+      },
+      "additionalProperties": false
+    },
+    "device_management_ui_requirements": {
+      "type": "object",
+      "description": "FE→FW: device-management UI + status-display requirements.",
+      "properties": {
+        "status_display_needs": { "type": "array", "items": { "type": "string" } },
+        "management_controls": { "type": "array", "items": { "type": "string" } },
+        "mediated_via": { "type": "array", "items": { "type": "string", "enum": ["FW↔BACK-001", "BACK↔FE-001"] } }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["firmware_status_semantics"] },
+    { "required": ["device_management_ui_requirements"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "FW↔FE-001",
+    "producer_role": "FW",
+    "consumer_role": "FE",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Provisional/DERIVED edge — no §6 contract exists on either side; firmware status reaches the dashboard through the Backend (FW↔BACK-001 → BACK↔FE-001). Agents coordinate provisionally and must COUNTER for ratification; binding device-management actions (re-flash, re-key) route through FW↔BACK-001 / the security baseline.",
+    "source_status": "DERIVED — no direct §6 on either the FW or FE side; reconstructed from the mediated path (FW↔BACK-001 / BACK↔FE-001). Mandates COUNTER (CCR to ratify a §6 contract), not a binding CONFIRM.",
+    "cadence": "TRIGGER (provisional — to be set by the ratifying §6 contract / CCR)",
+    "confirm_conditions": [
+      "firmware status fields (OTA state, boot health, version) are defined for display",
+      "status reaches the dashboard via the Backend path (FW↔BACK-001 → BACK↔FE-001)",
+      "device-management control actions are declared as routing through FW↔BACK-001",
+      "the mediated path is declared"
+    ],
+    "reject_conditions": [
+      "a device-management action (reboot/re-flash/re-key) wired directly from the UI to firmware bypassing FW↔BACK-001 (security/desired-state path)",
+      "an OTA-state value invented outside the firmware OTA state machine (FW↔BACK-001 / FW↔DEVOPS-001)",
+      "this DERIVED schema treated as a binding contract — it is provisional pending §6 ratification"
+    ],
+    "counter_conditions": [
+      "ALWAYS COUNTER: request ratification of a real FW↔FE §6 contract (or confirm the relationship is intentionally mediated via Backend) via a CCR before any binding CONFIRM",
+      "a UI control implies a privileged device action — route it through the Backend desired-state contract (FW↔BACK-001) with the security review"
+    ]
+  }
+}

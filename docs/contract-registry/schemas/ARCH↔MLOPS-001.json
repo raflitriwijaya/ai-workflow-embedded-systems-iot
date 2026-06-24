@@ -1,0 +1,81 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ARCH↔MLOPS-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCH↔MLOPS-001: Model Deployment Topology & Flash Budget + Reproducibility/Rollback Evidence",
+  "description": "The Embedded Systems Architect provides the deployment topology, the flash budget for model artifacts, the edge-vs-cloud inference split, and the OTA (Over-the-Air) strategy constraints; the MLOps Engineer provides implementation of reproducibility and deployment-safety requirements, plus evidence of model lineage and rollback capability. Grounded in EMBEDDED_SYSTEMS_ARCHITECT_SKILL §6.5 and MLOPS_ENGINEER_SKILL §6.5. A flash-budget exceedance or a reproducibility/safety gap is raised as an ADR (Never-Silently-Deviate); model signing / supply-chain integrity stay under MLOPS↔SEC-001, and OTA dispatch stays under MLOPS↔DEVOPS-001 / FW↔MLOPS-001.",
+  "type": "object",
+  "properties": {
+    "architecture_constraints": {
+      "type": "object",
+      "description": "ARCH→MLOPS: deployment topology, model flash budget, inference split, OTA strategy constraints.",
+      "properties": {
+        "deployment_topology": { "type": "string" },
+        "model_flash_budget": {
+          "type": "object",
+          "properties": {
+            "value": { "type": "number", "minimum": 0 },
+            "unit": { "type": "string", "minLength": 1, "description": "e.g., KB." }
+          },
+          "required": ["value", "unit"],
+          "additionalProperties": false
+        },
+        "inference_split": { "type": "string", "enum": ["EDGE", "CLOUD", "HYBRID"] },
+        "ota_strategy_constraints": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "mlops_implementation_evidence": {
+      "type": "object",
+      "description": "MLOPS→ARCH: reproducibility/safety implementation + lineage and rollback evidence.",
+      "properties": {
+        "reproducibility_implemented": { "type": "boolean" },
+        "lineage_evidence_ref": { "type": "string" },
+        "rollback_capability_verified": { "type": "boolean" },
+        "flash_budget_conformance": {
+          "type": "object",
+          "properties": {
+            "within_budget": { "type": "boolean" },
+            "measured_size": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., KB." } }, "required": ["value", "unit"], "additionalProperties": false },
+            "exceedance_adr_ref": { "type": "string", "pattern": "^ADR-\\d{4}$", "description": "Required when within_budget = false." }
+          },
+          "required": ["within_budget"],
+          "additionalProperties": false,
+          "allOf": [
+            { "if": { "properties": { "within_budget": { "const": false } }, "required": ["within_budget"] },
+              "then": { "required": ["exceedance_adr_ref"] } }
+          ]
+        },
+        "safety_gap_adr_ref": { "type": "string", "pattern": "^ADR-\\d{4}$", "description": "ADR for any reproducibility/deployment-safety gap." }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["architecture_constraints"] },
+    { "required": ["mlops_implementation_evidence"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "ARCH↔MLOPS-001",
+    "producer_role": "ARCH",
+    "consumer_role": "MLOPS",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Deployment topology, model flash budget, inference split, and OTA strategy constraints are architecture decisions ratified by humans. A flash-budget exceedance or a reproducibility/rollback gap is raised as an ADR; binding OTA strategy changes route through the OTA chain (MLOPS↔DEVOPS-001 / FW↔MLOPS-001) and model signing through MLOPS↔SEC-001 (ESC-SEC).",
+    "cadence": "TRIGGER (strategy alignment at planning; ADR consultation on any reproducibility/safety gap; release-gate review)",
+    "confirm_conditions": [
+      "the model flash budget and measured artifact size carry explicit units",
+      "the inference split (EDGE/CLOUD/HYBRID) and deployment topology are stated",
+      "lineage evidence and verified rollback capability are provided for a production-stage model",
+      "flash_budget_conformance states within_budget; an exceedance carries an ADR reference"
+    ],
+    "reject_conditions": [
+      "a flash-budget or artifact-size quantity emitted without a unit (units rule §3.10)",
+      "a model artifact over the flash budget presented as conformant without an ADR (Never-Silently-Deviate)",
+      "rollback capability asserted without lineage/rollback evidence (Honesty Over Polish §10.3)"
+    ],
+    "counter_conditions": [
+      "an OTA strategy change is implied — route it through the OTA chain (MLOPS↔DEVOPS-001 / FW↔MLOPS-001) with an ADR, not this constraint handoff",
+      "a reproducibility gap lacks a remediation path — request the safety-gap ADR before release-gate sign-off"
+    ]
+  }
+}

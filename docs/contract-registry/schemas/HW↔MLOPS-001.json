@@ -1,0 +1,59 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/HW↔MLOPS-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HW↔MLOPS-001: Hardware Platform Profile + Model-Target Packaging Constraints (DERIVED)",
+  "description": "DERIVED / PROVISIONAL — there is NO direct §6 contract on either the Hardware Engineer or the MLOps Engineer side (HARDWARE_ENGINEER_SKILL §6 lists no MLOps; MLOPS_ENGINEER_SKILL §6 lists no Hardware Engineer). The relationship is mediated: the model flash budget is set by the Architect (ARCH↔MLOPS-001), the on-device hardware-ID match and flash-budget-fit are enforced through FW↔MLOPS-001, and sensor characterization for modeling flows through HW↔ML-001. This schema reconstructs the plausible direct interface (hardware platform profile ↔ model-target packaging constraints) for machine validation; per its x-macp.source_status it mandates a COUNTER rather than a binding CONFIRM. No budgets are invented.",
+  "type": "object",
+  "properties": {
+    "hardware_platform_profile": {
+      "type": "object",
+      "description": "HW→MLOPS: target hardware profile relevant to model packaging.",
+      "properties": {
+        "target_hardware_id": { "type": "string" },
+        "mcu_family": { "type": "string" },
+        "available_model_flash": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., KB." } }, "required": ["value", "unit"], "additionalProperties": false },
+        "available_ram": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., KB." } }, "required": ["value", "unit"], "additionalProperties": false }
+      },
+      "additionalProperties": false
+    },
+    "mlops_packaging_constraints": {
+      "type": "object",
+      "description": "MLOPS→HW: hardware-target packaging constraints (subordinate to the ARCH-set flash budget).",
+      "properties": {
+        "per_hw_arena_limit": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., KB." } }, "required": ["value", "unit"], "additionalProperties": false },
+        "packaging_notes": { "type": "array", "items": { "type": "string" } },
+        "mediated_via": { "type": "array", "items": { "type": "string", "enum": ["ARCH↔MLOPS-001", "FW↔MLOPS-001", "HW↔ML-001"] } }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["hardware_platform_profile"] },
+    { "required": ["mlops_packaging_constraints"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "HW↔MLOPS-001",
+    "producer_role": "HW",
+    "consumer_role": "MLOPS",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Provisional/DERIVED edge — no §6 contract exists on either side; the model flash budget is the Architect's (ARCH↔MLOPS-001) and on-device hardware-ID/flash-fit is enforced via FW↔MLOPS-001. Agents coordinate provisionally and must COUNTER for ratification.",
+    "source_status": "DERIVED — no direct §6 on either the HW or MLOPS side; reconstructed from the mediated path (ARCH↔MLOPS-001 / FW↔MLOPS-001 / HW↔ML-001). Mandates COUNTER (CCR to ratify a §6 contract), not a binding CONFIRM.",
+    "cadence": "TRIGGER (provisional — to be set by the ratifying §6 contract / CCR)",
+    "confirm_conditions": [
+      "available flash/RAM and any arena limit carry explicit units",
+      "the model flash budget defers to ARCH↔MLOPS-001 (Architect-owned)",
+      "the hardware-ID match / flash-budget-fit defers to FW↔MLOPS-001",
+      "the mediated path is declared"
+    ],
+    "reject_conditions": [
+      "a flash, RAM, or arena quantity emitted without a unit (units rule §3.10)",
+      "a model flash budget set here instead of by the Architect (ARCH↔MLOPS-001 ownership)",
+      "this DERIVED schema treated as a binding contract — it is provisional pending §6 ratification"
+    ],
+    "counter_conditions": [
+      "ALWAYS COUNTER: request ratification of a real HW↔MLOPS §6 contract (or confirm the relationship is intentionally mediated via ARCH/FW) via a CCR before any binding CONFIRM",
+      "a packaging constraint conflicts with the Architect flash budget — route the trade through ARCH↔MLOPS-001 (ADR on exceedance)"
+    ]
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ARCH↔BACK-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCH↔BACK-001: Edge–Cloud Contracts & Broker Topology + API/Scaling Feasibility",
+  "description": "The Embedded Systems Architect provides the edge–cloud interface contracts, the MQTT (Message Queuing Telemetry Transport) broker topology and QoS (Quality of Service), the device shadow/twin model, and the identity/provisioning topology; the Backend/Cloud Engineer provides API (Application Programming Interface) and broker feasibility, scaling limits, device-management constraints that may reshape the contract, and ADR proposals when a contract or topology is infeasible. Grounded in EMBEDDED_SYSTEMS_ARCHITECT_SKILL §6.8 and BACKEND_CLOUD_ENGINEER_SKILL §6.1. Scaling limits are validated against the fleet ceilings (SCALE-1 50,000 devices; SCALE-2 50,000 MQTT connections; SCALE-3 10,000 msgs/s); identity/provisioning topology is security-relevant (PKI under BACK↔SEC-001).",
+  "type": "object",
+  "properties": {
+    "edge_cloud_architecture": {
+      "type": "object",
+      "description": "ARCH→BACK: edge–cloud contracts, broker topology/QoS, device shadow/twin, identity/provisioning topology.",
+      "properties": {
+        "interface_contracts": { "type": "array", "items": { "type": "string" } },
+        "broker_topology": { "type": "string" },
+        "qos": { "type": "integer", "enum": [0, 1, 2] },
+        "device_twin_model": { "type": "string" },
+        "identity_provisioning_topology": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "backend_feasibility": {
+      "type": "object",
+      "description": "BACK→ARCH: API/broker feasibility, scaling limits, device-management constraints, infeasibility ADR.",
+      "properties": {
+        "api_broker_feasibility": { "type": "string", "enum": ["FEASIBLE", "FEASIBLE_WITH_CHANGES", "INFEASIBLE"] },
+        "scaling_limits": {
+          "type": "object",
+          "properties": {
+            "max_devices": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., devices." } }, "required": ["value", "unit"], "additionalProperties": false },
+            "max_throughput": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., msgs/s." } }, "required": ["value", "unit"], "additionalProperties": false }
+          },
+          "additionalProperties": false
+        },
+        "device_management_constraints": { "type": "array", "items": { "type": "string" } },
+        "infeasibility_adr_ref": { "type": "string", "pattern": "^ADR-\\d{4}$", "description": "Required when api_broker_feasibility = INFEASIBLE." }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        { "if": { "properties": { "api_broker_feasibility": { "const": "INFEASIBLE" } }, "required": ["api_broker_feasibility"] },
+          "then": { "required": ["infeasibility_adr_ref"] } }
+      ]
+    }
+  },
+  "anyOf": [
+    { "required": ["edge_cloud_architecture"] },
+    { "required": ["backend_feasibility"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "ARCH↔BACK-001",
+    "producer_role": "ARCH",
+    "consumer_role": "BACK",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Edge–cloud interface contracts, broker topology/QoS, device-twin and identity/provisioning topology are architecture decisions ratified by humans. An infeasible contract/topology is raised as an ADR; identity/provisioning topology is security-relevant (PKI binding under BACK↔SEC-001, ESC-SEC); scaling must be validated against the SCALE ceilings.",
+    "cadence": "TRIGGER (contract handoff at planning; integration checkpoints; ADR consultation on any infeasibility; fleet-scaling review at production-ready)",
+    "confirm_conditions": [
+      "scaling limits (max devices, max throughput) carry explicit units",
+      "the API/broker feasibility verdict is stated; INFEASIBLE carries an ADR reference",
+      "broker topology, QoS, device-twin and identity/provisioning topology are specified",
+      "scaling is reconciled against SCALE-1 (50,000 devices) / SCALE-2 / SCALE-3 (10,000 msgs/s)"
+    ],
+    "reject_conditions": [
+      "a scaling-limit quantity emitted without a unit (units rule §3.10)",
+      "a topology exceeding a SCALE ceiling presented as feasible without load validation (Honesty Over Polish §10.3)",
+      "a ratified edge–cloud contract / broker topology altered without a CCR + version bump"
+    ],
+    "counter_conditions": [
+      "the identity/provisioning topology change touches PKI/device identity — route the security decision through BACK↔SEC-001 (ESC-SEC) before committing",
+      "a device-management constraint reshapes the contract — request an ADR / Architect review before the topology is frozen"
+    ]
+  }
+}

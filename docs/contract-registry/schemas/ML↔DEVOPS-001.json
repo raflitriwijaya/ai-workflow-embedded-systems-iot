@@ -1,0 +1,66 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ML↔DEVOPS-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ML↔DEVOPS-001: ML Build Requirements + ML Build/CI Infrastructure (DERIVED)",
+  "description": "DERIVED / PROVISIONAL — there is NO direct §6 contract on either the Edge AI/ML Engineer or the DevOps/Platform Engineer side (EDGE_AI_ML_ENGINEER_SKILL §6 lists no DevOps; DEVOPS_PLATFORM_ENGINEER_SKILL §6 lists no ML). Model build/deploy infrastructure and the ML CI pipeline are owned by MLOps: the training/conversion CI pipeline and registry come from ML↔MLOPS-001, and the underlying platform/cluster/IaC from MLOPS↔DEVOPS-001. This schema reconstructs the plausible direct interface (ML build requirements ↔ ML build/CI infrastructure) for machine validation; per its x-macp.source_status it mandates a COUNTER. A direct ML↔DevOps interaction should generally route through MLOps.",
+  "type": "object",
+  "properties": {
+    "ml_build_requirements": {
+      "type": "object",
+      "description": "ML→DEVOPS: training-environment / build / compute requirements (normally expressed to MLOps).",
+      "properties": {
+        "training_environment": { "type": "string" },
+        "build_toolchain_needs": { "type": "array", "items": { "type": "string" } },
+        "compute_requirements": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string", "enum": ["GPU", "CPU", "SPECIALIZED_HW"] },
+            "quantity": { "type": "integer", "minimum": 0 }
+          },
+          "required": ["type"],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "devops_ml_infrastructure": {
+      "type": "object",
+      "description": "DEVOPS→ML: ML build infrastructure / CI capacity (provided via the MLOps layer).",
+      "properties": {
+        "ci_capacity": { "type": "string" },
+        "infrastructure_ref": { "type": "string" },
+        "mediated_via": { "type": "array", "items": { "type": "string", "enum": ["ML↔MLOPS-001", "MLOPS↔DEVOPS-001"] } }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["ml_build_requirements"] },
+    { "required": ["devops_ml_infrastructure"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "ML↔DEVOPS-001",
+    "producer_role": "ML",
+    "consumer_role": "DEVOPS",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Provisional/DERIVED edge — no §6 contract exists on either side, and the capability it describes is explicitly owned by MLOps: the ML CI/training pipeline is ML↔MLOPS-001 and the platform/cluster/IaC is MLOPS↔DEVOPS-001. Agents coordinate provisionally and must COUNTER, routing the real work through MLOps.",
+    "source_status": "DERIVED — no direct §6 on either the ML or DEVOPS side; the model build/deploy CI is owned by ML↔MLOPS-001 + MLOPS↔DEVOPS-001. Mandates COUNTER (CCR; normally route through MLOps), not a binding CONFIRM.",
+    "cadence": "TRIGGER (provisional — to be set by the ratifying §6 contract / CCR)",
+    "confirm_conditions": [
+      "ML build/compute requirements are expressed for the MLOps-owned pipeline (ML↔MLOPS-001)",
+      "platform/cluster/IaC provisioning defers to MLOPS↔DEVOPS-001",
+      "the mediated path is declared",
+      "no pipeline ownership is asserted directly between ML and DevOps"
+    ],
+    "reject_conditions": [
+      "ML build/CI infrastructure treated as a direct ML↔DevOps contract, bypassing the MLOps-owned pipeline (ML↔MLOPS-001 / MLOPS↔DEVOPS-001)",
+      "a compute quantity expressed ambiguously (no type/quantity) for provisioning",
+      "this DERIVED schema treated as a binding contract — it is provisional pending §6 ratification"
+    ],
+    "counter_conditions": [
+      "ALWAYS COUNTER: route ML build/deploy infrastructure through MLOps (ML↔MLOPS-001 → MLOPS↔DEVOPS-001), and request a CCR if a genuine direct ML↔DevOps need exists",
+      "a specialized compute/toolchain need exceeds standard provisioning — route through MLOPS↔DEVOPS-001 / RES↔DEVOPS-001 with the full spec"
+    ]
+  }
+}

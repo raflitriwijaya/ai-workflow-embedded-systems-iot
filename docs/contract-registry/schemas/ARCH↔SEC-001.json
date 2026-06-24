@@ -1,0 +1,77 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ARCH↔SEC-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCH↔SEC-001: Co-Owned Security Baseline + Architecture Threat-Modeling Surfaces",
+  "description": "The Security Engineer provides the security baseline definition, threat models, hardening requirements, and PKI (Public Key Infrastructure)/identity design — co-owned for security-by-design; the Embedded Systems Architect provides the architecture surfaces for threat modeling and embeds the security requirements (secure boot, mTLS, root of trust) into the system architecture. Grounded in SECURITY_ENGINEER_SKILL §6.1 and EMBEDDED_SYSTEMS_ARCHITECT_SKILL §6.11. This is the co-owned security-baseline contract: it is Tier-1, fires ESC-SEC, and any security-relevant decision carries the Security Engineer veto (HG-01-adjacent) and Architect + Security STRATEGIC-ADR approval — agents may only propose.",
+  "type": "object",
+  "properties": {
+    "security_baseline": {
+      "type": "object",
+      "description": "SEC→ARCH: security baseline, threat models, hardening requirements, PKI/identity design (co-owned).",
+      "properties": {
+        "baseline_controls": {
+          "type": "array",
+          "description": "Mandatory baseline controls (secure boot, signed OTA, mTLS/X.509, hardware root of trust, debug-port lockdown, anti-rollback).",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "threat_model_ref": { "type": "string" },
+        "hardening_requirements": { "type": "array", "items": { "type": "string" } },
+        "pki_identity_design_ref": { "type": "string" },
+        "baseline_change": { "type": "boolean", "description": "True when this submission changes the security baseline — fires ESC-SEC + ESC-TIER1." },
+        "strategic_adr_ref": { "type": "string", "pattern": "^ADR-\\d{4}$", "description": "Required when baseline_change = true (ARCH + SEC STRATEGIC-ADR)." }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        { "if": { "properties": { "baseline_change": { "const": true } }, "required": ["baseline_change"] },
+          "then": { "required": ["strategic_adr_ref"] } }
+      ]
+    },
+    "architecture_surfaces": {
+      "type": "object",
+      "description": "ARCH→SEC: architecture surfaces for threat modeling + embedded security requirements.",
+      "properties": {
+        "surfaces_for_threat_modeling": { "type": "array", "items": { "type": "string" } },
+        "embedded_controls": {
+          "type": "object",
+          "properties": {
+            "secure_boot": { "type": "boolean" },
+            "mtls": { "type": "boolean" },
+            "root_of_trust": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["security_baseline"] },
+    { "required": ["architecture_surfaces"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "ARCH↔SEC-001",
+    "producer_role": "SEC",
+    "consumer_role": "ARCH",
+    "decision_tier": "Tier-1",
+    "tier_rationale": "The co-owned security baseline is the canonical Tier-1 surface: any security-baseline change is a STRATEGIC ADR requiring ARCH + Security approval and carries the Security Engineer release veto (HG-01). Agents may only propose; the Security Engineer owns all binding security decisions (ESC-SEC, ESC-TIER1).",
+    "escalation_triggers": ["ESC-SEC", "ESC-TIER1"],
+    "cadence": "TRIGGER (joint security-baseline authoring at planning; security architecture reviews; ADR consultation with veto on any security-relevant decision; pre-production hardening sign-off)",
+    "confirm_conditions": [
+      "the baseline controls list is present and the threat model / PKI-identity design are referenced",
+      "embedded controls (secure boot, mTLS, root of trust) are reflected in the architecture surfaces",
+      "a baseline change carries a STRATEGIC-ADR reference (ARCH + SEC approval)",
+      "the submission records a proposal only — no binding baseline change is asserted by the message itself"
+    ],
+    "reject_conditions": [
+      "a security-baseline change asserted without the ARCH + SEC STRATEGIC ADR (ESC-TIER1; bypasses HG-01)",
+      "an architecture surface that weakens a mandatory baseline control (secure boot / signed OTA / mTLS / RoT / debug lockdown / anti-rollback) — Security veto",
+      "an agent attempting autonomous resolution of a security-baseline decision (Tier-1 admits zero autonomous resolution)"
+    ],
+    "counter_conditions": [
+      "ALWAYS escalate ESC-SEC + ESC-TIER1 — the security baseline is co-owned and human-gated; propose and route to the Security Engineer + Architect, never auto-confirm",
+      "a threat-model surface is incompletely specified — request the full attack-surface enumeration before baseline sign-off"
+    ]
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ML↔BACK-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ML↔BACK-001: Cloud Inference Output Schema + Backend Serving Requirements (DERIVED)",
+  "description": "DERIVED / PROVISIONAL — there is NO direct §6 contract on either the Edge AI/ML Engineer or the Backend/Cloud Engineer side (EDGE_AI_ML_ENGINEER_SKILL §6 lists no Backend; BACKEND_CLOUD_ENGINEER_SKILL §6 lists no ML). AgriSpectra inference is primarily on-device (edge); any cloud-side inference is mediated through the MLOps pipeline (ML↔MLOPS-001) and served by the Backend (MLOPS↔BACK-001), with the edge-vs-cloud inference split owned by the Architect (ARCH↔ML-001). This schema reconstructs the plausible direct interface (cloud inference output schema ↔ backend serving requirements) for machine validation; per its x-macp.source_status it mandates a COUNTER. No latency/throughput targets are invented.",
+  "type": "object",
+  "properties": {
+    "ml_cloud_inference_schema": {
+      "type": "object",
+      "description": "ML→BACK: output schema for any cloud-served inference (subordinate to the ARCH edge-vs-cloud split).",
+      "properties": {
+        "output_fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "unit": { "type": "string", "minLength": 1, "description": "Explicit unit per physical field; use 'enum'/'probability'/'bool' for non-physical." }
+            },
+            "required": ["name", "unit"],
+            "additionalProperties": false
+          }
+        },
+        "inference_location": { "type": "string", "enum": ["EDGE", "CLOUD", "HYBRID"], "description": "Owned by ARCH↔ML-001; CLOUD/HYBRID is what makes this edge relevant." }
+      },
+      "additionalProperties": false
+    },
+    "backend_serving_requirements": {
+      "type": "object",
+      "description": "BACK→ML: API/serving requirements for ML outputs (via MLOPS↔BACK-001).",
+      "properties": {
+        "serving_interface": { "type": "string", "enum": ["REST", "gRPC", "WebSocket"] },
+        "latency_requirement": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., ms." } }, "required": ["value", "unit"], "additionalProperties": false },
+        "throughput_requirement": { "type": "object", "properties": { "value": { "type": "number", "minimum": 0 }, "unit": { "type": "string", "minLength": 1, "description": "e.g., req/s." } }, "required": ["value", "unit"], "additionalProperties": false },
+        "mediated_via": { "type": "array", "items": { "type": "string", "enum": ["ARCH↔ML-001", "ML↔MLOPS-001", "MLOPS↔BACK-001"] } }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["ml_cloud_inference_schema"] },
+    { "required": ["backend_serving_requirements"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "ML↔BACK-001",
+    "producer_role": "ML",
+    "consumer_role": "BACK",
+    "decision_tier": "Tier-3",
+    "tier_rationale": "Provisional/DERIVED edge — no §6 contract exists on either side; AgriSpectra inference is edge-first and any cloud inference is mediated (ARCH↔ML-001 split; ML↔MLOPS-001; MLOPS↔BACK-001). Agents coordinate provisionally and must COUNTER for ratification.",
+    "source_status": "DERIVED — no direct §6 on either the ML or BACK side; reconstructed from the mediated path (ARCH↔ML-001 / ML↔MLOPS-001 / MLOPS↔BACK-001). Mandates COUNTER (CCR to ratify a §6 contract), not a binding CONFIRM.",
+    "cadence": "TRIGGER (provisional — to be set by the ratifying §6 contract / CCR)",
+    "confirm_conditions": [
+      "every inference output field and serving requirement (latency/throughput) carries an explicit unit",
+      "the edge-vs-cloud inference split defers to ARCH↔ML-001",
+      "cloud serving routes through MLOPS↔BACK-001 (model distribution/serving)",
+      "the mediated path is declared"
+    ],
+    "reject_conditions": [
+      "an output field, latency, or throughput quantity emitted without a unit (units rule §3.10)",
+      "a cloud-inference deployment that changes the edge-vs-cloud split without ARCH↔ML-001 / an ADR",
+      "this DERIVED schema treated as a binding contract — it is provisional pending §6 ratification"
+    ],
+    "counter_conditions": [
+      "ALWAYS COUNTER: request ratification of a real ML↔BACK §6 contract (or confirm inference is edge-only / mediated) via a CCR before any binding CONFIRM",
+      "a serving requirement exceeds the API ceiling (SCALE-4 / PERF-3) — route capacity through ARCH↔BACK-001 with load validation"
+    ]
+  }
+}

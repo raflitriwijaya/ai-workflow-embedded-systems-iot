@@ -1,0 +1,96 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ML↔MLOPS-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ML↔MLOPS-001: Model Artifact & Drift Metric Definitions + Pipeline/Registry Services",
+  "description": "The Edge AI/ML Engineer provides reproducible training and conversion code, the model artifact and metadata, and the drift-monitoring metric definitions; the MLOps Engineer provides the CI/CD (Continuous Integration / Continuous Delivery) training/conversion pipeline, the model registry, automated quantization/packaging, implemented drift monitoring, and fleet telemetry for analysis. Grounded in EDGE_AI_ML_ENGINEER_SKILL §6.4 and MLOPS_ENGINEER_SKILL §6.1. Drift monitoring is erosion-shaped detection evaluated against FC-022 (closed-loop silent corruption); model signing / supply-chain integrity stay under MLOPS↔SEC-001, and OTA packaging/dispatch under FW↔MLOPS-001 / MLOPS↔DEVOPS-001.",
+  "type": "object",
+  "properties": {
+    "model_handoff": {
+      "type": "object",
+      "description": "ML→MLOPS: reproducible code, model artifact + metadata, drift-metric definitions, acceptance thresholds.",
+      "properties": {
+        "training_code_ref": { "type": "string" },
+        "conversion_code_ref": { "type": "string" },
+        "model_artifact_ref": { "type": "string" },
+        "model_metadata": {
+          "type": "object",
+          "properties": {
+            "model_id": { "type": "string" },
+            "version": { "type": "string" }
+          },
+          "required": ["model_id", "version"],
+          "additionalProperties": false
+        },
+        "drift_metric_definitions": {
+          "type": "array",
+          "description": "Erosion-shaped drift metrics (FC-022); each carries a threshold with an explicit unit.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "metric": { "type": "string" },
+              "threshold": { "type": "number" },
+              "unit": { "type": "string", "minLength": 1 }
+            },
+            "required": ["metric", "threshold", "unit"],
+            "additionalProperties": false
+          }
+        },
+        "acceptance_thresholds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "metric": { "type": "string" },
+              "comparator": { "type": "string", "enum": [">=", "<=", ">", "<", "=="] },
+              "value": { "type": "number" },
+              "unit": { "type": "string", "minLength": 1 }
+            },
+            "required": ["metric", "comparator", "value", "unit"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "mlops_pipeline_services": {
+      "type": "object",
+      "description": "MLOPS→ML: CI pipeline, registry, quantization/packaging, drift monitoring, fleet telemetry.",
+      "properties": {
+        "ci_pipeline_ref": { "type": "string" },
+        "registry_ref": { "type": "string" },
+        "quantization_packaging": { "type": "string", "enum": ["AUTOMATED", "MANUAL"] },
+        "drift_monitoring_implemented": { "type": "boolean" },
+        "fleet_telemetry_available": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["model_handoff"] },
+    { "required": ["mlops_pipeline_services"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "ML↔MLOPS-001",
+    "producer_role": "ML",
+    "consumer_role": "MLOPS",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Model registration, reproducibility, and drift-metric definition cross the model/pipeline boundary and are ratified by humans (pipeline alignment at planning; artifact handoff/registration at production-ready). Drift design maps to FC-022; a registry-schema or pipeline change exceeding the precedented surface coordinates via RES↔MLOPS-001 / ADR.",
+    "cadence": "TRIGGER (pipeline alignment at planning; artifact handoff and registration during development and production-ready; ongoing drift-review cycles)",
+    "confirm_conditions": [
+      "reproducible training and conversion code references accompany the model artifact + metadata (model_id + version)",
+      "every drift metric and acceptance threshold carries an explicit unit",
+      "the pipeline/registry services and quantization/packaging mode are stated",
+      "drift monitoring is confirmed implementable against available fleet telemetry (FC-022)"
+    ],
+    "reject_conditions": [
+      "a drift metric, threshold, or acceptance value emitted without a unit (units rule §3.10)",
+      "a model registered without reproducible training/conversion code (reproducibility requirement)",
+      "drift monitoring claimed implemented when current fleet telemetry cannot support the metric (Honesty Over Polish §10.3; FC-022 blind spot)"
+    ],
+    "counter_conditions": [
+      "a drift metric is not computable from available fleet telemetry — request a telemetry-feasible erosion-shaped metric (FC-022)",
+      "a novel artifact format/registry-schema change is implied — route it through RES↔MLOPS-001 / an ADR before registration"
+    ]
+  }
+}

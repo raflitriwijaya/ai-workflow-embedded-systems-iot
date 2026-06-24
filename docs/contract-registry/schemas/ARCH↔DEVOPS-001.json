@@ -1,0 +1,74 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/ARCH↔DEVOPS-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCH↔DEVOPS-001: OTA/Orchestration Strategy + Pipeline & Artifact-Signing Feasibility",
+  "description": "The Embedded Systems Architect provides the OTA (Over-the-Air) strategy (A/B partitions, signing, rollback), the gateway-orchestration approach (K3s/balena), build/toolchain constraints, and the deployment topology; the DevOps/Platform Engineer provides pipeline and fleet-management feasibility, the OTA implementation, the artifact-signing mechanism, and observability hooks. Grounded in EMBEDDED_SYSTEMS_ARCHITECT_SKILL §6.7 and DEVOPS_PLATFORM_ENGINEER_SKILL §6.5. The artifact-signing mechanism and any anti-rollback change are security-baseline-relevant (ESC-SEC; binding decisions under DEVOPS↔SEC-001 / FW↔SEC-001); OTA dispatch governance stays in the MLOPS↔DEVOPS-001 chain.",
+  "type": "object",
+  "properties": {
+    "ota_orchestration_strategy": {
+      "type": "object",
+      "description": "ARCH→DEVOPS: OTA strategy, gateway orchestration, build/toolchain constraints, deployment topology.",
+      "properties": {
+        "ota_strategy": {
+          "type": "object",
+          "properties": {
+            "ab_partitions": { "type": "boolean" },
+            "signing_required": { "type": "boolean" },
+            "rollback_supported": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        "orchestration_approach": { "type": "string", "description": "e.g., K3s, balena." },
+        "build_toolchain_constraints": { "type": "array", "items": { "type": "string" } },
+        "deployment_topology": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "devops_feasibility": {
+      "type": "object",
+      "description": "DEVOPS→ARCH: pipeline/fleet feasibility, OTA implementation, artifact-signing mechanism, observability hooks.",
+      "properties": {
+        "pipeline_feasibility": { "type": "string", "enum": ["FEASIBLE", "FEASIBLE_WITH_CHANGES", "INFEASIBLE"] },
+        "ota_implementation_ref": { "type": "string" },
+        "artifact_signing_mechanism": { "type": "string", "description": "Security-baseline-relevant (binding under DEVOPS↔SEC-001)." },
+        "observability_hooks": { "type": "array", "items": { "type": "string" } },
+        "signing_baseline_change": { "type": "boolean", "description": "True when the signing/anti-rollback baseline would change — fires ESC-SEC." },
+        "security_review_ref": { "type": "string", "description": "Required when signing_baseline_change = true (Security Engineer review)." }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        { "if": { "properties": { "signing_baseline_change": { "const": true } }, "required": ["signing_baseline_change"] },
+          "then": { "required": ["security_review_ref"] } }
+      ]
+    }
+  },
+  "anyOf": [
+    { "required": ["ota_orchestration_strategy"] },
+    { "required": ["devops_feasibility"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "ARCH↔DEVOPS-001",
+    "producer_role": "ARCH",
+    "consumer_role": "DEVOPS",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "OTA/orchestration strategy and build/toolchain constraints are architecture decisions ratified by humans. The artifact-signing mechanism and anti-rollback posture touch the security baseline — a change there fires ESC-SEC and is bound under DEVOPS↔SEC-001 / FW↔SEC-001; OTA dispatch governance stays in the MLOPS↔DEVOPS-001 chain.",
+    "escalation_triggers": ["ESC-SEC"],
+    "cadence": "TRIGGER (OTA and fleet-strategy alignment at planning; CI/CD integration during development; ADR consultation on any reliability/automation/security gap; production-scaling review)",
+    "confirm_conditions": [
+      "the OTA strategy (A/B, signing, rollback) and orchestration approach are specified",
+      "pipeline/fleet feasibility verdict is stated with the OTA implementation reference",
+      "a signing/anti-rollback baseline change carries a Security Engineer review reference (ESC-SEC)",
+      "observability hooks are enumerated for fleet management"
+    ],
+    "reject_conditions": [
+      "an artifact-signing or anti-rollback baseline change accepted without a Security Engineer review reference (security baseline — ESC-SEC)",
+      "an OTA strategy change decided in this contract without an ADR (OTA governance is ADR-gated)",
+      "a pipeline presented as FEASIBLE while the signing mechanism weakens the security baseline (Honesty Over Polish §10.3)"
+    ],
+    "counter_conditions": [
+      "ALWAYS escalate ESC-SEC when the coordination changes the signing/anti-rollback baseline — propose, do not auto-confirm; the Security Engineer owns the binding decision",
+      "an orchestration/toolchain change implies a deployment-topology change — request an ADR before freezing the strategy"
+    ]
+  }
+}

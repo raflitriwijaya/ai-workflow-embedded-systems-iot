@@ -1,0 +1,145 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/SEC↔BIZ-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SEC↔BIZ-001: Security Investment ROI + Compliance Cost-Benefit",
+  "description": "The Business Consultant provides business risk framing of security gaps (regulatory exposure, reputational risk, contract liability), the investment case for security certifications (e.g., IEC 62443, ISO 27001) required by target enterprise customers, and the competitive-differentiation value of security credentials; the Security Engineer provides security audit cost and timeline estimates, certification cost and schedule for target compliance frameworks, and security-incident-response cost estimates for risk modeling. Grounded in BUSINESS_CONSULTANT_SKILL §6.7. ASYMMETRY: SECURITY_ENGINEER_SKILL §6 has no Business Consultant subsection, so this contract is documented one-sided from the Business Consultant card; its Provides/Requires pair documents both directions, so reciprocity is reconstructed from the single grounded side — grounded, NOT a DERIVED/invented contract. Security-relevant: investment/posture decisions fire ESC-SEC; the quantified Business Impact Analysis is the BIA artifact (ARCH↔BIZ-BIA-001).",
+  "type": "object",
+  "properties": {
+    "business_security_case": {
+      "type": "object",
+      "description": "BIZ→SEC: risk framing, certification investment case, differentiation value, Business Impact Analysis.",
+      "properties": {
+        "risk_framing": {
+          "type": "object",
+          "properties": {
+            "regulatory_exposure": { "type": "string" },
+            "reputational_risk": { "type": "string" },
+            "contract_liability": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "certification_investment_case": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "framework": { "type": "string", "description": "e.g., IEC 62443, ISO 27001." },
+              "customer_required": { "type": "boolean" }
+            },
+            "required": ["framework"],
+            "additionalProperties": false
+          }
+        },
+        "differentiation_value": { "type": "string" },
+        "business_impact_analysis": {
+          "type": "object",
+          "description": "Quantified BIA (within 10 business days of a Security Investment Request); see ARCH↔BIZ-BIA-001.",
+          "properties": {
+            "quantified_risk_exposure": { "$ref": "#/$defs/money" },
+            "regulatory_penalty_exposure": { "$ref": "#/$defs/money" },
+            "bia_ref": { "type": "string" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "security_cost_estimates": {
+      "type": "object",
+      "description": "SEC→BIZ: audit/certification cost+timeline, incident-response cost estimates, posture summary.",
+      "properties": {
+        "audit_estimate": {
+          "type": "object",
+          "properties": { "cost": { "$ref": "#/$defs/money" }, "timeline": { "$ref": "#/$defs/duration" } },
+          "additionalProperties": false
+        },
+        "certification_estimates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "framework": { "type": "string" },
+              "cost": { "$ref": "#/$defs/money" },
+              "schedule": { "$ref": "#/$defs/duration" }
+            },
+            "required": ["framework"],
+            "additionalProperties": false
+          }
+        },
+        "incident_response_cost_estimate": { "$ref": "#/$defs/money" },
+        "posture_summary": {
+          "type": "object",
+          "properties": {
+            "open_critical_findings": { "type": "integer", "minimum": 0 },
+            "open_high_findings": { "type": "integer", "minimum": 0 },
+            "compliance_assessment": { "type": "string", "enum": ["MEETS", "PARTIAL_GAP", "FULL_GAP"] }
+          },
+          "additionalProperties": false
+        },
+        "incident_business_impact_notification": {
+          "type": "object",
+          "description": "On a confirmed security incident, Security notifies Business within 4 hours.",
+          "properties": {
+            "incident_id": { "type": "string" },
+            "confirmed_at": { "type": "string", "format": "date-time" },
+            "notified_at": { "type": "string", "format": "date-time" }
+          },
+          "required": ["incident_id", "confirmed_at", "notified_at"],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["business_security_case"] },
+    { "required": ["security_cost_estimates"] }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "money": {
+      "type": "object",
+      "properties": {
+        "value": { "type": "number", "minimum": 0 },
+        "currency": { "type": "string", "minLength": 1 },
+        "unit": { "type": "string", "minLength": 1, "description": "e.g., USD, USD/year." }
+      },
+      "required": ["value", "currency", "unit"],
+      "additionalProperties": false
+    },
+    "duration": {
+      "type": "object",
+      "properties": {
+        "value": { "type": "number", "minimum": 0 },
+        "unit": { "type": "string", "minLength": 1, "description": "e.g., weeks, months." }
+      },
+      "required": ["value", "unit"],
+      "additionalProperties": false
+    }
+  },
+  "x-macp": {
+    "contract_id": "SEC↔BIZ-001",
+    "producer_role": "SEC",
+    "consumer_role": "BIZ",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Security investment ROI and compliance cost-benefit are coordinated (monthly alignment; quarterly strategy review), but security-investment and posture decisions are security-relevant and human-owned. ESC-SEC applies — the Business Consultant supplies the business case and BIA; the Security Engineer owns the binding security decision and any risk acceptance.",
+    "source_status": "ASYMMETRIC — grounded one-sided from BIZ §6.7 (no SEC §6 Business subsection); reciprocity reconstructed from the single documented side, not invented.",
+    "escalation_triggers": ["ESC-SEC"],
+    "cadence": "TRIGGER + CALENDAR (monthly Security-Business Alignment, third Wednesday; Security Investment Business Case Support — BIA within 10 business days; Security Incident Business Impact — Security notifies within 4 hours, BIA within 24 hours; quarterly Security-Business Strategy Review; customer security-requirement review — forwarded within 2 business days, compliance assessment within 5 business days; annual offsite)",
+    "confirm_conditions": [
+      "every cost and timeline estimate (audit, certification, incident-response) carries a currency and/or an explicit time unit",
+      "a quantified BIA accompanies a Security Investment Request (risk exposure, regulatory-penalty exposure)",
+      "the posture summary reports open Critical/High findings honestly",
+      "a confirmed security incident is notified to Business within 4 hours"
+    ],
+    "reject_conditions": [
+      "a cost, penalty-exposure, or timeline emitted without a unit/currency (units rule §3.10)",
+      "open Critical/High security findings understated or omitted to strengthen an investment case (Honesty Over Polish §10.3; ESC-SEC)",
+      "a security-investment or risk-acceptance decision asserted by the Business Consultant without the Security Engineer's binding decision (ESC-SEC; SEC owns the call)"
+    ],
+    "counter_conditions": [
+      "ALWAYS escalate ESC-SEC when coordination touches security posture, incident impact, or risk acceptance — propose, do not auto-confirm; the Security Engineer decides",
+      "a certification investment case lacks the Security audit/cost estimate — request the cost+timeline before presenting the ROI to executive leadership"
+    ]
+  }
+}

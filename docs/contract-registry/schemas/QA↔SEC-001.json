@@ -1,0 +1,99 @@
+{
+  "$id": "https://vault.local/contract-registry/schemas/QA↔SEC-001.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QA↔SEC-001: Threat-Derived Test Cases + Security Test Execution Evidence",
+  "description": "The Security Engineer provides security test requirements, threat-derived test cases mapped to STRIDE (Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege) in the Threat-Derived Test Case Schema format, penetration-test scope and methodology, security acceptance criteria, and the security baseline specification; the QA & Test Automation Engineer provides security test execution results with objective evidence and traceability, verification of security-defect fixes with regression evidence, security vulnerability findings (reported within 1 business day of discovery), and security-test coverage reports as input to the release security gate. Grounded in SECURITY_ENGINEER_SKILL §6.8 and QA_TEST_AUTOMATION_ENGINEER_SKILL §6.10. Security-relevant: this contract feeds the Security Engineer's release go/no-go (HG-01) and fires ESC-SEC — QA executes and reports; the Security Engineer owns all binding security decisions.",
+  "type": "object",
+  "properties": {
+    "security_test_package": {
+      "type": "object",
+      "description": "SEC→QA: test requirements, threat-derived (STRIDE) test cases, pen-test scope, acceptance criteria, baseline.",
+      "properties": {
+        "test_requirements": { "type": "array", "items": { "type": "string" } },
+        "threat_derived_test_cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "test_case_id": { "type": "string" },
+              "stride_category": { "type": "string", "enum": ["SPOOFING", "TAMPERING", "REPUDIATION", "INFORMATION_DISCLOSURE", "DENIAL_OF_SERVICE", "ELEVATION_OF_PRIVILEGE"] },
+              "execution_type": { "type": "string", "enum": ["AUTOMATED", "MANUAL"] }
+            },
+            "required": ["test_case_id", "stride_category"],
+            "additionalProperties": false
+          }
+        },
+        "pentest_scope": { "type": "string" },
+        "security_acceptance_criteria": { "type": "array", "items": { "type": "string" } },
+        "security_baseline_ref": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "qa_security_evidence": {
+      "type": "object",
+      "description": "QA→SEC: test execution results, defect-fix verification, vulnerability findings, coverage reports.",
+      "properties": {
+        "test_results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "test_case_id": { "type": "string" },
+              "result": { "type": "string", "enum": ["PASS", "FAIL", "BLOCKED"] },
+              "evidence_ref": { "type": "string" }
+            },
+            "required": ["test_case_id", "result"],
+            "additionalProperties": false
+          }
+        },
+        "defect_fix_verifications": { "type": "array", "items": { "type": "string" } },
+        "vulnerability_findings": {
+          "type": "array",
+          "description": "Reported within 1 business day of discovery.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "finding_id": { "type": "string" },
+              "severity": { "type": "string", "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"] },
+              "discovered_date": { "type": "string", "format": "date" },
+              "reported_date": { "type": "string", "format": "date" }
+            },
+            "required": ["finding_id", "severity", "discovered_date", "reported_date"],
+            "additionalProperties": false
+          }
+        },
+        "coverage_report_ref": { "type": "string", "description": "Security-test coverage report — input to the release security gate." }
+      },
+      "additionalProperties": false
+    }
+  },
+  "anyOf": [
+    { "required": ["security_test_package"] },
+    { "required": ["qa_security_evidence"] }
+  ],
+  "additionalProperties": false,
+  "x-macp": {
+    "contract_id": "QA↔SEC-001",
+    "producer_role": "SEC",
+    "consumer_role": "QA",
+    "decision_tier": "Tier-2",
+    "tier_rationale": "Threat-derived test-case handoff and security-test execution are coordinated at machine speed, but the evidence feeds the Security Engineer's release security gate (HG-01, Tier-1) and any vulnerability finding is security-relevant. ESC-SEC applies — QA executes and reports; the Security Engineer owns the binding go/no-go and risk-acceptance decisions.",
+    "escalation_triggers": ["ESC-SEC"],
+    "cadence": "TRIGGER + SLA_FROM_EVENT (security-test alignment at planning; threat-derived test-case handoff within 10 business days of a threat-model update / security ADR / post-incident review; QA acknowledges in 2 business days, executes automated cases in 5 / manual in 10 business days, reports in 1 business day; vulnerability findings reported within 1 business day; quarterly test-case review; release-gate security sign-off)",
+    "confirm_conditions": [
+      "each threat-derived test case carries a STRIDE category and an execution type",
+      "QA test results carry a PASS/FAIL/BLOCKED verdict with evidence and traceability to the test-case id",
+      "vulnerability findings carry a severity and were reported within 1 business day of discovery",
+      "the security-test coverage report is provided as input to the release security gate"
+    ],
+    "reject_conditions": [
+      "a discovered vulnerability not reported within 1 business day, or downgraded in severity (Honesty Over Polish §10.3; ESC-SEC)",
+      "a security test reported PASS without objective evidence / traceability to the threat-derived case",
+      "a release security sign-off inferred from coverage without the Security Engineer's binding go/no-go (bypasses HG-01)"
+    ],
+    "counter_conditions": [
+      "ALWAYS escalate ESC-SEC when a finding touches the security baseline or a security-relevant release — propose, do not auto-confirm; the Security Engineer decides",
+      "a threat-derived test case cannot be executed as written (ambiguous steps, missing prerequisites) — flag back to Security within 2 business days with specific blockers"
+    ]
+  }
+}
