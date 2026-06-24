@@ -45,7 +45,13 @@
     "consumer_role": "DEVOPS",
     "decision_tier": "Tier-3",
     "tier_rationale": "Provisional/DERIVED edge — no §6 contract exists on either side, and the capability it describes is explicitly owned by MLOps: the ML CI/training pipeline is ML↔MLOPS-001 and the platform/cluster/IaC is MLOPS↔DEVOPS-001. Agents coordinate provisionally and must COUNTER, routing the real work through MLOps.",
-    "source_status": "DERIVED — no direct §6 on either the ML or DEVOPS side; the model build/deploy CI is owned by ML↔MLOPS-001 + MLOPS↔DEVOPS-001. Mandates COUNTER (CCR; normally route through MLOps), not a binding CONFIRM.",
+    "source_status": "MEDIATED-PERMANENT",
+    "mediation": {
+      "decision": "MEDIATE",
+      "rationale": "No direct contract needed: the ML training/conversion CI pipeline and model registry are MLOps-owned (ML↔MLOPS-001), and the underlying platform/cluster/IaC is MLOPS↔DEVOPS-001; a direct ML↔DevOps contract would bypass the MLOps-owned pipeline.",
+      "redirect_to": ["ML↔MLOPS-001", "MLOPS↔DEVOPS-001"],
+      "arb_reference": "docs/contract-registry/DERIVED_RESOLUTION.md"
+    },
     "cadence": "TRIGGER (provisional — to be set by the ratifying §6 contract / CCR)",
     "confirm_conditions": [
       "ML build/compute requirements are expressed for the MLOps-owned pipeline (ML↔MLOPS-001)",

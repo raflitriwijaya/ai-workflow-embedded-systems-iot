@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eval-harness"
+version = "1.0.0"
+description = "Evaluation Harness — AI agent performance measurement (Phase 5 'measure first, delegate second')"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary — internal AgriSpectra governance tooling" }
+authors = [
+    { name = "QA & Test Automation Engineer (Process Architect)" },
+    { name = "DevOps/Platform Engineer (Builder)" },
+]
+
+# The scoring/statistics core depends only on the standard library. The optional
+# extras pull in the persistence, API, and YAML-ingest layers.
+dependencies = []
+
+[project.optional-dependencies]
+db = ["psycopg2-binary>=2.9"]
+api = ["fastapi>=0.110", "uvicorn[standard]>=0.29", "pydantic>=2.6", "python-multipart>=0.0.9"]
+ingest = ["PyYAML>=6.0"]
+dev = ["pytest>=8.0", "ruff>=0.4"]
+# Convenience: everything needed to run the full service.
+all = [
+    "psycopg2-binary>=2.9",
+    "fastapi>=0.110", "uvicorn[standard]>=0.29", "pydantic>=2.6", "python-multipart>=0.0.9",
+    "PyYAML>=6.0",
+]
+
+[project.scripts]
+harness-capture = "eval_harness.cli.capture:main"
+harness-evaluate = "eval_harness.cli.evaluate:main"
+harness-stats = "eval_harness.pipeline.statistical_engine:main"
+
+[tool.setuptools.packages.find]
+include = ["eval_harness*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+addopts = "-ra -q --import-mode=importlib"
+testpaths = ["tests"]
+# importlib mode + a tests package lets test modules import shared fixtures from
+# one another without sys.path collisions.
+# (pytest>=7 honours import-mode here)
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E741"]  # ambiguous var names (e.g. 'l') are intentional in a couple of spots

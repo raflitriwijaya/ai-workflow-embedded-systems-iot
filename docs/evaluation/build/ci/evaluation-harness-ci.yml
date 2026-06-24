@@ -1,0 +1,83 @@
+# Evaluation Harness CI/CD (GitHub Actions).
+#
+# Install: copy (or symlink) this file to the repository root at
+#   .github/workflows/evaluation-harness-ci.yml
+# GitHub only discovers workflows under .github/workflows at the repo root.
+#
+# Jobs:
+#   lint-test  — ruff + pytest on the pure scoring/statistics core (no DB)
+#   db-smoke   — migrate + seed a real PostgreSQL, run the end-to-end smoke test
+#   docker     — build the harness image
+name: evaluation-harness-ci
+
+on:
+  push:
+    paths:
+      - "docs/evaluation/build/**"
+      - ".github/workflows/evaluation-harness-ci.yml"
+  pull_request:
+    paths:
+      - "docs/evaluation/build/**"
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: docs/evaluation/build
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install harness (dev extras)
+        run: pip install "./harness[dev]"
+      - name: Ruff lint
+        run: ruff check harness
+      - name: Unit tests (scoring + statistics + validators)
+        run: pytest -q
+        working-directory: docs/evaluation/build/harness
+
+  db-smoke:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: eval_harness
+          POSTGRES_USER: harness
+          POSTGRES_PASSWORD: harness
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U harness -d eval_harness"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_URL: postgresql://harness:harness@localhost:5432/eval_harness
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGDATABASE: eval_harness
+      PGUSER: harness
+      PGPASSWORD: harness
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install harness (all extras)
+        run: pip install "./harness[all]"
+      - name: Apply migrations + seed
+        run: python db/migrate.py --seed -v
+      - name: Verify migration status (idempotent re-run)
+        run: python db/migrate.py --seed --status
+      - name: End-to-end smoke test
+        run: python ci/smoke_test.py
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: [lint-test]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build harness image
+        run: docker build -t eval-harness:ci docs/evaluation/build

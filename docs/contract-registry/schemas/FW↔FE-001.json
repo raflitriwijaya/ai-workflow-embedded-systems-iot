@@ -38,7 +38,13 @@
     "consumer_role": "FE",
     "decision_tier": "Tier-3",
     "tier_rationale": "Provisional/DERIVED edge — no §6 contract exists on either side; firmware status reaches the dashboard through the Backend (FW↔BACK-001 → BACK↔FE-001). Agents coordinate provisionally and must COUNTER for ratification; binding device-management actions (re-flash, re-key) route through FW↔BACK-001 / the security baseline.",
-    "source_status": "DERIVED — no direct §6 on either the FW or FE side; reconstructed from the mediated path (FW↔BACK-001 / BACK↔FE-001). Mandates COUNTER (CCR to ratify a §6 contract), not a binding CONFIRM.",
+    "source_status": "MEDIATED-PERMANENT",
+    "mediation": {
+      "decision": "MEDIATE",
+      "rationale": "No direct contract needed: firmware status reaches the dashboard via the cloud, not directly (FW↔BACK-001 → BACK↔FE-001); binding device-management actions (reboot, re-flash, re-key) must route through the Backend desired-state contract FW↔BACK-001 with the security review attached.",
+      "redirect_to": ["FW↔BACK-001", "BACK↔FE-001"],
+      "arb_reference": "docs/contract-registry/DERIVED_RESOLUTION.md"
+    },
     "cadence": "TRIGGER (provisional — to be set by the ratifying §6 contract / CCR)",
     "confirm_conditions": [
       "firmware status fields (OTA state, boot health, version) are defined for display",

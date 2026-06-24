@@ -1,0 +1,18 @@
+# Secrets — never commit real credentials (task constraint)
+.env
+
+# Python build/test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# Local artifact store / reports
+/var/harness/
+reports/

@@ -1,0 +1,141 @@
+# =============================================================================
+# Evaluation Harness — local/staging deployment (spec §9.1).
+#   1. cp .env.example .env   &&   edit secrets
+#   2. docker compose up -d --build
+#   3. open Grafana at http://localhost:${GRAFANA_PORT}
+# Services: db (TimescaleDB) · migrate (one-shot) · grafana-grants (one-shot) ·
+#           api · stats (hourly engine) · grafana · minio (optional profile).
+# =============================================================================
+name: eval-harness
+
+services:
+  db:
+    image: timescale/timescaledb:latest-pg16
+    environment:
+      POSTGRES_DB: ${HARNESS_DB_NAME}
+      POSTGRES_USER: ${HARNESS_DB_USER}
+      POSTGRES_PASSWORD: ${HARNESS_DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"   # bound to localhost only — harness is isolated
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${HARNESS_DB_USER} -d ${HARNESS_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "db/migrate.py", "--seed", "-v"]
+    env_file: .env
+    environment:
+      PGHOST: db
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  grafana-grants:
+    # Creates the least-privilege read-only role Grafana uses (spec §8.1).
+    image: timescale/timescaledb:latest-pg16
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >
+        PGPASSWORD="$${HARNESS_DB_PASSWORD}" psql -h db -U "$${HARNESS_DB_USER}" -d "$${HARNESS_DB_NAME}" -v ON_ERROR_STOP=1
+        -c "DO \$$\$$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='$${GRAFANA_DB_USER}') THEN CREATE ROLE \"$${GRAFANA_DB_USER}\" LOGIN PASSWORD '$${GRAFANA_DB_PASSWORD}'; END IF; END \$$\$$;"
+        -c "GRANT CONNECT ON DATABASE \"$${HARNESS_DB_NAME}\" TO \"$${GRAFANA_DB_USER}\";"
+        -c "GRANT USAGE ON SCHEMA public TO \"$${GRAFANA_DB_USER}\";"
+        -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO \"$${GRAFANA_DB_USER}\";"
+        -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO \"$${GRAFANA_DB_USER}\";"
+    env_file: .env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    environment:
+      PGHOST: db
+    ports:
+      - "${HARNESS_API_PORT}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  stats:
+    # Statistical Engine — recompute readiness on the spec §2.3 hourly cadence.
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - "while true; do harness-stats || echo 'stats run failed'; sleep ${HARNESS_STATS_INTERVAL}; done"
+    env_file: .env
+    environment:
+      PGHOST: db
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_INSTALL_PLUGINS: ""
+      # Interpolated into provisioning/datasources/postgres.yaml at load time:
+      HARNESS_DB_HOST: db
+      HARNESS_DB_PORT: "5432"
+      HARNESS_DB_NAME: ${HARNESS_DB_NAME}
+      HARNESS_DB_SSLMODE: ${HARNESS_DB_SSLMODE}
+      GRAFANA_DB_USER: ${GRAFANA_DB_USER}
+      GRAFANA_DB_PASSWORD: ${GRAFANA_DB_PASSWORD}
+    volumes:
+      - ./dashboard/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./dashboard/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafanadata:/var/lib/grafana
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      grafana-grants:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:RELEASE.2024-09-13T20-26-02Z
+    profiles: ["objectstore"]
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-change-me-minio}
+    volumes:
+      - miniodata:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  grafanadata:
+  miniodata:

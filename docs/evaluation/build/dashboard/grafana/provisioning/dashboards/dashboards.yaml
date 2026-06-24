@@ -1,0 +1,16 @@
+# Grafana dashboard provider — loads the config-as-code Evaluation Dashboard
+# (spec §8.1) from disk so the dashboard is versioned in Git, not edited in the UI.
+apiVersion: 1
+
+providers:
+  - name: Evaluation Harness
+    orgId: 1
+    folder: Evaluation Harness
+    type: file
+    disableDeletion: true
+    editable: false
+    allowUiUpdates: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false

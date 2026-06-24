@@ -43,7 +43,13 @@
     "consumer_role": "BACK",
     "decision_tier": "Tier-3",
     "tier_rationale": "Provisional/DERIVED edge — no §6 contract exists on either side; the relationship is mediated and security-relevant. Routine non-security provisioning coordination is provisional and must COUNTER for ratification; any cryptographic-device-identity touchpoint fires ESC-SEC and is bound under HW↔SEC-001 / BACK↔SEC-001.",
-    "source_status": "DERIVED — no direct §6 on either the HW or BACK side; reconstructed from the mediated path (HW↔SEC-001 / BACK↔SEC-001 / HW↔DEVOPS-001). Mandates COUNTER (CCR to ratify a §6 contract), not a binding CONFIRM.",
+    "source_status": "MEDIATED-PERMANENT",
+    "mediation": {
+      "decision": "MEDIATE",
+      "rationale": "No direct contract needed: this edge is security-baseline territory — cryptographic device identity is SEC-owned (HW↔SEC-001 / BACK↔SEC-001) and provisioning/enrollment via HW↔DEVOPS-001; a direct HW↔BACK contract would be a security anti-pattern (ESC-SEC, HG-01).",
+      "redirect_to": ["HW↔SEC-001", "BACK↔SEC-001", "HW↔DEVOPS-001"],
+      "arb_reference": "docs/contract-registry/DERIVED_RESOLUTION.md"
+    },
     "escalation_triggers": ["ESC-SEC"],
     "cadence": "TRIGGER (provisional — to be set by the ratifying §6 contract / CCR)",
     "confirm_conditions": [

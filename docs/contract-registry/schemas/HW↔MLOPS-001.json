@@ -38,7 +38,13 @@
     "consumer_role": "MLOPS",
     "decision_tier": "Tier-3",
     "tier_rationale": "Provisional/DERIVED edge — no §6 contract exists on either side; the model flash budget is the Architect's (ARCH↔MLOPS-001) and on-device hardware-ID/flash-fit is enforced via FW↔MLOPS-001. Agents coordinate provisionally and must COUNTER for ratification.",
-    "source_status": "DERIVED — no direct §6 on either the HW or MLOPS side; reconstructed from the mediated path (ARCH↔MLOPS-001 / FW↔MLOPS-001 / HW↔ML-001). Mandates COUNTER (CCR to ratify a §6 contract), not a binding CONFIRM.",
+    "source_status": "MEDIATED-PERMANENT",
+    "mediation": {
+      "decision": "MEDIATE",
+      "rationale": "No direct contract needed: the only hardware fact relevant to model packaging is the model flash/RAM budget, which is Architect-owned (ARCH↔MLOPS-001); on-device hardware-ID match and flash-fit are enforced through FW↔MLOPS-001.",
+      "redirect_to": ["ARCH↔MLOPS-001", "FW↔MLOPS-001", "HW↔ML-001"],
+      "arb_reference": "docs/contract-registry/DERIVED_RESOLUTION.md"
+    },
     "cadence": "TRIGGER (provisional — to be set by the ratifying §6 contract / CCR)",
     "confirm_conditions": [
       "available flash/RAM and any arena limit carry explicit units",

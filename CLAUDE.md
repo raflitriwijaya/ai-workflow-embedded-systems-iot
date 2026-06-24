@@ -205,7 +205,68 @@ Governs platform/protocol/interface/NFR decisions crossing ≥ 2 role boundaries
 Formal process to clarify or change a ratified interface contract. Schema `docs/schemas/CCR_SCHEMA.md`; ID `CCR-NN`. Required whenever a role finds an ambiguity, gap, or necessary change in a §6 clause. Severity `BLOCKING` / `HIGH` / `MEDIUM` / `LOW`; a `BLOCKING` CCR halts all associated IRD gates until `RESOLVED`. Agents scan all open CCRs before accepting any IRD — an `OPEN`/`IN_REVIEW` + `BLOCKING` CCR fires `ESC-BLOCK`. Propose→Confirm is the machine-speed CCR for Tier 3–4 ambiguities; > 3 Reject/Counter rounds (`ESC-DEAD`) files a formal human CCR; CCRs unresolved within 10 business days escalate to an ADR with ARB review.
 
 ### 6.5 Budget Trade Tolerance Bands
-[NOT YET AVAILABLE — fill in manually from `EMBEDDED_SYSTEMS_ARCHITECT_SKILL.md` §5 NFR matrix and per-node resource budget tables: the allowed ± margin on Flash/SRAM (KB), power (mW/mWh), and latency (ms) before a budget exceedance triggers an ADR rather than a silent trade.]
+Authoritative bands that let MACP L1+ agents make **routine resource trade-offs** at Tier 3/4 without firing `ESC-CONF` on every trade, while protecting NFR targets and open FMEA chains. Baselines trace to [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] §5 (Per-Node Resource Budgets, NFR Verification Matrix S3/PERF-4/REL) and the Flash↔SRAM band already ratified in [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] §7.Z item 2. Reference MCU: STM32H7 — 2,048 KB Flash, 1,024 KB SRAM.
+
+**Four bands per dimension (escalate upward when ambiguous):**
+- **Auto-Confirm** — agent trades within this range with no approval (Tier 4 Auto-Confirm); logged to the Coordination Ledger only.
+- **CCR** — agent proposes the trade via Propose→Confirm / CCR (`docs/schemas/CCR_SCHEMA.md`); peer/consumer roles confirm, ARB validates per §7.Z item 2. Tier 3.
+- **ADR threshold** — beyond this the agent MUST stop and escalate to the Architect via an ADR (`ADR-NNNN`) with measured resource-impact evidence. Never silently traded.
+- **Hard ceiling** — absolute physical/safety limit; never exceedable by any role or process.
+
+| Dimension | Baseline | Auto-Confirm | CCR (propose) | ADR threshold | Hard ceiling | Guards |
+|---|---|---|---|---|---|---|
+| **A. Flash↔SRAM** | Flash 2,048 KB / SRAM 1,024 KB | ≤ ±5% of smaller budget (≤ ±51 KB) | > ±5% to ≤ ±10% (> ±51 to ≤ ±102 KB) | > ±10% (> ±102 KB) | Flash used ≤ 2,048 KB; SRAM used ≤ 1,024 KB | ≥15% margin (§7.Z) |
+| **B. Power** | Per-node envelope (§5) | ≤ 100% of budget (under-budget always) | exceed by ≤ 3% | > 3% to ≤ 10% | > 10% (HW redesign only) | REL-1, solar balance |
+| **C. Inference latency** | 100 ms (PERF-4) | ≤ 100 ms | > 100 to ≤ 105 ms (≤ +5%) | > 105 ms (> +5%) | 1,000 ms real-time deadline | PERF-4 ≥50% CPU |
+| **D. Tensor arena** | Per-node SRAM allotment (§5) | ≤ budget | exceed by ≤ 16 KB | > 16 KB | MPU stack-guard boundary (FC-008) | FC-008 fail-closed |
+| **E. OTA image** | FW ≤ 2 MB / model ≤ 512 KB (S3) | ≤ S3 budget | ≤ 5% reallocation, no net increase | any net increase or > 5% | A/B partition slot capacity | S3, FC-026 |
+
+#### 6.5.A Flash ↔ SRAM Trade
+- **Baseline reference:** [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] §5 Per-Node Resource Budgets; band ratified in §7.Z item 2. STM32H7: Flash 2,048 KB, SRAM 1,024 KB. The smaller budget (SRAM, 1,024 KB) governs the percentage.
+- **Auto-Confirm band:** trade ≤ **±5%** of the smaller (SRAM) budget = **≤ ±51 KB** (1× tolerance, pre-authorized per §7.Z). Firmware may shift Flash↔SRAM within this band provided ≥15% headroom remains on **both** Flash and SRAM.
+- **CCR band:** **> ±51 KB to ≤ ±102 KB** (> ±5% to ≤ ±10%, the 1×–2× tolerance band). Requires a verified post-rebalancing headroom calculation showing **≥ 15% remaining Flash and SRAM margin** (§7.Z item 2) before ARB quorum confirms.
+- **ADR threshold:** **> ±102 KB** (> ±10%, beyond 2× tolerance) — Architect + ADR with full resource-budget impact analysis (§7.Z Decision Limits).
+- **Hard ceiling:** Flash used ≤ **2,048 KB** and SRAM used ≤ **1,024 KB** — physical chip capacity; the two regions are physically distinct and neither may overflow.
+- **Justification:** ties to the ≥15% Flash/SRAM memory-headroom KPI ([[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] §10) and keeps SRAM trades from silently shrinking the tensor-arena / stack-guard margin (FC-008).
+- **Roles authorized:** [[FIRMWARE_ENGINEER_SKILL|Firmware]] proposes (owns measured Flash/SRAM usage); [[EDGE_AI_ML_ENGINEER_SKILL|Edge AI/ML]] consulted when the SRAM side touches the tensor arena; ARB validates the CCR band; [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] for the ADR threshold.
+
+#### 6.5.B Power Budget
+- **Baseline reference:** per-node active/sleep power and peak-current envelope in [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] §5 Per-Node Resource Budgets (derived from the battery/solar energy envelope, §3.1). [NOT YET AVAILABLE — fill in the absolute per-node mW / mWh / µA baseline from the Per-Node Resource Budget table once instantiated; the bands below are expressed as % of that baseline.]
+- **Auto-Confirm band:** any design **at or under** 100% of the power budget — under-budget trades need no approval.
+- **CCR band:** exceed the active/sleep-power budget by **≤ 3%** — propose via CCR; [[HARDWARE_ENGINEER_SKILL|Hardware]] confirms the energy-balance impact.
+- **ADR threshold:** exceed by **> 3% to ≤ 10%** — Architect + ADR. Any **peak-current** exceedance (any %) goes straight to ADR + [[HARDWARE_ENGINEER_SKILL|Hardware]] review, as it is bounded by regulator/battery sizing, not energy balance.
+- **Hard ceiling:** exceed by **> 10%** — never approved without a hardware redesign (new power source / regulator / cell). A >10% draw breaks the solar-harvest energy balance over the field lifetime.
+- **Justification:** the 7-year field lifetime and REL-1 (≥ 100,000 h hardware MTBF) depend on a closed solar/battery energy balance; a sustained over-budget draw causes brownout and premature battery wear. Power is physics-bounded by harvest, so the band is conservative (3% vs. 5% for memory).
+- **Roles authorized:** [[FIRMWARE_ENGINEER_SKILL|Firmware]] proposes (duty-cycle / sleep-strategy trades); [[HARDWARE_ENGINEER_SKILL|Hardware]] confirms energy-balance and owns peak-current; [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] for the ADR threshold.
+
+#### 6.5.C Inference Latency
+- **Baseline reference:** PERF-4 — MCU-class on-device inference ≤ **100 ms** per cycle ([[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] §5), sized to leave ≥ 50% CPU for comms and sensing.
+- **Auto-Confirm band:** measured inference latency ≤ **100 ms** — always acceptable.
+- **CCR band:** **> 100 ms to ≤ 105 ms** (≤ +5%) — propose via CCR; [[EDGE_AI_ML_ENGINEER_SKILL|Edge AI/ML]] (model compliance) and [[FIRMWARE_ENGINEER_SKILL|Firmware]] (on-target measurement) confirm that ≥ 50% CPU headroom for comms/sensing is preserved.
+- **ADR threshold:** **> 105 ms** (> +5%) — Architect + ADR; re-validates PERF-4 and the CPU-headroom assumption.
+- **Hard ceiling:** inference must never exceed the **1,000 ms** real-time sampling deadline at the 1 Hz burst cadence (SCALE-1 burst profile, 5% of fleet at 1 sample/s); beyond it the device drops samples, breaching REL-7 data-ingestion integrity.
+- **Justification:** PERF-4 reserves ≥ 50% CPU for the MQTT/sensing tasks; eroding that margin starves comms and risks the cross-layer chains around telemetry loss. Band kept narrow (±5%) for that reason.
+- **Roles authorized:** [[EDGE_AI_ML_ENGINEER_SKILL|Edge AI/ML]] proposes (quantization / model-size latency trades); [[FIRMWARE_ENGINEER_SKILL|Firmware]] measures on-target (DWT cycle counter); [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] for the ADR threshold.
+
+#### 6.5.D Tensor Arena Size
+- **Baseline reference:** static SRAM reserved for the TFLite Micro tensor arena, set in the [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] §5 Per-Node Resource Budget (SRAM line, incl. tensor arena). [NOT YET AVAILABLE — fill in the absolute arena KB baseline once the Per-Node Resource Budget is instantiated; the band below is an absolute KB margin around that baseline.]
+- **Auto-Confirm band:** arena ≤ budget — always acceptable.
+- **CCR band:** exceed the arena budget by **≤ 16 KB** — propose via CCR; [[EDGE_AI_ML_ENGINEER_SKILL|Edge AI/ML]] (arena sizing) and [[FIRMWARE_ENGINEER_SKILL|Firmware]] (placement) confirm the MPU stack-guard region remains intact and ≥ 15% SRAM headroom holds.
+- **ADR threshold:** exceed by **> 16 KB** — Architect + ADR (this is also a Flash↔SRAM trade once it crosses §6.5.A bands).
+- **Hard ceiling:** the arena must **never impinge on the MPU stack-guard region (FC-008)** — a non-zero MPU guard band between stack and arena is mandatory; any encroachment raises a hard fault (fail-closed). Zero tolerance.
+- **Justification:** FC-008 (RPN 216, [[SYSTEM_FMEA_V2_CLOSURE|FMEA V2 Closure]] §3.14) — stack↔arena overlap causes **silent weight corruption**; the MPU guard region converts overrun into a fail-closed hard fault. A small absolute band (16 KB) prevents the agent from quietly eroding that guard margin.
+- **Roles authorized:** [[EDGE_AI_ML_ENGINEER_SKILL|Edge AI/ML]] proposes (arena sizing as models mature); [[FIRMWARE_ENGINEER_SKILL|Firmware]] owns MPU guard placement and worst-case stack-depth CI; [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] for the ADR threshold.
+
+#### 6.5.E OTA Image Size
+- **Baseline reference:** S3 per-device budgets ([[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] §5) — OTA firmware update image ≤ **2 MB** (MCUboot-compatible, compressed); OTA model update package ≤ **512 KB**; the OTA Model Artifact Contract governs the combined download.
+- **Auto-Confirm band:** artifact ≤ its S3 budget — always acceptable.
+- **CCR band:** **reallocation of ≤ 5%** between the firmware-image and model-package budgets that keeps **each artifact within its A/B partition slot and produces no net increase** of the combined S3 OTA budget — propose via CCR with the OTA-pipeline roles. There is **no Auto-Confirm or CCR band for a net budget increase**: per S3, any exceedance of a per-device budget requires an ADR.
+- **ADR threshold:** **any net increase** over the combined S3 OTA budget, or any reallocation **> 5%** — Architect + ADR with **fleet-scale capacity impact analysis** (S3 rule: no silent budget exceedances; blocks Development exit and production release).
+- **Hard ceiling:** each artifact must **fit within its A/B partition slot** (the smaller of the two slots governs); the on-device monotonic anti-rollback version counter must be preserved (FC-026). [[SECURITY_ENGINEER_SKILL|Security]] retains veto (HG-01) over any OTA change weakening anti-rollback or model signing.
+- **Justification:** S3 ties per-device OTA size to fleet-scale CDN/bandwidth capacity (SCALE-6: 5,000 concurrent downloads = 10% of the 50,000-device fleet); an unbudgeted image inflates campaign egress for the whole fleet. FC-026 (model anti-rollback weaker than firmware) makes anti-rollback preservation a hard ceiling, not a tradeable margin.
+- **Roles authorized:** [[FIRMWARE_ENGINEER_SKILL|Firmware]] (firmware image) and [[MLOPS_ENGINEER_SKILL|MLOps]] (model package) propose; [[DEVOPS_PLATFORM_ENGINEER_SKILL|DevOps]] confirms distribution-bandwidth impact; [[SECURITY_ENGINEER_SKILL|Security]] veto on anti-rollback/signing; [[EMBEDDED_SYSTEMS_ARCHITECT_SKILL|Architect]] for the ADR threshold.
+
+**Cross-cutting rules:** (1) the CCR-band confirmation must carry the measured post-trade headroom, never an estimate; (2) two trades that are each within Auto-Confirm but jointly cross a CCR/ADR boundary on the same budget escalate at the **aggregate** level (no salami-slicing); (3) any trade touching a security-baseline or OTA-governance surface fires `ESC-SEC` regardless of band; (4) bands apply only after the role has a captured Evaluation Harness baseline (§7.5) — a Wave-0 agent drafts the trade for human review and does not Auto-Confirm.
 
 ### 6.6 Human-in-the-Loop Gates (Permanent Tier 1)
 Non-negotiable, non-overridable by any agent or role (incl. ARCH, PO, TSC):

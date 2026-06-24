@@ -63,7 +63,13 @@
     "consumer_role": "FE",
     "decision_tier": "Tier-3",
     "tier_rationale": "Routine dashboard requirement intake / UX feasibility is agent-autonomous. Elevated by the source gap: see source_status.",
-    "source_status": "DERIVED / PROVISIONAL — no direct §6 contract exists on either side. Composed from BIZ §6.1 + FE §6.3 + DATA §6.12. RECOMMENDED ACTION: ratify a formal FE↔BIZ §6 interface contract via a CCR before this schema is treated as authoritative. Until then, agents must COUNTER (request §6 ratification) rather than CONFIRM a binding change.",
+    "source_status": "MEDIATED-PERMANENT",
+    "mediation": {
+      "decision": "MEDIATE",
+      "rationale": "No direct contract needed: business KPIs are product requirements owned by PO; a direct FE↔BIZ edge would duplicate PO's requirement-ownership role. Requirements flow BIZ→PO→FE and data is served via DATA/BACK→FE.",
+      "redirect_to": ["PO↔BIZ-001", "FE↔PO-001", "DATA↔FE-001", "BACK↔FE-001"],
+      "arb_reference": "docs/contract-registry/DERIVED_RESOLUTION.md"
+    },
     "cadence": "TRIGGER (dashboard data requirements ≥2 weeks before development of a new view; monthly query-performance review) — inherited from FE §6.3 / DATA §6.12 pending a ratified FE↔BIZ cadence",
     "confirm_conditions": [
       "each market_kpi carries kpi_id, kpi_name, business_rationale, and target_audience",

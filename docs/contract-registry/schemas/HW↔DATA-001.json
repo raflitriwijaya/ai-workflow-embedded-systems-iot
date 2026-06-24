@@ -48,7 +48,13 @@
     "consumer_role": "DATA",
     "decision_tier": "Tier-3",
     "tier_rationale": "Provisional/DERIVED edge — no §6 contract exists on either side; the real data path is mediated (HW↔FW-001 → FW↔DATA-001 telemetry schema; HW↔ML-001 characterization). Until a §6 contract is ratified, agents coordinate provisionally and must COUNTER for ratification; the authoritative per-field telemetry schema remains DATA-owned.",
-    "source_status": "DERIVED — no direct §6 on either the HW or DATA side; reconstructed from the mediated path (HW↔FW-001 / FW↔DATA-001 / HW↔ML-001). Mandates COUNTER (CCR to ratify a §6 contract), not a binding CONFIRM.",
+    "source_status": "MEDIATED-PERMANENT",
+    "mediation": {
+      "decision": "MEDIATE",
+      "rationale": "No direct contract needed: hardware does not emit data to the pipeline — Firmware does. Raw sensor signals are formatted into telemetry (HW↔FW-001) and validated against the DATA-owned schema registry via FW↔DATA-001; characterization for modelling flows through HW↔ML-001.",
+      "redirect_to": ["HW↔FW-001", "FW↔DATA-001", "HW↔ML-001"],
+      "arb_reference": "docs/contract-registry/DERIVED_RESOLUTION.md"
+    },
     "cadence": "TRIGGER (provisional — to be set by the ratifying §6 contract / CCR)",
     "confirm_conditions": [
       "every sensor data-format quantity (resolution, sampling rate) carries an explicit unit",

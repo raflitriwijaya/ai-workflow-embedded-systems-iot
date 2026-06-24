@@ -48,7 +48,13 @@
     "consumer_role": "BIZ",
     "decision_tier": "Tier-3",
     "tier_rationale": "Routine quality-evidence exchange for business cases is agent-autonomous. Elevated by the source gap: see source_status.",
-    "source_status": "DERIVED / PROVISIONAL — no direct §6 contract exists on either side (QA §6 lists no BIZ; BIZ §6 lists no QA). Composed from QA §6.8 + DEVOPS §6.10-BIZ pattern + BIZ §6.1. RECOMMENDED ACTION: ratify a formal QA↔BIZ §6 interface contract via a CCR before this schema is treated as authoritative. Until then, agents must COUNTER (request §6 ratification) rather than CONFIRM a binding change.",
+    "source_status": "MEDIATED-PERMANENT",
+    "mediation": {
+      "decision": "MEDIATE",
+      "rationale": "No direct contract needed: QA quality/release-readiness evidence already flows to BIZ via PO, and reliability/uptime SLA inputs via DEVOPS↔BIZ-001; a direct QA↔BIZ line would duplicate the PO release-decision channel.",
+      "redirect_to": ["QA↔PO-001", "PO↔BIZ-001", "DEVOPS↔BIZ-001"],
+      "arb_reference": "docs/contract-registry/DERIVED_RESOLUTION.md"
+    },
     "cadence": "TRIGGER (at GTM readiness review; quarterly quality review) — provisional pending a ratified QA↔BIZ cadence",
     "confirm_conditions": [
       "every quality metric carries a value and an explicit unit",

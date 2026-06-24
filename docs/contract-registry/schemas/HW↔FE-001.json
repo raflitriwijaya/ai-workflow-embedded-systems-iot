@@ -46,7 +46,13 @@
     "consumer_role": "FE",
     "decision_tier": "Tier-3",
     "tier_rationale": "Provisional/DERIVED edge — no §6 contract exists on either side; hardware-status visualization is mediated through Firmware telemetry → Backend API → Frontend. Agents coordinate provisionally and must COUNTER for ratification.",
-    "source_status": "DERIVED — no direct §6 on either the HW or FE side; reconstructed from the mediated path (HW↔FW-001 / FW↔BACK-001 / BACK↔FE-001 / DATA↔FE-001). Mandates COUNTER (CCR to ratify a §6 contract), not a binding CONFIRM.",
+    "source_status": "MEDIATED-PERMANENT",
+    "mediation": {
+      "decision": "MEDIATE",
+      "rationale": "No direct contract needed: physical topology forbids a direct edge — hardware health is read by firmware, emitted as telemetry, and reaches the dashboard only via the cloud (HW↔FW-001 → FW↔BACK-001 → BACK↔FE-001), with serving views via DATA↔FE-001.",
+      "redirect_to": ["HW↔FW-001", "FW↔BACK-001", "BACK↔FE-001", "DATA↔FE-001"],
+      "arb_reference": "docs/contract-registry/DERIVED_RESOLUTION.md"
+    },
     "cadence": "TRIGGER (provisional — to be set by the ratifying §6 contract / CCR)",
     "confirm_conditions": [
       "every physical health signal carries an explicit unit",

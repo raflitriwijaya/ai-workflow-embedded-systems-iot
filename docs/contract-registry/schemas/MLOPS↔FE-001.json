@@ -57,7 +57,13 @@
     "consumer_role": "FE",
     "decision_tier": "Tier-3",
     "tier_rationale": "Provisional/DERIVED edge — no §6 contract exists on either side; deployment-status and drift dashboards are served through the Backend (MLOPS↔BACK-001 → BACK↔FE-001), and the inference confidence/drift signal schema is owned by ML↔FE-001. Agents coordinate provisionally and must COUNTER for ratification.",
-    "source_status": "DERIVED — no direct §6 on either the MLOPS or FE side; reconstructed from the mediated path (MLOPS↔BACK-001 / BACK↔FE-001 / ML↔FE-001). Mandates COUNTER (CCR to ratify a §6 contract), not a binding CONFIRM.",
+    "source_status": "MEDIATED-PERMANENT",
+    "mediation": {
+      "decision": "MEDIATE",
+      "rationale": "No direct contract needed: MLOps fleet/deployment data reaches dashboards through the Backend (MLOPS↔BACK-001 → BACK↔FE-001), and the operator-facing inference confidence/drift signal schema is the already-ratified ML↔FE-001; a direct MLOPS↔FE contract would add only redundancy (no FC-022 detection coverage).",
+      "redirect_to": ["MLOPS↔BACK-001", "BACK↔FE-001", "ML↔FE-001"],
+      "arb_reference": "docs/contract-registry/DERIVED_RESOLUTION.md"
+    },
     "cadence": "TRIGGER (provisional — to be set by the ratifying §6 contract / CCR)",
     "confirm_conditions": [
       "fleet device counts, drift values, and refresh rate carry explicit units",

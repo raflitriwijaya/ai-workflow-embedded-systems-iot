@@ -1,0 +1,24 @@
+# Grafana datasource provisioning — Evaluation Harness PostgreSQL (read-only).
+# Credentials come from environment variables interpolated by Grafana at load
+# time ($VAR syntax); no secrets are committed. The grafana_ro role is granted
+# SELECT-only in docker-compose init (see DEPLOYMENT_GUIDE.md).
+apiVersion: 1
+
+datasources:
+  - name: Evaluation Harness DB
+    uid: eval_pg
+    type: grafana-postgresql-datasource
+    access: proxy
+    url: ${HARNESS_DB_HOST}:${HARNESS_DB_PORT}
+    user: ${GRAFANA_DB_USER}
+    jsonData:
+      database: ${HARNESS_DB_NAME}
+      sslmode: ${HARNESS_DB_SSLMODE}
+      maxOpenConns: 5
+      maxIdleConns: 2
+      connMaxLifetime: 14400
+      postgresVersion: 1500
+      timescaledb: false
+    secureJsonData:
+      password: ${GRAFANA_DB_PASSWORD}
+    editable: false

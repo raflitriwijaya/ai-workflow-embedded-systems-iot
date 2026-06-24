@@ -48,7 +48,13 @@
     "consumer_role": "BACK",
     "decision_tier": "Tier-3",
     "tier_rationale": "Provisional/DERIVED edge — no §6 contract exists on either side; AgriSpectra inference is edge-first and any cloud inference is mediated (ARCH↔ML-001 split; ML↔MLOPS-001; MLOPS↔BACK-001). Agents coordinate provisionally and must COUNTER for ratification.",
-    "source_status": "DERIVED — no direct §6 on either the ML or BACK side; reconstructed from the mediated path (ARCH↔ML-001 / ML↔MLOPS-001 / MLOPS↔BACK-001). Mandates COUNTER (CCR to ratify a §6 contract), not a binding CONFIRM.",
+    "source_status": "MEDIATED-PERMANENT",
+    "mediation": {
+      "decision": "MEDIATE",
+      "rationale": "No direct contract needed under the current edge-first architecture: AgriSpectra inference runs on-device, so there is no cloud-served inference for the Backend to host; any cloud inference would be packaged by MLOps (ML↔MLOPS-001) and served via MLOPS↔BACK-001, with the inference split owned by ARCH↔ML-001. Conditional re-evaluation if a future ARCH↔ML-001 ADR moves inference_location to CLOUD/HYBRID.",
+      "redirect_to": ["ARCH↔ML-001", "ML↔MLOPS-001", "MLOPS↔BACK-001"],
+      "arb_reference": "docs/contract-registry/DERIVED_RESOLUTION.md"
+    },
     "cadence": "TRIGGER (provisional — to be set by the ratifying §6 contract / CCR)",
     "confirm_conditions": [
       "every inference output field and serving requirement (latency/throughput) carries an explicit unit",

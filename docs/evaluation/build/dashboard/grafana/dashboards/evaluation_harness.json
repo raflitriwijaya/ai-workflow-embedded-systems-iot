@@ -1,0 +1,314 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "refresh": "5m",
+  "schemaVersion": 39,
+  "tags": ["evaluation-harness", "ai-agent", "phase-5"],
+  "templating": { "list": [] },
+  "time": { "from": "now-90d", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Evaluation Harness — AI Agent Readiness",
+  "uid": "eval-harness",
+  "version": 1,
+  "panels": [
+    {
+      "id": 1,
+      "title": "DASH-1 · Wave Activation Gate Status",
+      "type": "table",
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "eval_pg" },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 0 },
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto" } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "wg1_all_samples_met" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "true": { "color": "green", "index": 0 }, "false": { "color": "red", "index": 1 } } }
+              ] }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "wg2_all_reports_accepted" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "true": { "color": "green", "index": 0 }, "false": { "color": "red", "index": 1 } } }
+              ] }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT wave, wg1_all_samples_met, wg2_all_reports_accepted, deliverables_at_threshold, deliverables_in_wave FROM v_wave_gate_status ORDER BY wave;"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "DASH-8 · Safety & Security Incidents (0 = GREEN)",
+      "type": "stat",
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "eval_pg" },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 0 },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null }, { "color": "red", "value": 1 }
+          ] },
+          "color": { "mode": "thresholds" }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "textMode": "value_and_name", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT (SELECT count(*) FROM incidents WHERE incident_class='SAFETY') AS \"Safety\", (SELECT count(*) FROM incidents WHERE incident_class='SECURITY') AS \"Security\";"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "DASH-2 · Baseline Sample Count per Role/Deliverable (RED < 30)",
+      "type": "table",
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "eval_pg" },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 7 },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "baseline_n" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "thresholds", "value": { "mode": "absolute", "steps": [
+                { "color": "red", "value": null }, { "color": "green", "value": 30 }
+              ] } }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT role_code, deliverable_id, deliverable_name, baseline_n, min_sample FROM v_sample_progress ORDER BY role_code, deliverable_id;"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "DASH-3 · Human Baseline Distribution (p25 / median / p75 / p95)",
+      "type": "barchart",
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "eval_pg" },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 7 },
+      "fieldConfig": { "defaults": { "min": 0, "max": 100 }, "overrides": [] },
+      "options": { "xField": "deliverable_id", "orientation": "auto", "stacking": "none", "groupWidth": 0.7, "barWidth": 0.9, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT deliverable_id, p25, median, p75, p95 FROM v_baseline_stats ORDER BY deliverable_id;"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "DASH-4 · Agent vs Baseline mean (per deliverable)",
+      "type": "barchart",
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "eval_pg" },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 16 },
+      "fieldConfig": { "defaults": { "min": 0, "max": 100 }, "overrides": [] },
+      "options": { "xField": "deliverable_id", "orientation": "auto", "stacking": "none", "groupWidth": 0.7, "barWidth": 0.9, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT deliverable_id, baseline_mean, agent_mean FROM v_role_readiness_latest WHERE deliverable_id IS NOT NULL ORDER BY deliverable_id;"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "DASH-5 · Draft Acceptance Rate — rolling (threshold 0.80)",
+      "type": "timeseries",
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "eval_pg" },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 16 },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0, "max": 1,
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 5, "thresholdsStyle": { "mode": "line" } },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 0.8 } ] }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT date_trunc('day', captured_at) AS time, role_code AS metric, avg(CASE WHEN draft_accepted THEN 1.0 ELSE 0.0 END) AS rate FROM agent_results WHERE $__timeFilter(captured_at) GROUP BY 1, 2 ORDER BY 1;"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "DASH-6 · Human Edit-Required Breakdown (per role, 90d)",
+      "type": "barchart",
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "eval_pg" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 25 },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": { "xField": "role_code", "orientation": "auto", "stacking": "normal", "groupWidth": 0.7, "barWidth": 0.9, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT role_code, accepted_as_is, accepted_with_edit, rejected FROM v_edit_breakdown ORDER BY role_code;"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "DASH-7 · Phase Gate Status (G1–G7)",
+      "type": "table",
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "eval_pg" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 25 },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "status" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "GREEN": { "color": "green", "index": 0 }, "RED": { "color": "red", "index": 1 }, "AMBER": { "color": "orange", "index": 2 } } }
+              ] }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT gate, value, status FROM (\n  SELECT 1 AS ord, 'G1 all activated roles ready' AS gate, coalesce(min(CASE readiness WHEN 'GREEN' THEN 'GREEN' ELSE 'RED' END),'RED') AS value, coalesce(min(CASE readiness WHEN 'GREEN' THEN 'GREEN' ELSE 'RED' END),'RED') AS status FROM v_role_readiness_latest WHERE deliverable_id IS NULL\n  UNION ALL SELECT 2, 'G2 org draft-accept >= 80%', coalesce(round(100*org_draft_acceptance_rate,1)::text,'n/a') || '%', CASE WHEN org_draft_acceptance_rate >= 0.80 THEN 'GREEN' ELSE 'RED' END FROM v_draft_acceptance_org\n  UNION ALL SELECT 4, 'G4 safety incidents = 0', (SELECT count(*)::text FROM incidents WHERE incident_class='SAFETY'), CASE WHEN (SELECT count(*) FROM incidents WHERE incident_class='SAFETY')=0 THEN 'GREEN' ELSE 'RED' END\n  UNION ALL SELECT 5, 'G5 security incidents = 0', (SELECT count(*)::text FROM incidents WHERE incident_class='SECURITY'), CASE WHEN (SELECT count(*) FROM incidents WHERE incident_class='SECURITY')=0 THEN 'GREEN' ELSE 'RED' END\n) g ORDER BY ord;"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "DASH-9 · Harness Score Alignment — Pearson r (threshold 0.75)",
+      "type": "bargauge",
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "eval_pg" },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 33 },
+      "fieldConfig": {
+        "defaults": {
+          "min": -1, "max": 1,
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "orange", "value": 0.6 }, { "color": "green", "value": 0.75 } ] }
+        },
+        "overrides": []
+      },
+      "options": { "orientation": "horizontal", "displayMode": "gradient", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": true } },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT role_code, corr(composite_score, human_accepted::int) AS alignment FROM agent_results GROUP BY role_code HAVING count(*) >= 2 AND stddev_pop(human_accepted::int) > 0;"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "DASH-10 · Circuit Breaker Status",
+      "type": "table",
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "eval_pg" },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 33 },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "status" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "OK": { "color": "green", "index": 0 }, "TRIPPED": { "color": "red", "index": 1 }, "N/A": { "color": "gray", "index": 2 } } }
+              ] }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT breaker, status FROM (\n  SELECT 1 AS ord, 'Safety (0 tolerated)' AS breaker, CASE WHEN (SELECT count(*) FROM incidents WHERE incident_class='SAFETY')=0 THEN 'OK' ELSE 'TRIPPED' END AS status\n  UNION ALL SELECT 2, 'Security (CVSS>=9 to prod)', CASE WHEN (SELECT count(*) FROM incidents WHERE incident_class='SECURITY')=0 THEN 'OK' ELSE 'TRIPPED' END\n  UNION ALL SELECT 3, 'Quality escape (>2x baseline)', CASE WHEN (SELECT count(*) FROM incidents WHERE incident_class='QUALITY_ESCAPE') <= 0 THEN 'OK' ELSE 'TRIPPED' END\n  UNION ALL SELECT 4, 'Capability stall (needs >=2 quarters history)', 'N/A'\n  UNION ALL SELECT 5, 'Trust collapse (needs confidence survey)', 'N/A'\n) b ORDER BY ord;"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Time-to-completion · Human produce vs Agent edit-effort (minutes)",
+      "type": "barchart",
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "eval_pg" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 40 },
+      "fieldConfig": { "defaults": { "unit": "m", "min": 0 }, "overrides": [] },
+      "options": { "xField": "role_code", "orientation": "auto", "stacking": "none", "groupWidth": 0.7, "barWidth": 0.8, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT r.role_code, round((SELECT avg(time_spent_minutes) FROM human_baselines hb WHERE hb.role_code=r.role_code)::numeric,1) AS human_produce_min, round((SELECT avg(edit_effort_minutes) FROM agent_results ar WHERE ar.role_code=r.role_code)::numeric,1) AS agent_edit_min FROM roles r WHERE r.wave=1 ORDER BY r.role_code;"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Per-role Readiness (GREEN / YELLOW / RED)",
+      "type": "table",
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "eval_pg" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 40 },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "readiness" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "GREEN": { "color": "green", "index": 0 }, "YELLOW": { "color": "orange", "index": 1 }, "RED": { "color": "red", "index": 2 } } }
+              ] }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT role_code, readiness, baseline_n, round(agent_mean,1) AS agent_mean, round(baseline_mean,1) AS baseline_mean, round(draft_acceptance_rate,2) AS draft_accept FROM v_role_readiness_latest WHERE deliverable_id IS NULL ORDER BY role_code;"
+        }
+      ]
+    }
+  ]
+}
